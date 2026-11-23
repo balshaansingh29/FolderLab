@@ -6,6 +6,10 @@ DerivedData/
 project.xcworkspace/xcuserdata/
 xcuserdata/
 
+# App Bundles & Release Archives
+*.app/
+*.zip
+
 # macOS System Files
 .DS_Store
 .AppleDouble

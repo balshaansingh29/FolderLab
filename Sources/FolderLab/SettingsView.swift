@@ -28,7 +28,7 @@ struct SettingsView: View {
                             .font(.system(size: 16, weight: .bold))
                     }
 
-                    Text("Version 1.0.0 • Native macOS Icon Studio & Icon Composer")
+                    Text("Version 0.1 • Native macOS Icon Studio & Icon Composer")
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                 }

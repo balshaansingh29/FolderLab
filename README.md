@@ -10,6 +10,7 @@
 </p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/Release-v0.1-brightgreen.svg" alt="Release v0.1">
   <img src="https://img.shields.io/badge/macOS-13%2B%20Ventura%20%7C%20Sonoma%20%7C%20Sequoia-blue.svg?logo=apple" alt="macOS 13+">
   <img src="https://img.shields.io/badge/Swift-5.9%2B-orange.svg?logo=swift" alt="Swift 5.9+">
   <img src="https://img.shields.io/badge/UI-SwiftUI%20%26%20AppKit-purple.svg" alt="SwiftUI & AppKit">
