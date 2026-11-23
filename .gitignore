@@ -9,6 +9,7 @@ xcuserdata/
 # App Bundles & Release Archives
 *.app/
 *.zip
+*.dmg
 
 # macOS System Files
 .DS_Store
