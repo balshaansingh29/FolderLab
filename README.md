@@ -17,6 +17,10 @@
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT">
 </p>
 
+<p align="center">
+  <img src="docs/screenshot.png" width="880" alt="FolderLab Studio Screenshot" />
+</p>
+
 ---
 
 ## 🌟 Highlights & Features
