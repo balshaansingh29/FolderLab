@@ -1,64 +1,83 @@
-# 📁 FolderLab
+<p align="center">
+  <img src="Sources/FolderLab/Resources/AppIcon.png" width="128" height="128" alt="FolderLab App Icon" />
+</p>
+
+<h1 align="center">📁 FolderLab 🧪✨</h1>
 
 <p align="center">
-  <b>A native, ultra-polished macOS utility (macOS 13+) for customizing, stamping, and skinning macOS folders in real-time. Open Source.</b>
+  <b>The modern, native macOS studio to customize, stamp, and skin Finder folders in real time! 🎨🚀</b><br>
+  <i>Crafted with SwiftUI & AppKit • Apple Liquid Glass • SF Symbols • Open Source 🌟</i>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/macOS-13%2B-blue.svg" alt="macOS 13+">
-  <img src="https://img.shields.io/badge/Swift-5.9-orange.svg" alt="Swift 5.9">
-  <img src="https://img.shields.io/badge/SwiftUI-Native-purple.svg" alt="SwiftUI Native">
+  <img src="https://img.shields.io/badge/macOS-13%2B%20Ventura%20%7C%20Sonoma%20%7C%20Sequoia-blue.svg?logo=apple" alt="macOS 13+">
+  <img src="https://img.shields.io/badge/Swift-5.9%2B-orange.svg?logo=swift" alt="Swift 5.9+">
+  <img src="https://img.shields.io/badge/UI-SwiftUI%20%26%20AppKit-purple.svg" alt="SwiftUI & AppKit">
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT">
 </p>
 
 ---
 
-## 🌟 Features
+## 🌟 Highlights & Features
 
-* **Direct Finder Drag & Drop**: Drag any folder from macOS Finder directly onto the stage to apply your custom design instantly!
-* **Batch / Bulk Folder Styler**: Select multiple folders simultaneously or skin all subfolders within a parent directory (e.g. `~/Developer`) with one click.
-* **Custom PNG / SVG Graphic Stamping**: Drop or choose custom artwork, team logos, vector icons, or transparent PNGs to stamp onto the folder flap with rotation, scaling, and color tinting.
-* **Native macOS Finder Tag Sync**: Match authentic Apple Finder tag color palettes (Red, Orange, Yellow, Green, Blue, Purple, Gray) and optionally write tags directly to Finder metadata.
-* **Shareable Theme Presets (`.folderlab`)**: Export and import themes as portable `.folderlab` files to share with teammates and the community.
-* **Photorealistic Folder Craft**: Authentic Apple folder geometry with front flap highlight rim, interior crease shadow, and Finder drop shadows.
-* **Liquid Glass Folder Skins 🧊**: Translucent smoked and crystal liquid glass folder materials with specular rim beveling.
-* **Laser-Engraved Symbol Stamping**: Over 140+ curated SF Symbols across 6 categories (Projects, Code, Media, Tech, Badges, Places) or custom monograms and emoji.
-* **Finder Multi-Scale Previews**: Preview how your folder looks in Finder Icon View (128px), List View (64px), Column View (32px), Sidebar (16px), and the macOS Dock.
-* **Lossless Export**: Export your folder icons as native Apple `.icns` packages or 1024×1024 master PNGs.
+- 🎯 **Direct Finder Drag & Drop**: Simply drag any folder from macOS Finder directly onto the preview stage to customize it instantly! ⚡
+- 🗂️ **Batch & Bulk Folder Styler**: Select multiple directories at once or re-theme all subfolders in a folder with one tap! 📂
+- 🖼️ **Custom Image & Stamp Importer**: Drop any PNG, JPG, or SVG image to stamp logos, team badges, or stickers onto the folder flap! 🎨
+- 🏷️ **Native Finder Tag Color Sync**: Live integration with Apple Finder tag colors (Red 🔴, Orange 🟠, Yellow 🟡, Green 🟢, Blue 🔵, Purple 🟣, Gray ⚪).
+- 🧊 **Apple Liquid Glass Aesthetics**: Dynamic glass translucency, frosted diffusion sheen, and specular rim chamfers! 💎
+- ✨ **SF Symbol Stamping**: Laser-engrave over 140+ curated Apple SF Symbols with custom tint gradients, shadows, and scaling! 🔮
+- 🖥️ **Live Multi-Scale Previews**: Check how your design looks across Finder sizes — Dock (68px), Large Icon (128px), List (64px), and Sidebar (16px)! 🔍
+- 💾 **Portable Preset Packs (`.folderlab`)**: Export and share your handcrafted folder themes with friends and teammates! 🤝
+- 📦 **Lossless High-Res Export**: Save your custom icons as production-ready Apple `.icns` packages or 1024×1024 master PNGs! 🚀
 
 ---
 
-## 🎨 Themes & Styles
+## 🎨 Pre-Built Themes & Aesthetic Finishes
 
-| Theme | Tone | Vibe |
+| Theme | Gradient Swatch | Aesthetic Vibe |
 | :--- | :--- | :--- |
-| **Classic Blue** | `#6CD0FF` → `#2F9DF4` | macOS standard folder appearance |
-| **Dark Graphite** | `#3A3D45` → `#181A1F` | Space Black / Pro dark mode |
-| **Titanium Slate** | `#5E6573` → `#3A3F49` | Industrial brushed metal |
-| **Liquid Glass 🧊** | Translucent Smoked Glass | iOS 18 / macOS Sequoia glass shader |
-| **Neon Cyber** | `#FF007F` → `#7928CA` | Electric vaporwave glow |
-| **Warm Sunset** | `#FF7E5F` → `#FEB47B` | Vibrant golden-hour gradient |
-| **Mint Emerald** | `#11998E` → `#38EF7D` | Fresh organic green |
-| **Crimson Ruby** | `#ED213A` → `#93291E` | Rich executive red |
-| **Champagne Gold** | `#F6D365` → `#FDA085` | Luxury metallic finish |
+| 🌊 **Classic Blue** | `#6CD0FF` → `#2F9DF4` | Authentic macOS Finder native look 🍏 |
+| 🌑 **Dark Graphite** | `#3A3D45` → `#181A1F` | Sleek Space Black & Pro studio dark mode 🖤 |
+| ⚙️ **Titanium Slate** | `#5E6573` → `#3A3F49` | Industrial brushed metal & minimal slate 🪨 |
+| 🧊 **Liquid Glass** | `Translucent Glass` | Smoked crystal glass with specular edge rim 💎 |
+| 🔮 **Neon Cyber** | `#FF007F` → `#7928CA` | Electric synthwave glow & vivid magenta ⚡ |
+| 🌅 **Warm Sunset** | `#FF7E5F` → `#FEB47B` | Golden hour glow & warm tangerine horizon 🌇 |
+| 🌿 **Mint Emerald** | `#11998E` → `#38EF7D` | Vibrant organic foliage & emerald glass 🌱 |
+| 🍷 **Crimson Ruby** | `#ED213A` → `#93291E` | Deep executive scarlet & velvet ruby finish 🌹 |
+| 👑 **Champagne Gold** | `#F6D365` → `#FDA085` | Luxury metallic shimmer & warm champagne ✨ |
+
+---
+
+## 🛠️ How It Works in 3 Easy Steps
+
+1. 🎨 **Craft your design**: Pick a vibrant color palette, adjust glass translucency, or choose an SF Symbol / custom stamp image.
+2. 🗂️ **Drop your folder**: Drag any folder from Finder directly into FolderLab, or click **"Apply to Folder…"**
+3. 🎉 **Done!**: Your folder in Finder is updated immediately with your bespoke icon! 🚀
 
 ---
 
 ## 🚀 Getting Started
 
-### Prerequisites
-- macOS 13.0 (Ventura) or later
-- Xcode 15+ or Swift 5.9+ toolchain
+### 📋 Prerequisites
+- 🍏 **macOS 13.0 (Ventura)**, **macOS 14 (Sonoma)**, or **macOS 15 (Sequoia)**
+- 🛠️ **Xcode 15+** or **Swift 5.9+** toolchain
 
-### Running Locally
+### ⚡ Running from Terminal
 ```bash
-git clone https://github.com/yourusername/folderlab.git
-cd folderlab
+# 1. Clone the repository 📦
+git clone https://github.com/balshaansingh29/FolderLab.git
+
+# 2. Enter the project directory 📂
+cd FolderLab
+
+# 3. Build & launch instantly! 🚀
 swift run
 ```
-Or open the project in Xcode and press **⌘R**.
+
+Or simply open `Package.swift` in Xcode and press **⌘R** to run! ▶️
 
 ---
 
 ## 📄 License
-This project is open source under the [MIT License](LICENSE).
+
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details. Enjoy skinning your folders! 📁✨
