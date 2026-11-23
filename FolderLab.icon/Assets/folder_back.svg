@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="backGrad" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.32"/>
+      <stop offset="45%" stop-color="#0284C7" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#1E3A8A" stop-opacity="0.38"/>
+    </linearGradient>
+    <linearGradient id="backStroke" x1="15%" y1="0%" x2="85%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="35%" stop-color="#FFFFFF" stop-opacity="0.55"/>
+      <stop offset="70%" stop-color="#93C5FD" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.75"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(512, 520)">
+    <!-- Back folder body with tab on top-left -->
+    <path d="M -310 170 L -310 -165 C -310 -185 -295 -195 -275 -195 L -80 -195 C -58 -195 -46 -175 -35 -145 C -26 -125 -10 -125 10 -125 L 280 -125 C 300 -125 310 -115 310 -95 L 310 170 C 310 190 295 200 275 200 L -275 200 C -295 200 -310 190 -310 170 Z"
+          fill="url(#backGrad)"/>
+    <!-- Outer Contour Specular Stroke -->
+    <path d="M -310 170 L -310 -165 C -310 -185 -295 -195 -275 -195 L -80 -195 C -58 -195 -46 -175 -35 -145 C -26 -125 -10 -125 10 -125 L 280 -125 C 300 -125 310 -115 310 -95 L 310 170 C 310 190 295 200 275 200 L -275 200 C -295 200 -310 190 -310 170 Z"
+          fill="none" stroke="url(#backStroke)" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"/>
+    <!-- Back Tab Interior Crease Shadow -->
+    <line x1="-295" y1="-110" x2="295" y2="-110" stroke="#000000" stroke-width="6" opacity="0.30" stroke-linecap="round"/>
+  </g>
+</svg>

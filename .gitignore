@@ -1,0 +1,17 @@
+# Xcode & Swift Package Manager
+.build/
+.swiftpm/
+DerivedData/
+*.xcuserstate
+project.xcworkspace/xcuserdata/
+xcuserdata/
+
+# macOS System Files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Assistant / Tool configuration
+.agents/
+.gemini/

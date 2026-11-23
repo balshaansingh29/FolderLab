@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="specGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="40%" stop-color="#FFFFFF" stop-opacity="0.80"/>
+      <stop offset="85%" stop-color="#FFFFFF" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.0"/>
+    </linearGradient>
+    <linearGradient id="sideSpec" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.80"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.0"/>
+    </linearGradient>
+    <filter id="starGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feComposite in="SourceGraphic" in2="b" operator="over"/>
+    </filter>
+  </defs>
+  <g transform="translate(512, 520)">
+    <!-- Top Flap Specular Glint Line -->
+    <path d="M -270 -107 L 30 -107"
+          fill="none" stroke="url(#specGrad)" stroke-width="7" stroke-linecap="round"/>
+    <!-- Back Tab Top Edge Specular -->
+    <path d="M -270 -192 L -90 -192"
+          fill="none" stroke="#FFFFFF" stroke-width="6.5" stroke-linecap="round" opacity="0.90"/>
+    <!-- Left Shoulder Vertical Specular -->
+    <path d="M -306 -60 L -306 110"
+          fill="none" stroke="url(#sideSpec)" stroke-width="5" stroke-linecap="round"/>
+    <!-- 4-point sparkle star on the folder tab -->
+    <g transform="translate(-80, -192) scale(0.95)">
+      <path d="M 0 -26 Q 0 0 26 0 Q 0 0 0 26 Q 0 0 -26 0 Q 0 0 0 -26 Z"
+            fill="#FFFFFF" filter="url(#starGlow)"/>
+      <circle cx="0" cy="0" r="4.5" fill="#FFFFFF"/>
+    </g>
+    <!-- Accent Star on the front flap -->
+    <g transform="translate(255, -107) scale(0.65)">
+      <path d="M 0 -20 Q 0 0 20 0 Q 0 0 0 20 Q 0 0 -20 0 Q 0 0 0 -20 Z"
+            fill="#FFFFFF" opacity="0.90" filter="url(#starGlow)"/>
+    </g>
+  </g>
+</svg>

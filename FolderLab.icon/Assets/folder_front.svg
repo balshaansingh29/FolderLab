@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="frontGrad" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.38"/>
+      <stop offset="35%" stop-color="#2563EB" stop-opacity="0.30"/>
+      <stop offset="70%" stop-color="#7C3AED" stop-opacity="0.36"/>
+      <stop offset="100%" stop-color="#A855F7" stop-opacity="0.45"/>
+    </linearGradient>
+    <linearGradient id="frontStroke" x1="15%" y1="0%" x2="85%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="30%" stop-color="#FFFFFF" stop-opacity="0.65"/>
+      <stop offset="70%" stop-color="#E0E7FF" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.80"/>
+    </linearGradient>
+    <linearGradient id="sheenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.22"/>
+      <stop offset="40%" stop-color="#FFFFFF" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.0"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(512, 520)">
+    <!-- Liquid Glass Folder Front Flap -->
+    <path d="M -310 -78 C -310 -98 -295 -110 -275 -110 L 275 -110 C 295 -110 310 -98 310 -78 L 310 173 C 310 193 295 205 275 205 L -275 205 C -295 205 -310 193 -310 173 Z"
+          fill="url(#frontGrad)"/>
+    <!-- Diagonal Frosted Sheen -->
+    <path d="M -310 -78 C -310 -98 -295 -110 -275 -110 L 275 -110 C 295 -110 310 -98 310 -78 L 310 173 C 310 193 295 205 275 205 L -275 205 C -295 205 -310 193 -310 173 Z"
+          fill="url(#sheenGrad)"/>
+    <!-- Outer Rim Stroke -->
+    <path d="M -310 -78 C -310 -98 -295 -110 -275 -110 L 275 -110 C 295 -110 310 -98 310 -78 L 310 173 C 310 193 295 205 275 205 L -275 205 C -295 205 -310 193 -310 173 Z"
+          fill="none" stroke="url(#frontStroke)" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"/>
+    <!-- Top Chamfer Highlight Line -->
+    <line x1="-285" y1="-106" x2="285" y2="-106" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" opacity="0.85"/>
+    <!-- Stylized Central Folder Silhouette Badge -->
+    <g transform="translate(0, 48) scale(0.65)" opacity="0.40">
+      <path d="M -90 -60 L -30 -60 L -15 -40 L 90 -40 C 98 -40 105 -33 105 -25 L 105 55 C 105 63 98 70 90 70 L -90 70 C -98 70 -105 63 -105 55 L -105 -45 C -105 -53 -98 -60 -90 -60 Z"
+            fill="#FFFFFF"/>
+    </g>
+  </g>
+</svg>
