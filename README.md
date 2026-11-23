@@ -26,7 +26,7 @@
 ## 🌟 Highlights & Features
 
 - 🎯 **Direct Finder Drag & Drop**: Simply drag any folder from macOS Finder directly onto the preview stage to customize it instantly! ⚡
-- 🗂️ **Batch & Bulk Folder Styler**: Select multiple directories at once or re-theme all subfolders in a folder with one tap! 📂
+- 🗂️ **Batch & Bulk Folder Styler**: Select multiple directories at once or re-theme all subfolders in a folder with one tap! 📁
 - 🖼️ **Custom Image & Stamp Importer**: Drop any PNG, JPG, or SVG image to stamp logos, team badges, or stickers onto the folder flap! 🎨
 - 🏷️ **Native Finder Tag Color Sync**: Live integration with Apple Finder tag colors (Red 🔴, Orange 🟠, Yellow 🟡, Green 🟢, Blue 🔵, Purple 🟣, Gray ⚪).
 - 🧊 **Apple Liquid Glass Aesthetics**: Dynamic glass translucency, frosted diffusion sheen, and specular rim chamfers! 💎
@@ -42,7 +42,7 @@
 | Theme | Gradient Swatch | Aesthetic Vibe |
 | :--- | :--- | :--- |
 | 🌊 **Classic Blue** | `#6CD0FF` → `#2F9DF4` | Authentic macOS Finder native look 🍏 |
-| 🌑 **Dark Graphite** | `#3A3D45` → `#181A1F` | Sleek Space Black & Pro studio dark mode 🖤 |
+| 🌘 **Dark Graphite** | `#3A3D45` → `#181A1F` | Sleek Space Black & Pro studio dark mode 🖤 |
 | ⚙️ **Titanium Slate** | `#5E6573` → `#3A3F49` | Industrial brushed metal & minimal slate 🪨 |
 | 🧊 **Liquid Glass** | `Translucent Glass` | Smoked crystal glass with specular edge rim 💎 |
 | 🔮 **Neon Cyber** | `#FF007F` → `#7928CA` | Electric synthwave glow & vivid magenta ⚡ |
@@ -63,7 +63,14 @@
 
 ## 🚀 Getting Started
 
-### 📋 Prerequisites
+### 📥 Direct Download (macOS App)
+Grab the latest pre-compiled build:
+- 💿 **[FolderLab-v0.1.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.1/FolderLab-v0.1.dmg)** *(Recommended: drag to `/Applications`)*
+- 📦 **[FolderLab-v0.1.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.1/FolderLab-v0.1.zip)** *(Standalone application archive)*
+
+---
+
+### 📋 Prerequisites (For Developers)
 - 🍏 **macOS 13.0 (Ventura)**, **macOS 14 (Sonoma)**, or **macOS 15 (Sequoia)**
 - 🛠️ **Xcode 15+** or **Swift 5.9+** toolchain
 
@@ -72,7 +79,7 @@
 # 1. Clone the repository 📦
 git clone https://github.com/balshaansingh29/FolderLab.git
 
-# 2. Enter the project directory 📂
+# 2. Enter the project directory 📁
 cd FolderLab
 
 # 3. Build & launch instantly! 🚀
