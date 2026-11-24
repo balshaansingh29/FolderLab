@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v0.3-brightgreen.svg" alt="Release v0.3">
+  <img src="https://img.shields.io/badge/Release-v0.3.1-brightgreen.svg" alt="Release v0.3.1">
   <img src="https://img.shields.io/badge/macOS-13%2B%20Ventura%20%7C%20Sonoma%20%7C%20Sequoia-blue.svg?logo=apple" alt="macOS 13+">
   <img src="https://img.shields.io/badge/Swift-5.9%2B-orange.svg?logo=swift" alt="Swift 5.9+">
   <img src="https://img.shields.io/badge/UI-SwiftUI%20%26%20AppKit-purple.svg" alt="SwiftUI & AppKit">
@@ -35,7 +35,7 @@
 - ✍️ **Typography & 3D Depth Stamping (v0.2)**: SF Pro Rounded, SF Mono, and New York Serif fonts with Embossed or Engraved 3D tactile bevels! 🔮
 - ↩️ **Full Undo & Redo (v0.2)**: 30-level state history with `⌘Z` / `⇧⌘Z` keyboard shortcuts and canvas toolbar buttons! ⚡
 - 🕒 **Recently Applied Styles Shelf (v0.2)**: Horizontal recents gallery in the Themes inspector to quickly re-apply your favorite folder designs! 🎨
-- 🔄 **In-App Software Updater (v0.2)**: Check GitHub releases right from the app menu or Settings, and download & mount DMGs with 1 click! 📦
+- ⚡ **Automatic 1-Click In-App Updater (v0.3.1)**: Seamless silent background installation! Clicking "Update Now" automatically mounts the installer, upgrades , strips quarantine flags, and relaunches with zero manual dragging! 🚀
 - 🎯 **Direct Finder Drag & Drop**: Simply drag any folder from macOS Finder directly onto the preview stage to customize it instantly! ⚡
 - 🗂️ **Batch & Bulk Folder Styler**: Select multiple directories at once or re-theme all subfolders in a folder with one tap! 📁
 - 🖼️ **Custom Image & Stamp Importer**: Drop any PNG, JPG, or SVG image to stamp logos, team badges, or stickers onto the folder flap! 🎨
@@ -94,8 +94,8 @@ brew install --cask https://raw.githubusercontent.com/balshaansingh29/FolderLab/
 
 ### 📥 Manual Download (DMG / ZIP)
 Grab the latest pre-compiled build:
-- 💿 **[FolderLab-v0.3.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.3.dmg)** *(Clean drag-and-drop installer for `/Applications`)*
-- 📦 **[FolderLab-v0.3.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.3.zip)** *(Standalone application archive)*
+- 💿 **[FolderLab-v0.3.1.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.3.1/FolderLab-v0.3.1.dmg)** *(Clean drag-and-drop installer for `/Applications`)*
+- 📦 **[FolderLab-v0.3.1.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.3.1/FolderLab-v0.3.1.zip)** *(Standalone application archive)*
 
 > [!TIP]
 > **First time opening on macOS?**

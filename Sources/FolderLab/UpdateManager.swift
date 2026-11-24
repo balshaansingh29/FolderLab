@@ -104,7 +104,7 @@ public final class UpdateManager: NSObject, ObservableObject {
         if let ver = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, !ver.isEmpty {
             return ver
         }
-        return "0.3"
+        return "0.3.1"
     }()
 
     @Published public var state: UpdateState = .idle
