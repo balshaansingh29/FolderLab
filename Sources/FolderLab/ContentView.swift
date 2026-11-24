@@ -239,6 +239,7 @@ enum InspectorTab: String, CaseIterable, Identifiable {
 
 struct ContentView: View {
     @ObservedObject private var store = IconStore.shared
+    @ObservedObject private var updateManager = UpdateManager.shared
     @State private var activeTab: InspectorTab = .presets
     @State private var showSettingsSheet = false
 
@@ -260,6 +261,9 @@ struct ContentView: View {
         .frame(minWidth: 1060, minHeight: 740)
         .sheet(isPresented: $showSettingsSheet) {
             SettingsView()
+        }
+        .sheet(isPresented: $updateManager.isUpdateSheetPresented) {
+            UpdateSheetView()
         }
     }
 }
@@ -311,6 +315,7 @@ struct StatusToastView: View {
 
 struct StudioCanvasView: View {
     @ObservedObject var store: IconStore
+    @ObservedObject private var updateManager = UpdateManager.shared
     @Binding var showSettingsSheet: Bool
     @State private var hoverTilt = CGSize.zero
     @State private var isHovering = false
@@ -448,19 +453,52 @@ struct StudioCanvasView: View {
             .buttonStyle(.plain)
             .help("Copy 1024×1024 icon to clipboard")
 
+            // Update Available Badge / Pill
+            if case .updateAvailable(let release) = updateManager.state {
+                Button {
+                    updateManager.isUpdateSheetPresented = true
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "arrow.down.circle.fill")
+                            .foregroundStyle(.blue)
+                        Text("Update \(release.tagName)")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(.primary)
+                    }
+                    .padding(.horizontal, 8)
+                    .frame(height: 26)
+                    .background(Color.blue.opacity(0.18), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .strokeBorder(Color.blue.opacity(0.35), lineWidth: 0.8)
+                    )
+                }
+                .buttonStyle(.plain)
+                .help("New version available: \(release.tagName) (Click to update)")
+            }
+
             // Settings Button
             Button {
                 showSettingsSheet = true
             } label: {
-                Image(systemName: "gearshape.fill")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.primary)
-                    .frame(width: 26, height: 26)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.15), lineWidth: 0.8)
-                    )
+                ZStack(alignment: .topTrailing) {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.primary)
+                        .frame(width: 26, height: 26)
+
+                    if case .updateAvailable = updateManager.state {
+                        Circle()
+                            .fill(Color.blue)
+                            .frame(width: 7, height: 7)
+                            .offset(x: -2, y: 2)
+                    }
+                }
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.15), lineWidth: 0.8)
+                )
             }
             .buttonStyle(.plain)
             .help("Settings (⌘,)")

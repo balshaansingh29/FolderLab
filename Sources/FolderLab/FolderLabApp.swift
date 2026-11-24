@@ -10,6 +10,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApplication.shared.setActivationPolicy(.regular)
         NSApplication.shared.activate(ignoringOtherApps: true)
         AppIconManager.shared.forceApplyCurrentIcon()
+
+        // Background update check if enabled (defaults to true)
+        let autoCheck = UserDefaults.standard.object(forKey: "autoCheckForUpdates") as? Bool ?? true
+        if autoCheck {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                UpdateManager.shared.checkForUpdates(userInitiated: false)
+            }
+        }
     }
 }
 
@@ -28,6 +36,14 @@ struct FolderLabApp: App {
         }
         .windowResizability(.contentMinSize)
         .defaultSize(width: 1180, height: 800)
+        .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates…") {
+                    UpdateManager.shared.checkForUpdates(userInitiated: true)
+                }
+                Divider()
+            }
+        }
 
         #if os(macOS)
         Settings {
