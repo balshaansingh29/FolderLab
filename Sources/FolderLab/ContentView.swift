@@ -1,6 +1,48 @@
 import SwiftUI
 import AppKit
 
+// MARK: - Staged Folder Model (v0.5)
+
+public struct StagedFolder: Identifiable, Equatable {
+    public let id: UUID
+    public let url: URL
+    public let name: String
+    public let path: String
+    public let originalIcon: NSImage
+    public let originalTags: [String]
+    public var isApplied: Bool
+
+    public init(url: URL, originalIcon: NSImage, originalTags: [String], isApplied: Bool = false) {
+        self.id = UUID()
+        self.url = url
+        self.name = url.lastPathComponent
+        self.path = url.path
+        self.originalIcon = originalIcon
+        self.originalTags = originalTags
+        self.isApplied = isApplied
+    }
+
+    public static func == (lhs: StagedFolder, rhs: StagedFolder) -> Bool {
+        lhs.id == rhs.id && lhs.url == rhs.url && lhs.isApplied == rhs.isApplied
+    }
+}
+
+public enum FolderComparisonMode: String, CaseIterable, Identifiable {
+    case sideBySide = "Side-by-Side"
+    case live = "After (Live)"
+    case original = "Before (Original)"
+
+    public var id: String { rawValue }
+
+    public var iconName: String {
+        switch self {
+        case .sideBySide: return "rectangle.split.2x1"
+        case .live: return "sparkles"
+        case .original: return "clock.arrow.circlepath"
+        }
+    }
+}
+
 // MARK: - Icon Store & State
 
 @MainActor
@@ -198,6 +240,79 @@ final class IconStore: ObservableObject {
         checkSmartSuggestion(for: url)
         let (ok, msg) = IconExporter.apply(spec: spec, to: url)
         notify(msg, isError: !ok)
+    }
+
+    // MARK: - Folder Staging & Live Before/After Comparison (v0.5)
+    @Published var stagedFolder: StagedFolder? = nil
+    @Published var comparisonMode: FolderComparisonMode = .sideBySide
+
+    func stageFolder(url: URL) {
+        let icon = NSWorkspace.shared.icon(forFile: url.path)
+        icon.size = NSSize(width: 512, height: 512)
+        let tags = IconExporter.getFinderTags(for: url)
+
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+            self.stagedFolder = StagedFolder(url: url, originalIcon: icon, originalTags: tags)
+            self.lastTargetFolderURL = url
+            self.comparisonMode = .sideBySide
+
+            // If finder tag color matches, suggest/apply
+            if let firstTag = tags.first,
+               let matched = FinderTagColor.allCases.first(where: { $0.rawValue.caseInsensitiveCompare(firstTag) == .orderedSame }) {
+                self.applyFinderTag(matched)
+            }
+
+            // Intelligently suggest folder nameplate text if currently default
+            if spec.nameplateEnabled && (spec.nameplateText.isEmpty || spec.nameplateText == "FOLDER") {
+                spec.nameplateText = url.lastPathComponent.uppercased()
+            }
+        }
+
+        checkSmartSuggestion(for: url)
+        notify("Staged '\(url.lastPathComponent)'! Tweak your design and click Apply.")
+    }
+
+    func stageFolderFromOpenPanel() {
+        let panel = NSOpenPanel()
+        panel.message = "Choose a folder to stage and live-preview"
+        panel.prompt = "Stage Folder"
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        if panel.runModal() == .OK, let url = panel.url {
+            stageFolder(url: url)
+        }
+    }
+
+    func applyToStagedFolder() {
+        guard let staged = stagedFolder else { return }
+        apply(to: staged.url)
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+            stagedFolder?.isApplied = true
+        }
+    }
+
+    func revertStagedFolder() {
+        guard let staged = stagedFolder else { return }
+        let success = NSWorkspace.shared.setIcon(nil, forFile: staged.url.path, options: [])
+        if success {
+            NSWorkspace.shared.noteFileSystemChanged(staged.url.path)
+            let refreshedIcon = NSWorkspace.shared.icon(forFile: staged.url.path)
+            refreshedIcon.size = NSSize(width: 512, height: 512)
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                stagedFolder = StagedFolder(url: staged.url, originalIcon: refreshedIcon, originalTags: staged.originalTags, isApplied: false)
+            }
+            notify("Restored '\(staged.name)' to default macOS icon! ↩️")
+        } else {
+            notify("Failed to restore '\(staged.name)'. Check folder permissions.", isError: true)
+        }
+    }
+
+    func clearStagedFolder() {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            stagedFolder = nil
+            comparisonMode = .live
+        }
     }
 
     func renameFolderDirectly(url: URL, newName: String) {
@@ -777,32 +892,45 @@ struct StudioCanvasView: View {
     private var mainIconStage: some View {
         let canvasSize: CGFloat = 340
         return VStack(spacing: 14) {
+            // 1. Target Folder Staging Bar (v0.5)
+            if let staged = store.stagedFolder {
+                folderStagingBar(staged: staged)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+
+            // 2. Interactive Stage Area (Supports Live, Before, or Side-by-Side)
             ZStack {
-                IconCanvas(spec: store.spec, size: canvasSize)
-                    .rotation3DEffect(
-                        .degrees(isHovering ? Double(hoverTilt.width * 14) : 0),
-                        axis: (x: 0, y: 1, z: 0)
-                    )
-                    .rotation3DEffect(
-                        .degrees(isHovering ? Double(-hoverTilt.height * 14) : 0),
-                        axis: (x: 1, y: 0, z: 0)
-                    )
-                    .onContinuousHover { phase in
-                        switch phase {
-                        case .active(let location):
-                            withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
-                                isHovering = true
-                                let nx = (location.x / canvasSize) - 0.5
-                                let ny = (location.y / canvasSize) - 0.5
-                                hoverTilt = CGSize(width: nx, height: ny)
-                            }
-                        case .ended:
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                isHovering = false
-                                hoverTilt = .zero
+                if let staged = store.stagedFolder, store.comparisonMode == .sideBySide {
+                    sideBySideComparisonView(staged: staged)
+                } else if let staged = store.stagedFolder, store.comparisonMode == .original {
+                    beforeOriginalView(staged: staged, size: canvasSize)
+                } else {
+                    IconCanvas(spec: store.spec, size: canvasSize)
+                        .rotation3DEffect(
+                            .degrees(isHovering ? Double(hoverTilt.width * 14) : 0),
+                            axis: (x: 0, y: 1, z: 0)
+                        )
+                        .rotation3DEffect(
+                            .degrees(isHovering ? Double(-hoverTilt.height * 14) : 0),
+                            axis: (x: 1, y: 0, z: 0)
+                        )
+                        .onContinuousHover { phase in
+                            switch phase {
+                            case .active(let location):
+                                withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
+                                    isHovering = true
+                                    let nx = (location.x / canvasSize) - 0.5
+                                    let ny = (location.y / canvasSize) - 0.5
+                                    hoverTilt = CGSize(width: nx, height: ny)
+                                }
+                            case .ended:
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                    isHovering = false
+                                    hoverTilt = .zero
+                                }
                             }
                         }
-                    }
+                }
 
                 // Drop target highlight overlay
                 if isDropTargeted {
@@ -814,14 +942,19 @@ struct StudioCanvasView: View {
                                 Image(systemName: "folder.badge.gearshape.fill")
                                     .font(.system(size: 40))
                                     .foregroundStyle(Color.accentColor)
-                                Text("Drop Folder Here to Apply!")
+                                Text("Drop Folder to Stage & Compare Live!")
                                     .font(.system(size: 16, weight: .bold))
                                     .foregroundStyle(Color.accentColor)
                             }
                         }
                 }
             }
-            .frame(width: canvasSize + 40, height: canvasSize + 40)
+            .frame(
+                width: (store.stagedFolder != nil && store.comparisonMode == .sideBySide) ? 520 : (canvasSize + 40),
+                height: canvasSize + 40
+            )
+            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: store.comparisonMode)
+            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: store.stagedFolder != nil)
             .onDrop(of: [.fileURL], isTargeted: $isDropTargeted) { providers in
                 guard let provider = providers.first else { return false }
                 _ = provider.loadObject(ofClass: URL.self) { url, _ in
@@ -829,17 +962,13 @@ struct StudioCanvasView: View {
                         Task { @MainActor in
                             var isDir: ObjCBool = false
                             if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir), isDir.boolValue {
-                                let tags = IconExporter.getFinderTags(for: url)
-                                if let firstTag = tags.first, let matched = FinderTagColor.allCases.first(where: { $0.rawValue.caseInsensitiveCompare(firstTag) == .orderedSame }) {
-                                    store.applyFinderTag(matched)
-                                }
-                                store.apply(to: url)
+                                store.stageFolder(url: url)
                             } else {
                                 let ext = url.pathExtension.lowercased()
                                 if ["png", "jpg", "jpeg", "svg", "webp", "icns", "tiff", "gif"].contains(ext) {
                                     store.loadCustomImage(from: url)
                                 } else {
-                                    store.notify("Please drop a folder to skin, or an image to stamp.", isError: true)
+                                    store.notify("Please drop a folder to stage, or an image to stamp.", isError: true)
                                 }
                             }
                         }
@@ -848,49 +977,318 @@ struct StudioCanvasView: View {
                 return true
             }
 
-            // Quick Action Buttons directly below Folder Preview
-            HStack(spacing: 12) {
-                Button {
-                    store.applyToItems()
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "folder.badge.gearshape.fill")
-                        Text("Apply to Folder…")
-                    }
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    .shadow(color: Color.accentColor.opacity(0.3), radius: 5, y: 2)
-                }
-                .buttonStyle(.plain)
-                .help("Choose any folder on your Mac to give this design")
-
-                Button {
-                    store.resetItems()
-                } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: "arrow.counterclockwise")
-                        Text("Reset Folder")
-                    }
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
-                    )
-                }
-                .buttonStyle(.plain)
-                .help("Restore default macOS blue folder icon")
+            // 3. Quick Action Buttons directly below Folder Preview
+            if let staged = store.stagedFolder {
+                stagedFolderActionButtons(staged: staged)
+            } else {
+                defaultActionButtons
             }
 
-            Text(isDropTargeted ? "Release to customize folder icon in Finder!" : "📁 Drag & drop any folder from Finder onto the canvas to customize instantly")
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(isDropTargeted ? Color.accentColor : Color.secondary)
+            // 4. Guidance Hint
+            if let staged = store.stagedFolder {
+                HStack(spacing: 5) {
+                    Image(systemName: "info.circle.fill")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color.accentColor)
+                    Text("Staged '\(staged.name)' • Live edits update the AFTER preview! Click Apply to write to Finder.")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+            } else {
+                Text(isDropTargeted ? "Release to stage folder & compare live!" : "📁 Drag & drop any folder from Finder onto the canvas to stage & compare live")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(isDropTargeted ? Color.accentColor : Color.secondary)
+            }
+        }
+    }
+
+    // MARK: - Staging Bar & Comparison Views (v0.5)
+
+    private func folderStagingBar(staged: StagedFolder) -> some View {
+        HStack(spacing: 12) {
+            Image(nsImage: staged.originalIcon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 32, height: 32)
+                .shadow(color: .black.opacity(0.18), radius: 3, y: 1)
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text(staged.name)
+                        .font(.system(size: 13, weight: .bold))
+
+                    if staged.isApplied {
+                        HStack(spacing: 3) {
+                            Image(systemName: "checkmark.circle.fill")
+                            Text("Applied to Finder")
+                        }
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(.green)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Capsule().fill(Color.green.opacity(0.15)))
+                    } else {
+                        HStack(spacing: 3) {
+                            Image(systemName: "circle.circle.fill")
+                            Text("Staged (Live Preview)")
+                        }
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(.orange)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Capsule().fill(Color.orange.opacity(0.15)))
+                    }
+                }
+
+                Text(staged.path)
+                    .font(.system(size: 10, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
+
+            Spacer()
+
+            Picker("View", selection: $store.comparisonMode) {
+                ForEach(FolderComparisonMode.allCases) { mode in
+                    HStack(spacing: 4) {
+                        Image(systemName: mode.iconName)
+                        Text(mode.rawValue)
+                    }
+                    .tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+            .frame(width: 280)
+
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    store.clearStagedFolder()
+                }
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 16))
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .help("Dismiss staged folder")
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.14), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.08), radius: 6, y: 2)
+        .frame(maxWidth: 520)
+    }
+
+    private func sideBySideComparisonView(staged: StagedFolder) -> some View {
+        HStack(spacing: 16) {
+            // BEFORE (Original)
+            VStack(spacing: 8) {
+                ZStack {
+                    Image(nsImage: staged.originalIcon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 185, height: 185)
+                        .shadow(color: .black.opacity(0.2), radius: 10, y: 5)
+                }
+                .frame(width: 215, height: 215)
+                .background(Color(nsColor: .controlBackgroundColor).opacity(0.45), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
+                )
+
+                HStack(spacing: 4) {
+                    Image(systemName: "clock.arrow.circlepath")
+                    Text("BEFORE (Original)")
+                        .font(.system(size: 11, weight: .bold))
+                }
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 3)
+                .background(Capsule().fill(Color.secondary.opacity(0.12)))
+            }
+
+            // Center Indicator
+            VStack(spacing: 4) {
+                Image(systemName: "arrow.right.circle.fill")
+                    .font(.system(size: 24))
+                    .foregroundStyle(Color.accentColor.opacity(0.8))
+                Text("LIVE")
+                    .font(.system(size: 9, weight: .heavy))
+                    .foregroundStyle(Color.accentColor)
+            }
+
+            // AFTER (Live Design)
+            VStack(spacing: 8) {
+                ZStack {
+                    IconCanvas(spec: store.spec, size: 185)
+                }
+                .frame(width: 215, height: 215)
+                .background(Color(nsColor: .controlBackgroundColor).opacity(0.45), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(Color.accentColor.opacity(0.4), lineWidth: 1.5)
+                )
+
+                HStack(spacing: 4) {
+                    Image(systemName: "sparkles")
+                    Text("AFTER (Live Design)")
+                        .font(.system(size: 11, weight: .bold))
+                }
+                .foregroundStyle(Color.accentColor)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 3)
+                .background(Capsule().fill(Color.accentColor.opacity(0.15)))
+            }
+        }
+    }
+
+    private func beforeOriginalView(staged: StagedFolder, size: CGFloat) -> some View {
+        VStack(spacing: 12) {
+            Image(nsImage: staged.originalIcon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: size, height: size)
+                .shadow(color: .black.opacity(0.25), radius: 18, y: 8)
+
+            HStack(spacing: 5) {
+                Image(systemName: "clock.arrow.circlepath")
+                Text("BEFORE: Original Finder Icon")
+                    .font(.system(size: 12, weight: .bold))
+            }
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 5)
+            .background(Capsule().fill(Color.secondary.opacity(0.15)))
+        }
+    }
+
+    private var defaultActionButtons: some View {
+        HStack(spacing: 12) {
+            Button {
+                store.applyToItems()
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "folder.badge.gearshape.fill")
+                    Text("Apply to Folder…")
+                }
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .shadow(color: Color.accentColor.opacity(0.3), radius: 5, y: 2)
+            }
+            .buttonStyle(.plain)
+            .help("Choose any folder on your Mac to give this design")
+
+            Button {
+                store.stageFolderFromOpenPanel()
+            } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: "rectangle.split.2x1")
+                    Text("Stage Folder…")
+                }
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.primary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
+                )
+            }
+            .buttonStyle(.plain)
+            .help("Select a folder to stage and preview Before vs. After")
+
+            Button {
+                store.resetItems()
+            } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: "arrow.counterclockwise")
+                    Text("Reset Folder")
+                }
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
+                )
+            }
+            .buttonStyle(.plain)
+            .help("Restore default macOS blue folder icon")
+        }
+    }
+
+    private func stagedFolderActionButtons(staged: StagedFolder) -> some View {
+        HStack(spacing: 12) {
+            Button {
+                store.applyToStagedFolder()
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: staged.isApplied ? "checkmark.circle.fill" : "folder.badge.gearshape.fill")
+                    Text(staged.isApplied ? "Re-Apply to '\(staged.name)'" : "Apply to '\(staged.name)'")
+                }
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 8)
+                .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .shadow(color: Color.accentColor.opacity(0.35), radius: 6, y: 2)
+            }
+            .buttonStyle(.plain)
+            .help("Apply this live custom design to '\(staged.name)' in Finder")
+
+            Button {
+                store.revertStagedFolder()
+            } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: "arrow.counterclockwise")
+                    Text("Revert / Restore Original")
+                }
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.primary)
+                .padding(.horizontal, 13)
+                .padding(.vertical, 8)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.15), lineWidth: 0.8)
+                )
+            }
+            .buttonStyle(.plain)
+            .help("Restore '\(staged.name)' to default macOS icon")
+
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    store.clearStagedFolder()
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "xmark")
+                    Text("Unstage")
+                }
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 11)
+                .padding(.vertical, 8)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.12), lineWidth: 0.8)
+                )
+            }
+            .buttonStyle(.plain)
+            .help("Dismiss staged folder and return to canvas studio")
         }
     }
 }
@@ -2930,6 +3328,104 @@ struct ExportInspectorTab: View {
                 )
 
                 VStack(spacing: 12) {
+                    // Staged Folder Quick Card (v0.5)
+                    if let staged = store.stagedFolder {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 10) {
+                                Image(nsImage: staged.originalIcon)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 30, height: 30)
+                                    .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    HStack(spacing: 5) {
+                                        Text(staged.name)
+                                            .font(.system(size: 12, weight: .bold))
+                                        Text(staged.isApplied ? "• Applied" : "• Staged Live")
+                                            .font(.system(size: 10, weight: .semibold))
+                                            .foregroundStyle(staged.isApplied ? .green : .orange)
+                                    }
+                                    Text(staged.path)
+                                        .font(.system(size: 9, design: .monospaced))
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(1)
+                                }
+                                Spacer()
+                            }
+                            .padding(8)
+                            .background(Color(nsColor: .controlBackgroundColor))
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .strokeBorder(Color.accentColor.opacity(0.35), lineWidth: 1)
+                            )
+
+                            HStack(spacing: 8) {
+                                Button {
+                                    store.applyToStagedFolder()
+                                } label: {
+                                    HStack(spacing: 5) {
+                                        Image(systemName: staged.isApplied ? "checkmark.circle.fill" : "folder.badge.gearshape.fill")
+                    Text(staged.isApplied ? "Re-Apply to '\(staged.name)'" : "Apply to '\(staged.name)'")
+                                    }
+                                    .font(.system(size: 12, weight: .bold))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 8)
+                                    .background(Color.accentColor)
+                                    .foregroundStyle(.white)
+                                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                                }
+                                .buttonStyle(.plain)
+
+                                Button {
+                                    store.revertStagedFolder()
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "arrow.counterclockwise")
+                                        Text("Revert")
+                                    }
+                                    .font(.system(size: 11, weight: .medium))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 8)
+                                    .background(Color(nsColor: .controlBackgroundColor))
+                                    .foregroundStyle(.secondary)
+                                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(.bottom, 4)
+                    }
+
+                    // Stage Folder from Open Panel Button
+                    Button {
+                        store.stageFolderFromOpenPanel()
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "rectangle.split.2x1")
+                                .font(.system(size: 13))
+                                .foregroundStyle(Color.accentColor)
+                            Text("Stage Folder for Live Comparison…")
+                                .font(.system(size: 12, weight: .semibold))
+                            Spacer()
+                            Text("Before vs After")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(Color(nsColor: .controlBackgroundColor))
+                        .foregroundStyle(.primary)
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .help("Select a folder to stage and live-preview Before vs. After on the canvas")
+
                     Button {
                         store.applyToItems()
                     } label: {
