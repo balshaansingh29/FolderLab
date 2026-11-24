@@ -418,11 +418,10 @@ final class IconStore: ObservableObject {
 
     func revertStagedFolder() {
         guard let staged = stagedFolder else { return }
-        let success = NSWorkspace.shared.setIcon(nil, forFile: staged.url.path, options: [])
+        let success = IconExporter.setCustomIcon(nil, for: staged.url)
         if success {
             IconExporter.removeStoredSpec(for: staged.url)
             folderDesignHistory.removeValue(forKey: staged.url.path)
-            NSWorkspace.shared.noteFileSystemChanged(staged.url.path)
             let refreshedIcon = NSWorkspace.shared.icon(forFile: staged.url.path)
             refreshedIcon.size = NSSize(width: 512, height: 512)
             withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
