@@ -136,13 +136,29 @@ enum IconExporter {
     // MARK: - Finder Desktop & Window Invalidation
 
     public static func refreshFinder(for url: URL) {
-        try? FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: url.path)
-        NSWorkspace.shared.noteFileSystemChanged(url.path)
+        let fm = FileManager.default
 
-        let parent = url.deletingLastPathComponent().path
-        if !parent.isEmpty {
-            try? FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: parent)
-            NSWorkspace.shared.noteFileSystemChanged(parent)
+        // 1. Touch folder modification date
+        try? fm.setAttributes([.modificationDate: Date()], ofItemAtPath: url.path)
+
+        // 2. Dummy file cycle inside folder to force FSEvents / kqueue directory reload
+        let dummy = url.appendingPathComponent(".folderlab_refresh_\(UUID().uuidString)")
+        try? "".write(to: dummy, atomically: true, encoding: .utf8)
+        try? fm.removeItem(at: dummy)
+
+        // 3. Dummy file cycle in parent directory (e.g. Desktop or enclosing folder) to force Finder parent view reload
+        let parent = url.deletingLastPathComponent()
+        if !parent.path.isEmpty && fm.isWritableFile(atPath: parent.path) {
+            try? fm.setAttributes([.modificationDate: Date()], ofItemAtPath: parent.path)
+            let parentDummy = parent.appendingPathComponent(".folderlab_refresh_\(UUID().uuidString)")
+            try? "".write(to: parentDummy, atomically: true, encoding: .utf8)
+            try? fm.removeItem(at: parentDummy)
+        }
+
+        // 4. Notify NSWorkspace
+        NSWorkspace.shared.noteFileSystemChanged(url.path)
+        if !parent.path.isEmpty {
+            NSWorkspace.shared.noteFileSystemChanged(parent.path)
         }
     }
 
