@@ -137,32 +137,12 @@ enum IconExporter {
 
     public static func refreshFinder(for url: URL) {
         try? FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: url.path)
-        let iconPath = url.appendingPathComponent("Icon\r").path
-        if FileManager.default.fileExists(atPath: iconPath) {
-            try? FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: iconPath)
-        }
-
         NSWorkspace.shared.noteFileSystemChanged(url.path)
+
         let parent = url.deletingLastPathComponent().path
         if !parent.isEmpty {
+            try? FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: parent)
             NSWorkspace.shared.noteFileSystemChanged(parent)
-        }
-
-        DispatchQueue.global(qos: .utility).async {
-            let escaped = url.path.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
-            let script = """
-            tell application "Finder"
-                try
-                    update (POSIX file "\(escaped)" as alias)
-                    update desktop
-                end try
-            end tell
-            """
-            let p = Process()
-            p.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-            p.arguments = ["-e", script]
-            try? p.run()
-            p.waitUntilExit()
         }
     }
 
