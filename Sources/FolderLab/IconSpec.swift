@@ -199,6 +199,7 @@ public enum SurfaceTexture: String, CaseIterable, Identifiable, Codable {
 }
 
 public enum NameplateStyle: String, CaseIterable, Identifiable, Codable {
+    case textOnly = "Text Only"
     case retroTape = "Retro Embossed Tape"
     case folderEngraved = "Folder Engraved Deboss"
     case glassCapsule = "Modern Glass Capsule"
@@ -211,6 +212,7 @@ public enum NameplateStyle: String, CaseIterable, Identifiable, Codable {
 
     public var iconName: String {
         switch self {
+        case .textOnly: return "textformat"
         case .retroTape: return "rectangle.fill"
         case .folderEngraved: return "applelogo"
         case .glassCapsule: return "capsule.fill"

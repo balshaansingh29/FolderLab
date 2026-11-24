@@ -2411,6 +2411,7 @@ struct NameplateCardButton: View {
 
     private var styleSubtitle: String {
         switch style {
+        case .textOnly: return "Direct flap typography"
         case .retroTape: return "Dymo plastic embossed"
         case .folderEngraved: return "Native macOS debossed"
         case .glassCapsule: return "Translucent frosted pill"
@@ -2603,6 +2604,8 @@ struct TextInspectorTab: View {
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
                                         store.spec.nameplateStyle = style
                                         switch style {
+                                        case .textOnly:
+                                            store.spec.nameplateTextColor = .white
                                         case .retroTape:
                                             store.spec.nameplateColor = Color(hex: "#1A1A1A") ?? .black
                                             store.spec.nameplateTextColor = .white
@@ -2632,7 +2635,9 @@ struct TextInspectorTab: View {
                     }
 
                     // Color Customization
-                    ColorRowModern(title: "Plate Background", color: $store.spec.nameplateColor)
+                    if store.spec.nameplateStyle != .textOnly {
+                        ColorRowModern(title: "Plate Background", color: $store.spec.nameplateColor)
+                    }
                     ColorRowModern(title: "Text Color", color: $store.spec.nameplateTextColor)
 
                     // Sliders

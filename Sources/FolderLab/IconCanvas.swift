@@ -545,6 +545,8 @@ struct NameplateBannerView: View {
     var body: some View {
         ZStack {
             switch spec.nameplateStyle {
+            case .textOnly:
+                textOnlyView
             case .retroTape:
                 retroTapeView
             case .folderEngraved:
@@ -562,6 +564,40 @@ struct NameplateBannerView: View {
             }
         }
         .frame(width: bannerWidth, height: bannerHeight)
+    }
+
+    // 0. Text Only Nameplate (Direct Flap Typography)
+    private var textOnlyView: some View {
+        Group {
+            if spec.textDepthStyle == .engraved {
+                Text(spec.nameplateText.uppercased())
+                    .font(.system(size: bannerHeight * 0.60, weight: .heavy, design: .rounded))
+                    .tracking(1.4)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.4)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [
+                                Color.black.opacity(0.38),
+                                Color.black.opacity(0.24)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .shadow(color: Color.black.opacity(0.75), radius: 0.7, x: 0, y: -0.9)
+                    .shadow(color: Color.white.opacity(0.75), radius: 0.6, x: 0, y: 1.1)
+            } else {
+                Text(spec.nameplateText.uppercased())
+                    .font(.system(size: bannerHeight * 0.60, weight: .bold, design: .rounded))
+                    .tracking(1.3)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.4)
+                    .foregroundStyle(spec.nameplateTextColor)
+                    .shadow(color: Color.black.opacity(0.45), radius: 1.2, x: 0, y: 1.0)
+            }
+        }
+        .padding(.horizontal, bannerHeight * 0.2)
     }
 
     // 2. Folder Engraved / macOS Debossed Nameplate
