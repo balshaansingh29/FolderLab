@@ -38,7 +38,21 @@ struct IconCanvas: View {
 
     /// Vertical offset of the glyph's center from the canvas center.
     private var glyphBaseOffset: CGFloat {
-        spec.base == .folder ? folderShift + folderH * 0.10 : 0
+        if spec.base == .folder {
+            if spec.nameplateEnabled && !spec.nameplateText.isEmpty && spec.nameplateMoveIconAbove {
+                // When nameplate is enabled, move the icon into the upper flap area so it sits gracefully above the nameplate!
+                return folderShift - folderH * 0.06
+            } else {
+                return folderShift + folderH * 0.10
+            }
+        } else if spec.base == .tile {
+            if spec.nameplateEnabled && !spec.nameplateText.isEmpty && spec.nameplateMoveIconAbove {
+                return -tileSide * 0.12
+            } else {
+                return 0
+            }
+        }
+        return 0
     }
 
     // MARK: Fills
@@ -66,10 +80,25 @@ struct IconCanvas: View {
     }
 
     private var glyphFill: AnyShapeStyle {
-        spec.glyphGradient
-            ? AnyShapeStyle(LinearGradient(colors: [spec.glyphColor, spec.glyphColor2],
+        if spec.textDepthStyle == .engraved && spec.glyphEngravedFolderTint && spec.base == .folder {
+            // Authentic macOS folder debossed translucent wash:
+            // Darkens the folder plastic to look like a laser-etched deboss matching Finder folders
+            return AnyShapeStyle(
+                LinearGradient(
+                    colors: [
+                        Color.black.opacity(0.32),
+                        Color.black.opacity(0.20)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+        } else if spec.glyphGradient {
+            return AnyShapeStyle(LinearGradient(colors: [spec.glyphColor, spec.glyphColor2],
                                            startPoint: .top, endPoint: .bottom))
-            : AnyShapeStyle(spec.glyphColor)
+        } else {
+            return AnyShapeStyle(spec.glyphColor)
+        }
     }
 
     // MARK: Body
@@ -323,19 +352,51 @@ struct IconCanvas: View {
         let g = glyphContent
             .rotationEffect(.degrees(spec.glyphRotation))
             .opacity(spec.glyphOpacity)
-        if spec.glyphShadow {
-            if spec.base == .folder {
-                g
-                    .shadow(color: .white.opacity(0.35), radius: 0.5, x: 0, y: 1.0)
-                    .shadow(color: .black.opacity(0.45), radius: ref * 0.018, x: 0, y: ref * 0.010)
-                    .shadow(color: .black.opacity(0.25), radius: ref * 0.005, x: 0, y: -0.5)
+
+        applyDepthStyle(to: g)
+    }
+
+    @ViewBuilder
+    private func applyDepthStyle(to view: some View) -> some View {
+        switch spec.textDepthStyle {
+        case .flat:
+            if spec.glyphShadow {
+                if spec.base == .folder {
+                    view
+                        .shadow(color: .white.opacity(0.35), radius: 0.5, x: 0, y: 1.0)
+                        .shadow(color: .black.opacity(0.45), radius: ref * 0.018, x: 0, y: ref * 0.010)
+                        .shadow(color: .black.opacity(0.25), radius: ref * 0.005, x: 0, y: -0.5)
+                } else {
+                    view
+                        .shadow(color: .black.opacity(0.40), radius: ref * 0.022, x: 0, y: ref * 0.014)
+                        .shadow(color: .black.opacity(0.20), radius: ref * 0.006, x: 0, y: ref * 0.003)
+                }
             } else {
-                g
-                    .shadow(color: .black.opacity(0.40), radius: ref * 0.022, x: 0, y: ref * 0.014)
-                    .shadow(color: .black.opacity(0.20), radius: ref * 0.006, x: 0, y: ref * 0.003)
+                view
             }
-        } else {
-            g
+
+        case .engraved:
+            // macOS Folder Debossed / Engraved Inset:
+            // Exact recreation of macOS native folder deboss:
+            // 1. Dark top shadow inside groove: simulates overhead light casting a shadow into the recessed cut
+            // 2. Bright white specular highlight on bottom lip: simulates overhead light catching the lower ledge
+            // 3. Ambient depth shadow
+            view
+                .shadow(color: Color.black.opacity(0.70), radius: 0.8, x: 0, y: -1.0)
+                .shadow(color: Color.white.opacity(0.75), radius: 0.6, x: 0, y: 1.2)
+                .shadow(color: Color.black.opacity(0.20), radius: ref * 0.012, x: 0, y: ref * 0.008)
+
+        case .embossed:
+            // 3D Embossed (raised):
+            view
+                .shadow(color: Color.white.opacity(0.80), radius: 0.8, x: 0, y: -1.0)
+                .shadow(color: Color.black.opacity(0.55), radius: ref * 0.016, x: 0, y: ref * 0.012)
+
+        case .insetShadow:
+            // Deep Inset:
+            view
+                .shadow(color: Color.black.opacity(0.90), radius: 1.2, x: 0, y: -1.5)
+                .shadow(color: Color.white.opacity(0.45), radius: 0.5, x: 0, y: 0.8)
         }
     }
 
@@ -369,30 +430,15 @@ struct IconCanvas: View {
                 }
             }()
 
-            let baseText = Text(spec.text)
+            Text(spec.text)
                 .font(.system(size: ref * spec.glyphScale, weight: .bold, design: fontDesign))
                 .foregroundStyle(glyphFill)
                 .lineLimit(1)
                 .minimumScaleFactor(0.15)
                 .frame(width: ref * 0.9, height: ref * 0.9)
-
-            Group {
-                switch spec.textDepthStyle {
-                case .flat:
-                    baseText
-                case .embossed:
-                    baseText
-                        .shadow(color: .white.opacity(0.7), radius: 0.8, x: 0, y: 1.2)
-                        .shadow(color: .black.opacity(0.45), radius: ref * 0.015, x: 0, y: ref * 0.010)
-                case .engraved:
-                    baseText
-                        .shadow(color: .black.opacity(0.85), radius: 0.8, x: 0, y: -1.0)
-                        .shadow(color: .white.opacity(0.55), radius: 0.5, x: 0, y: 1.0)
-                }
-            }
         case .customImage:
             if let data = spec.customImageData, let nsImg = NSImage(data: data) {
-                if spec.customImageTinted {
+                if spec.customImageTinted || (spec.textDepthStyle == .engraved && spec.glyphEngravedFolderTint) {
                     Image(nsImage: nsImg)
                         .renderingMode(.template)
                         .resizable()
@@ -501,6 +547,8 @@ struct NameplateBannerView: View {
             switch spec.nameplateStyle {
             case .retroTape:
                 retroTapeView
+            case .folderEngraved:
+                folderEngravedView
             case .glassCapsule:
                 glassCapsuleView
             case .brassPlate:
@@ -514,6 +562,52 @@ struct NameplateBannerView: View {
             }
         }
         .frame(width: bannerWidth, height: bannerHeight)
+    }
+
+    // 2. Folder Engraved / macOS Debossed Nameplate
+    private var folderEngravedView: some View {
+        ZStack {
+            // Recessed groove plate in folder flap
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(Color.black.opacity(0.14))
+
+            // Inset groove bevel (dark top shadow, white bottom specular highlight)
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            Color.black.opacity(0.40),
+                            Color.black.opacity(0.12),
+                            Color.white.opacity(0.55)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 0.9
+                )
+
+            // Engraved debossed text inside the plate
+            Text(spec.nameplateText.uppercased())
+                .font(.system(size: bannerHeight * 0.52, weight: .heavy, design: .rounded))
+                .tracking(1.4)
+                .lineLimit(1)
+                .minimumScaleFactor(0.4)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [
+                            Color.black.opacity(0.38),
+                            Color.black.opacity(0.24)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .shadow(color: Color.black.opacity(0.75), radius: 0.7, x: 0, y: -0.9)
+                .shadow(color: Color.white.opacity(0.75), radius: 0.6, x: 0, y: 1.1)
+                .padding(.horizontal, bannerHeight * 0.35)
+        }
+        .shadow(color: Color.white.opacity(0.35), radius: 0.5, x: 0, y: 1.0)
+        .shadow(color: Color.black.opacity(0.30), radius: 0.8, x: 0, y: -0.8)
     }
 
     // 1. Retro Embossed Dymo Label Tape

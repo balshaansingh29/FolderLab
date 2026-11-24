@@ -2217,6 +2217,42 @@ struct GlyphInspectorTab: View {
                     onReset: { store.spec.glyphRotation = 0 }
                 )
 
+                // Stamping & Engraving Depth Effect
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Text("Stamping & Engraving Depth")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        if store.spec.textDepthStyle == .engraved {
+                            HStack(spacing: 4) {
+                                Image(systemName: "applelogo")
+                                    .font(.system(size: 9))
+                                Text("macOS Deboss")
+                                    .font(.system(size: 9, weight: .bold))
+                            }
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(Color.accentColor.opacity(0.2)))
+                            .foregroundStyle(Color.accentColor)
+                        }
+                    }
+
+                    Picker("Depth", selection: $store.spec.textDepthStyle) {
+                        ForEach(TextDepthStyle.allCases) { d in
+                            Text(d.rawValue).tag(d)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    if store.spec.textDepthStyle == .engraved && store.spec.base == .folder {
+                        Toggle("Match Folder Material (Native Deboss)", isOn: $store.spec.glyphEngravedFolderTint)
+                            .toggleStyle(.switch)
+                            .font(.system(size: 11, weight: .medium))
+                            .help("Darkens and debosses symbol directly into folder plastic, matching native macOS folders.")
+                    }
+                }
+
                 Toggle("Glyph Soft Shadow", isOn: $store.spec.glyphShadow)
                     .toggleStyle(.switch)
                     .font(.system(size: 12, weight: .medium))
@@ -2376,6 +2412,7 @@ struct NameplateCardButton: View {
     private var styleSubtitle: String {
         switch style {
         case .retroTape: return "Dymo plastic embossed"
+        case .folderEngraved: return "Native macOS debossed"
         case .glassCapsule: return "Translucent frosted pill"
         case .brassPlate: return "Metallic with corner rivets"
         case .cyberRibbon: return "Obsidian neon glowing"
@@ -2470,6 +2507,39 @@ struct TextInspectorTab: View {
                     .font(.system(size: 12, weight: .semibold))
 
                 if store.spec.nameplateEnabled {
+                    Toggle("Move Icon Above Nameplate", isOn: $store.spec.nameplateMoveIconAbove)
+                        .toggleStyle(.switch)
+                        .font(.system(size: 11, weight: .medium))
+                        .help("Automatically shifts the folder logo/icon into the upper flap area so it sits gracefully above the nameplate")
+
+                    // 1-Tap Engraved Match Shortcut
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                            store.spec.nameplateStyle = .folderEngraved
+                            store.spec.textDepthStyle = .engraved
+                            store.spec.glyphEngravedFolderTint = true
+                            store.spec.nameplateMoveIconAbove = true
+                        }
+                        store.notify("Applied macOS Native Folder Engraving! 📁✨")
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "applelogo")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(Color.accentColor)
+                            Text("1-Tap Native Engraved Look")
+                                .font(.system(size: 11, weight: .semibold))
+                            Spacer()
+                            Text("Icon + Nameplate")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.accentColor.opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .help("Carves both the icon logo and namebar directly into the folder flap, matching native macOS folders")
                     // Label Text Field
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Label Banner Text")
@@ -2536,6 +2606,9 @@ struct TextInspectorTab: View {
                                         case .retroTape:
                                             store.spec.nameplateColor = Color(hex: "#1A1A1A") ?? .black
                                             store.spec.nameplateTextColor = .white
+                                        case .folderEngraved:
+                                            store.spec.nameplateColor = Color.black.opacity(0.14)
+                                            store.spec.nameplateTextColor = Color.black.opacity(0.55)
                                         case .glassCapsule:
                                             store.spec.nameplateColor = store.spec.color1.darker(0.3)
                                             store.spec.nameplateTextColor = .white

@@ -32,6 +32,7 @@ struct IconSpec: Equatable {
     // Text & Monogram Stamping (v0.2)
     var textFontFamily: TextFontFamily = .rounded
     var textDepthStyle: TextDepthStyle = .flat
+    var glyphEngravedFolderTint: Bool = true // in engraved mode, tints glyph with authentic translucent folder deboss
 
     // SF Symbol Badging (v0.2)
     var cornerBadge: CornerBadge = .none
@@ -73,6 +74,7 @@ struct IconSpec: Equatable {
     var nameplateTextColor: Color = .white
     var nameplateYOffset: Double = 0.22      // vertical position on folder flap (0.0 = center, positive = lower, negative = higher)
     var nameplateScale: Double = 0.72        // width fraction of flap
+    var nameplateMoveIconAbove: Bool = true  // moves logo/icon into upper flap area when nameplate is active
 
     // Outer drop shadow (only with macMargin)
     var dropShadow = true
@@ -139,9 +141,21 @@ public enum TextFontFamily: String, CaseIterable, Identifiable, Codable {
 
 public enum TextDepthStyle: String, CaseIterable, Identifiable, Codable {
     case flat = "Flat Clean"
+    case engraved = "macOS Engraved"
     case embossed = "Embossed 3D"
-    case engraved = "Engraved Inset"
+    case insetShadow = "Deep Inset"
+
     public var id: String { rawValue }
+
+    public init?(rawValue: String) {
+        switch rawValue {
+        case "Flat Clean": self = .flat
+        case "macOS Engraved", "Engraved Inset", "Engraved", "macOS Folder Engraved": self = .engraved
+        case "Embossed 3D": self = .embossed
+        case "Deep Inset": self = .insetShadow
+        default: return nil
+        }
+    }
 }
 
 public enum CornerBadge: String, CaseIterable, Identifiable, Codable {
@@ -186,6 +200,7 @@ public enum SurfaceTexture: String, CaseIterable, Identifiable, Codable {
 
 public enum NameplateStyle: String, CaseIterable, Identifiable, Codable {
     case retroTape = "Retro Embossed Tape"
+    case folderEngraved = "Folder Engraved Deboss"
     case glassCapsule = "Modern Glass Capsule"
     case brassPlate = "Engraved Brass Plaque"
     case cyberRibbon = "Cyber Neon Banner"
@@ -197,6 +212,7 @@ public enum NameplateStyle: String, CaseIterable, Identifiable, Codable {
     public var iconName: String {
         switch self {
         case .retroTape: return "rectangle.fill"
+        case .folderEngraved: return "applelogo"
         case .glassCapsule: return "capsule.fill"
         case .brassPlate: return "shield.lefthalf.filled"
         case .cyberRibbon: return "bolt.horizontal.fill"
@@ -256,6 +272,8 @@ struct FolderLabPreset: Codable {
     var nameplateTextColorHex: String? = "#FFFFFF"
     var nameplateYOffset: Double? = 0.22
     var nameplateScale: Double? = 0.72
+    var nameplateMoveIconAbove: Bool? = true
+    var glyphEngravedFolderTint: Bool? = true
 }
 
 enum SymbolMode: String, CaseIterable, Identifiable {
@@ -781,7 +799,9 @@ extension IconSpec {
             nameplateColorHex: nameplateColor.hexString,
             nameplateTextColorHex: nameplateTextColor.hexString,
             nameplateYOffset: nameplateYOffset,
-            nameplateScale: nameplateScale
+            nameplateScale: nameplateScale,
+            nameplateMoveIconAbove: nameplateMoveIconAbove,
+            glyphEngravedFolderTint: glyphEngravedFolderTint
         )
     }
 
@@ -830,6 +850,8 @@ extension IconSpec {
         if let ntch = preset.nameplateTextColorHex { s.nameplateTextColor = Color(hex: ntch) ?? s.nameplateTextColor }
         if let nyo = preset.nameplateYOffset { s.nameplateYOffset = nyo }
         if let nsc = preset.nameplateScale { s.nameplateScale = nsc }
+        if let mv = preset.nameplateMoveIconAbove { s.nameplateMoveIconAbove = mv }
+        if let gt = preset.glyphEngravedFolderTint { s.glyphEngravedFolderTint = gt }
         return s
     }
 }
