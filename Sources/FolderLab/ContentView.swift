@@ -155,6 +155,10 @@ final class IconStore: ObservableObject {
             spec.cornerBadge = suggestion.badge
             spec.glyphKind = .symbol
             spec.symbolName = suggestion.symbolName
+            if let peek = suggestion.peekContentType {
+                spec.peekInsideEnabled = true
+                spec.peekContentType = peek
+            }
             activeSuggestion = nil
         }
         addToRecents(spec)
@@ -311,6 +315,9 @@ final class IconStore: ObservableObject {
             self.stagedFolder = StagedFolder(url: url, originalIcon: icon, originalTags: tags, previousSpec: self.spec)
             self.lastTargetFolderURL = url
             self.comparisonMode = .sideBySide
+
+            let detected = self.detectPeekContent(for: url)
+            self.spec.peekDetectedType = detected
         }
 
         checkSmartSuggestion(for: url)
@@ -327,6 +334,44 @@ final class IconStore: ObservableObject {
         if panel.runModal() == .OK, let url = panel.url {
             stageFolder(url: url)
         }
+    }
+
+    // MARK: - Peek Inside Auto-Detection (v0.5+)
+
+    func detectPeekContent(for url: URL) -> PeekContentType {
+        let fm = FileManager.default
+        guard let files = try? fm.contentsOfDirectory(atPath: url.path) else {
+            return .documents
+        }
+
+        var codeCount = 0
+        var photoCount = 0
+        var musicCount = 0
+        var docCount = 0
+
+        let codeExts: Set<String> = ["swift", "py", "js", "ts", "json", "cpp", "c", "h", "m", "mm", "rs", "go", "rb", "html", "css", "java", "kt", "sh", "yml", "yaml", "xml", "sql", "php"]
+        let photoExts: Set<String> = ["png", "jpg", "jpeg", "heic", "gif", "tiff", "webp", "raw", "svg", "psd", "ai", "bmp"]
+        let musicExts: Set<String> = ["mp3", "wav", "m4a", "flac", "aac", "aiff", "ogg", "mid", "midi", "alac"]
+        let docExts: Set<String> = ["pdf", "doc", "docx", "txt", "md", "rtf", "pages", "numbers", "key", "xls", "xlsx", "csv", "ppt", "pptx"]
+
+        for file in files {
+            if file.hasPrefix(".") { continue }
+            let ext = (file as NSString).pathExtension.lowercased()
+            if codeExts.contains(ext) { codeCount += 1 }
+            else if photoExts.contains(ext) { photoCount += 1 }
+            else if musicExts.contains(ext) { musicCount += 1 }
+            else if docExts.contains(ext) { docCount += 1 }
+            if file == "Package.swift" || file == "package.json" || file == "Cargo.toml" || file == "Podfile" {
+                codeCount += 5
+            }
+        }
+
+        let maxCount = max(codeCount, photoCount, musicCount, docCount)
+        if maxCount == 0 { return .documents }
+        if maxCount == codeCount { return .code }
+        if maxCount == photoCount { return .photos }
+        if maxCount == musicCount { return .music }
+        return .documents
     }
 
     func loadPreviousDesignForStagedFolder() {
@@ -1819,6 +1864,111 @@ struct InspectorPanelView: View {
     }
 }
 
+// MARK: - Peek Inside Inspector Card (v0.5+)
+
+struct PeekInsideInspectorCard: View {
+    @ObservedObject var store: IconStore
+
+    var body: some View {
+        InspectorCard {
+            HStack(alignment: .center) {
+                InspectorSectionHeader(
+                    title: "Peek Inside",
+                    subtitle: "Authentic documents, code, or photos peeking from folder pocket",
+                    icon: "tray.and.arrow.up.fill",
+                    iconColor: .purple
+                )
+                Spacer()
+                Toggle("", isOn: $store.spec.peekInsideEnabled)
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+            }
+
+            if store.spec.peekInsideEnabled {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("POCKET CONTENT STYLE")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 2)
+
+                    // Styles Selection Grid
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                        ForEach(PeekContentType.allCases) { type in
+                            Button {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    store.spec.peekContentType = type
+                                }
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: type.iconName)
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundStyle(store.spec.peekContentType == type ? Color.white : Color.accentColor)
+                                        .frame(width: 20)
+
+                                    Text(type.rawValue)
+                                        .font(.system(size: 11, weight: store.spec.peekContentType == type ? .bold : .medium))
+                                        .lineLimit(1)
+
+                                    Spacer(minLength: 0)
+
+                                    if store.spec.peekContentType == type {
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundStyle(.white)
+                                    }
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
+                                .background {
+                                    if store.spec.peekContentType == type {
+                                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                            .fill(Color(nsColor: .controlAccentColor))
+                                            .shadow(color: Color(nsColor: .controlAccentColor).opacity(0.3), radius: 3, y: 1)
+                                    } else {
+                                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                            .fill(Color(nsColor: .controlBackgroundColor))
+                                    }
+                                }
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                        .strokeBorder(store.spec.peekContentType == type ? Color.white.opacity(0.25) : Color.white.opacity(0.08), lineWidth: 1)
+                                )
+                                .foregroundStyle(store.spec.peekContentType == type ? Color.white : Color.primary)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+
+                    // Description & Auto-Detect Live Status
+                    HStack(spacing: 6) {
+                        Image(systemName: store.spec.peekContentType == .autoDetect ? "wand.and.stars" : "info.circle")
+                            .font(.system(size: 11))
+                            .foregroundStyle(store.spec.peekContentType == .autoDetect ? Color.purple : Color.secondary)
+
+                        if store.spec.peekContentType == .autoDetect {
+                            if let staged = store.stagedFolder, let detected = store.spec.peekDetectedType {
+                                Text("Auto-detected for '\(staged.name)': \(detected.rawValue)")
+                                    .font(.system(size: 10.5, weight: .semibold))
+                                    .foregroundStyle(Color.accentColor)
+                            } else {
+                                Text("Drop any folder onto canvas to auto-peek its matching contents")
+                                    .font(.system(size: 10.5))
+                                    .foregroundStyle(.secondary)
+                            }
+                        } else {
+                            Text(store.spec.peekContentType.subtitle)
+                                .font(.system(size: 10.5))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.top, 2)
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+    }
+}
+
 // MARK: - Presets Tab (Includes Light, Dark, Clear, Tinted App Icons)
 
 struct PresetsInspectorTab: View {
@@ -1965,6 +2115,9 @@ struct PresetsInspectorTab: View {
                     }
                 }
             }
+
+            // Peek Inside Folder Pocket (v0.5+)
+            PeekInsideInspectorCard(store: store)
 
             // Folder Themes Grid
             InspectorCard {
@@ -2557,6 +2710,9 @@ struct GlyphInspectorTab: View {
                 }
                 .pickerStyle(.segmented)
             }
+
+            // Peek Inside Folder Pocket (v0.5+)
+            PeekInsideInspectorCard(store: store)
 
             if store.spec.glyphKind == .customImage {
                 // Custom Image Stamp (Feature 4)

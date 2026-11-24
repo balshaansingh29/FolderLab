@@ -13,6 +13,7 @@ public struct FolderSuggestion: Identifiable, Equatable {
     public let color3: Color?
     public let texture: SurfaceTexture
     public let badge: CornerBadge
+    public let peekContentType: PeekContentType?
 
     public static func == (lhs: FolderSuggestion, rhs: FolderSuggestion) -> Bool {
         lhs.title == rhs.title && lhs.symbolName == rhs.symbolName
@@ -39,7 +40,8 @@ public enum SmartFolderSuggester {
                 color2: Color(hex: "#1A202C") ?? .black,
                 color3: Color(hex: "#4A5568"),
                 texture: .carbon,
-                badge: .none
+                badge: .none,
+                peekContentType: .code
             )
         } else if n.contains("download") || n.contains("inbox") || n.contains("incoming") {
             return FolderSuggestion(
@@ -50,7 +52,8 @@ public enum SmartFolderSuggester {
                 color2: Color(hex: "#0369A1") ?? .blue,
                 color3: nil,
                 texture: .none,
-                badge: .none
+                badge: .none,
+                peekContentType: .documents
             )
         } else if n.contains("doc") || n.contains("note") || n.contains("pdf") || n.contains("paper") || n.contains("book") || n.contains("read") {
             return FolderSuggestion(
@@ -61,7 +64,8 @@ public enum SmartFolderSuggester {
                 color2: Color(hex: "#B45309") ?? .orange,
                 color3: nil,
                 texture: .leather,
-                badge: .none
+                badge: .none,
+                peekContentType: .documents
             )
         } else if n.contains("photo") || n.contains("pic") || n.contains("img") || n.contains("camera") || n.contains("screenshot") || n.contains("wallpaper") {
             return FolderSuggestion(
@@ -72,7 +76,8 @@ public enum SmartFolderSuggester {
                 color2: Color(hex: "#047857") ?? .green,
                 color3: nil,
                 texture: .none,
-                badge: .star
+                badge: .star,
+                peekContentType: .photos
             )
         } else if n.contains("music") || n.contains("audio") || n.contains("sound") || n.contains("podcast") || n.contains("beat") || n.contains("track") {
             return FolderSuggestion(
@@ -83,7 +88,8 @@ public enum SmartFolderSuggester {
                 color2: Color(hex: "#7E22CE") ?? .purple,
                 color3: nil,
                 texture: .grid,
-                badge: .none
+                badge: .none,
+                peekContentType: .music
             )
         } else if n.contains("video") || n.contains("film") || n.contains("movie") || n.contains("youtube") || n.contains("clip") || n.contains("stream") {
             return FolderSuggestion(
@@ -94,7 +100,8 @@ public enum SmartFolderSuggester {
                 color2: Color(hex: "#BE123C") ?? .red,
                 color3: nil,
                 texture: .none,
-                badge: .none
+                badge: .none,
+                peekContentType: .photos
             )
         } else if n.contains("money") || n.contains("tax") || n.contains("finance") || n.contains("budget") || n.contains("bank") || n.contains("crypto") || n.contains("receipt") {
             return FolderSuggestion(
@@ -105,7 +112,8 @@ public enum SmartFolderSuggester {
                 color2: Color(hex: "#047857") ?? .green,
                 color3: Color(hex: "#F59E0B"),
                 texture: .brushed,
-                badge: .lock
+                badge: .lock,
+                peekContentType: .documents
             )
         } else if n.contains("archive") || n.contains("backup") || n.contains("old") || n.contains("storage") || n.contains("zip") {
             return FolderSuggestion(
@@ -116,7 +124,8 @@ public enum SmartFolderSuggester {
                 color2: Color(hex: "#374151") ?? .gray,
                 color3: nil,
                 texture: .stripes,
-                badge: .none
+                badge: .none,
+                peekContentType: .documents
             )
         } else if n.contains("work") || n.contains("office") || n.contains("client") || n.contains("corp") || n.contains("business") {
             return FolderSuggestion(
@@ -127,7 +136,8 @@ public enum SmartFolderSuggester {
                 color2: Color(hex: "#1E40AF") ?? .blue,
                 color3: nil,
                 texture: .leather,
-                badge: .none
+                badge: .none,
+                peekContentType: .documents
             )
         } else if n.contains("art") || n.contains("design") || n.contains("figma") || n.contains("ui") || n.contains("asset") || n.contains("icon") {
             return FolderSuggestion(
@@ -138,7 +148,8 @@ public enum SmartFolderSuggester {
                 color2: Color(hex: "#8B5CF6") ?? .purple,
                 color3: Color(hex: "#3B82F6"),
                 texture: .none,
-                badge: .star
+                badge: .star,
+                peekContentType: .photos
             )
         }
 

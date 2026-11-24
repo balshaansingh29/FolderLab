@@ -76,6 +76,18 @@ struct IconSpec: Equatable {
     var nameplateScale: Double = 0.72        // width fraction of flap
     var nameplateMoveIconAbove: Bool = true  // moves logo/icon into upper flap area when nameplate is active
 
+    // Peek Inside Folder Pocket (v0.5+)
+    var peekInsideEnabled: Bool = false
+    var peekContentType: PeekContentType = .documents
+    var peekDetectedType: PeekContentType? = nil
+
+    var effectivePeekContentType: PeekContentType {
+        if peekContentType == .autoDetect {
+            return peekDetectedType ?? .documents
+        }
+        return peekContentType
+    }
+
     // Outer drop shadow (only with macMargin)
     var dropShadow = true
 }
@@ -224,6 +236,36 @@ public enum NameplateStyle: String, CaseIterable, Identifiable, Codable {
     }
 }
 
+public enum PeekContentType: String, CaseIterable, Identifiable, Codable {
+    case documents = "Documents Stack"
+    case code = "Code / Dev"
+    case photos = "Photos / Polaroids"
+    case music = "Music / Vinyl"
+    case autoDetect = "Auto-Detect"
+
+    public var id: String { rawValue }
+
+    public var iconName: String {
+        switch self {
+        case .documents: return "doc.text.fill"
+        case .code: return "chevron.left.forwardslash.chevron.right"
+        case .photos: return "photo.stack.fill"
+        case .music: return "opticaldisc.fill"
+        case .autoDetect: return "wand.and.stars"
+        }
+    }
+
+    public var subtitle: String {
+        switch self {
+        case .documents: return "Crisp A4 sheets with folded corner tips & lined text"
+        case .code: return "Dark-mode editor card with colored syntax bars & traffic lights"
+        case .photos: return "Tilted Polaroid prints with white border margins & vivid scene"
+        case .music: return "Vinyl record sleeve with concentric grooves & waveform"
+        case .autoDetect: return "Smart detection based on files inside folder"
+        }
+    }
+}
+
 // MARK: - Shareable Theme Preset (.folderlab)
 
 struct FolderLabPreset: Codable {
@@ -276,6 +318,9 @@ struct FolderLabPreset: Codable {
     var nameplateScale: Double? = 0.72
     var nameplateMoveIconAbove: Bool? = true
     var glyphEngravedFolderTint: Bool? = true
+    // v0.5+ Peek Inside Extensions
+    var peekInsideEnabled: Bool? = false
+    var peekContentType: String? = "Documents Stack"
 }
 
 enum SymbolMode: String, CaseIterable, Identifiable {
@@ -325,6 +370,9 @@ extension IconSpec {
         s.nameplateTextColor = old.nameplateTextColor
         s.nameplateYOffset = old.nameplateYOffset
         s.nameplateScale = old.nameplateScale
+        s.peekInsideEnabled = old.peekInsideEnabled
+        s.peekContentType = old.peekContentType
+        s.peekDetectedType = old.peekDetectedType
 
         switch style {
         case .bigSur:       // light tile, colored glyph, like Apple's own apps
@@ -1024,7 +1072,9 @@ extension IconSpec {
             nameplateYOffset: nameplateYOffset,
             nameplateScale: nameplateScale,
             nameplateMoveIconAbove: nameplateMoveIconAbove,
-            glyphEngravedFolderTint: glyphEngravedFolderTint
+            glyphEngravedFolderTint: glyphEngravedFolderTint,
+            peekInsideEnabled: peekInsideEnabled,
+            peekContentType: peekContentType.rawValue
         )
     }
 
@@ -1075,6 +1125,8 @@ extension IconSpec {
         if let nsc = preset.nameplateScale { s.nameplateScale = nsc }
         if let mv = preset.nameplateMoveIconAbove { s.nameplateMoveIconAbove = mv }
         if let gt = preset.glyphEngravedFolderTint { s.glyphEngravedFolderTint = gt }
+        if let pie = preset.peekInsideEnabled { s.peekInsideEnabled = pie }
+        if let pct = preset.peekContentType, let type = PeekContentType(rawValue: pct) { s.peekContentType = type }
         return s
     }
 }

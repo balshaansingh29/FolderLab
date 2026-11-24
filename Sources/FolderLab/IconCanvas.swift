@@ -244,6 +244,16 @@ struct IconCanvas: View {
                 .offset(y: -folderH * 0.015)
                 .blur(radius: folderH * 0.012)
 
+            // 2b. Peek Inside Pocket Contents (v0.5+)
+            if spec.peekInsideEnabled {
+                FolderPeekContentView(
+                    contentType: spec.effectivePeekContentType,
+                    folderW: folderW,
+                    folderH: folderH,
+                    frontH: frontH
+                )
+            }
+
             // 3. Front flap
             if spec.liquidGlass {
                 RoundedRectangle(cornerRadius: rad, style: .continuous)
@@ -847,5 +857,253 @@ struct NameplateBannerView: View {
                 .strokeBorder(Color.white.opacity(0.18), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.28), radius: folderH * 0.015, y: folderH * 0.008)
+    }
+}
+
+
+// MARK: - Peek Inside Pocket Content View (v0.5+)
+
+struct FolderPeekContentView: View {
+    let contentType: PeekContentType
+    let folderW: CGFloat
+    let folderH: CGFloat
+    let frontH: CGFloat
+
+    private var pocketW: CGFloat { folderW * 0.76 }
+    private var pocketH: CGFloat { folderH * 0.46 }
+
+    var body: some View {
+        ZStack {
+            switch contentType {
+            case .documents, .autoDetect:
+                documentsStack
+            case .code:
+                codeEditorStack
+            case .photos:
+                photosStack
+            case .music:
+                musicVinylStack
+            }
+        }
+        .frame(width: pocketW, height: pocketH)
+        .offset(x: folderW * 0.02, y: -folderH * 0.23)
+    }
+
+    // 1. Documents Stack: Crisp A4 sheets with folded corner tips & lined text
+    private var documentsStack: some View {
+        ZStack {
+            // Sheet 1 (back left)
+            RoundedRectangle(cornerRadius: max(2, pocketH * 0.03), style: .continuous)
+                .fill(Color(white: 0.92))
+                .frame(width: pocketW * 0.48, height: pocketH * 0.88)
+                .rotationEffect(.degrees(-6))
+                .offset(x: -pocketW * 0.16, y: pocketH * 0.02)
+                .shadow(color: .black.opacity(0.12), radius: 2, y: 1)
+
+            // Sheet 2 (back right)
+            RoundedRectangle(cornerRadius: max(2, pocketH * 0.03), style: .continuous)
+                .fill(Color(white: 0.96))
+                .frame(width: pocketW * 0.50, height: pocketH * 0.90)
+                .rotationEffect(.degrees(5))
+                .offset(x: pocketW * 0.15, y: 0)
+                .shadow(color: .black.opacity(0.14), radius: 2, y: 1)
+
+            // Sheet 3 (front center - A4 document with folded dog-ear corner tip)
+            ZStack(alignment: .topTrailing) {
+                RoundedRectangle(cornerRadius: max(2, pocketH * 0.03), style: .continuous)
+                    .fill(Color.white)
+
+                // Dog-ear corner fold
+                Path { path in
+                    let foldSize = max(5, pocketH * 0.14)
+                    path.move(to: CGPoint(x: 0, y: 0))
+                    path.addLine(to: CGPoint(x: foldSize, y: foldSize))
+                    path.addLine(to: CGPoint(x: 0, y: foldSize))
+                    path.closeSubpath()
+                }
+                .fill(Color(white: 0.86))
+                .frame(width: max(5, pocketH * 0.14), height: max(5, pocketH * 0.14))
+                .shadow(color: .black.opacity(0.20), radius: 1, x: -0.5, y: 0.5)
+
+                // Document text lines
+                VStack(alignment: .leading, spacing: max(2, pocketH * 0.045)) {
+                    // Document colored header banner
+                    RoundedRectangle(cornerRadius: 1.5)
+                        .fill(Color.blue.opacity(0.75))
+                        .frame(width: pocketW * 0.28, height: max(2, pocketH * 0.04))
+
+                    // Lined paragraphs
+                    ForEach(0..<4) { i in
+                        let widths: [CGFloat] = [0.42, 0.38, 0.44, 0.26]
+                        RoundedRectangle(cornerRadius: 1.0)
+                            .fill(Color.black.opacity(0.22))
+                            .frame(width: pocketW * widths[i], height: max(1.5, pocketH * 0.025))
+                    }
+                }
+                .padding(.top, pocketH * 0.10)
+                .padding(.leading, pocketH * 0.08)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+            }
+            .frame(width: pocketW * 0.54, height: pocketH * 0.96)
+            .rotationEffect(.degrees(-1.5))
+            .offset(x: -pocketW * 0.02, y: -pocketH * 0.02)
+            .shadow(color: .black.opacity(0.20), radius: 3, y: 1.5)
+        }
+    }
+
+    // 2. Code / Dev: Dark-mode terminal & IDE editor cards with colored syntax bars
+    private var codeEditorStack: some View {
+        ZStack {
+            // Background terminal card
+            RoundedRectangle(cornerRadius: max(3, pocketH * 0.04), style: .continuous)
+                .fill(Color(hex: "#0F141C") ?? .black)
+                .frame(width: pocketW * 0.50, height: pocketH * 0.86)
+                .rotationEffect(.degrees(4.5))
+                .offset(x: pocketW * 0.18, y: pocketH * 0.02)
+                .shadow(color: .black.opacity(0.25), radius: 3, y: 1)
+
+            // Main IDE editor card
+            ZStack(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: max(3, pocketH * 0.04), style: .continuous)
+                    .fill(Color(hex: "#161B22") ?? .black)
+
+                VStack(alignment: .leading, spacing: max(2.5, pocketH * 0.04)) {
+                    // Window traffic lights
+                    HStack(spacing: max(2, pocketH * 0.03)) {
+                        Circle().fill(Color(hex: "#FF5F56") ?? .red)
+                            .frame(width: max(3, pocketH * 0.05), height: max(3, pocketH * 0.05))
+                        Circle().fill(Color(hex: "#FFBD2E") ?? .yellow)
+                            .frame(width: max(3, pocketH * 0.05), height: max(3, pocketH * 0.05))
+                        Circle().fill(Color(hex: "#27C93F") ?? .green)
+                            .frame(width: max(3, pocketH * 0.05), height: max(3, pocketH * 0.05))
+                    }
+                    .padding(.bottom, max(1, pocketH * 0.02))
+
+                    // Syntax line 1: keyword + function + bracket
+                    HStack(spacing: 3) {
+                        RoundedRectangle(cornerRadius: 1).fill(Color(hex: "#FF7B72") ?? .pink)
+                            .frame(width: pocketW * 0.09, height: max(2, pocketH * 0.035))
+                        RoundedRectangle(cornerRadius: 1).fill(Color(hex: "#79C0FF") ?? .blue)
+                            .frame(width: pocketW * 0.16, height: max(2, pocketH * 0.035))
+                        RoundedRectangle(cornerRadius: 1).fill(Color.white.opacity(0.6))
+                            .frame(width: pocketW * 0.06, height: max(2, pocketH * 0.035))
+                    }
+
+                    // Syntax line 2: indent + let + var + string
+                    HStack(spacing: 3) {
+                        Spacer().frame(width: pocketW * 0.04)
+                        RoundedRectangle(cornerRadius: 1).fill(Color(hex: "#FF7B72") ?? .pink)
+                            .frame(width: pocketW * 0.07, height: max(2, pocketH * 0.035))
+                        RoundedRectangle(cornerRadius: 1).fill(Color(hex: "#7EE787") ?? .green)
+                            .frame(width: pocketW * 0.12, height: max(2, pocketH * 0.035))
+                        RoundedRectangle(cornerRadius: 1).fill(Color(hex: "#A5D6FF") ?? .cyan)
+                            .frame(width: pocketW * 0.14, height: max(2, pocketH * 0.035))
+                    }
+
+                    // Syntax line 3: indent + return + call
+                    HStack(spacing: 3) {
+                        Spacer().frame(width: pocketW * 0.04)
+                        RoundedRectangle(cornerRadius: 1).fill(Color(hex: "#FFA657") ?? .orange)
+                            .frame(width: pocketW * 0.10, height: max(2, pocketH * 0.035))
+                        RoundedRectangle(cornerRadius: 1).fill(Color(hex: "#79C0FF") ?? .blue)
+                            .frame(width: pocketW * 0.15, height: max(2, pocketH * 0.035))
+                    }
+                }
+                .padding(pocketH * 0.08)
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: max(3, pocketH * 0.04), style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.14), lineWidth: 0.8)
+            )
+            .frame(width: pocketW * 0.58, height: pocketH * 0.96)
+            .rotationEffect(.degrees(-2))
+            .offset(x: -pocketW * 0.03, y: -pocketH * 0.02)
+            .shadow(color: .black.opacity(0.35), radius: 3, y: 1.5)
+        }
+    }
+
+    // 3. Photos / Polaroids: Tilted photographic prints with white border margins
+    private var photosStack: some View {
+        ZStack {
+            // Photo 1 (back right)
+            ZStack {
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .fill(Color.white)
+                VStack(spacing: 0) {
+                    LinearGradient(colors: [Color(hex: "#00C0FF") ?? .cyan, Color(hex: "#00E676") ?? .green],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing)
+                        .clipShape(RoundedRectangle(cornerRadius: 2))
+                    Spacer().frame(height: pocketH * 0.18)
+                }
+                .padding(pocketH * 0.04)
+            }
+            .frame(width: pocketW * 0.44, height: pocketH * 0.88)
+            .rotationEffect(.degrees(6.5))
+            .offset(x: pocketW * 0.16, y: 0)
+            .shadow(color: .black.opacity(0.20), radius: 2.5, y: 1)
+
+            // Photo 2 (front left)
+            ZStack {
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .fill(Color.white)
+                VStack(spacing: 0) {
+                    LinearGradient(colors: [Color(hex: "#FF2A6D") ?? .pink, Color(hex: "#FF9F1C") ?? .orange, Color(hex: "#FFD166") ?? .yellow],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing)
+                        .clipShape(RoundedRectangle(cornerRadius: 2))
+                        .overlay(
+                            Image(systemName: "sun.max.fill")
+                                .font(.system(size: max(6, pocketH * 0.12)))
+                                .foregroundStyle(Color.white.opacity(0.85))
+                                .offset(x: pocketW * 0.08, y: -pocketH * 0.06)
+                        )
+                    Spacer().frame(height: pocketH * 0.20)
+                }
+                .padding(pocketH * 0.045)
+            }
+            .frame(width: pocketW * 0.46, height: pocketH * 0.94)
+            .rotationEffect(.degrees(-4.5))
+            .offset(x: -pocketW * 0.10, y: -pocketH * 0.02)
+            .shadow(color: .black.opacity(0.25), radius: 3, y: 1.5)
+        }
+    }
+
+    // 4. Music / Vinyl: Vinyl record sleeve with concentric grooves & audio waveform sheet
+    private var musicVinylStack: some View {
+        ZStack {
+            // Waveform equalizer card (left)
+            ZStack {
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(Color(hex: "#1A1D24") ?? .black)
+                HStack(alignment: .bottom, spacing: max(1.5, pocketW * 0.015)) {
+                    ForEach([0.35, 0.70, 0.95, 0.55, 0.85, 0.60, 0.40], id: \.self) { h in
+                        RoundedRectangle(cornerRadius: 1)
+                            .fill(LinearGradient(colors: [.purple, .cyan], startPoint: .bottom, endPoint: .top))
+                            .frame(width: max(2, pocketW * 0.028), height: pocketH * 0.45 * h)
+                    }
+                }
+                .padding(.bottom, pocketH * 0.12)
+            }
+            .frame(width: pocketW * 0.44, height: pocketH * 0.90)
+            .rotationEffect(.degrees(-5))
+            .offset(x: -pocketW * 0.14, y: 0)
+            .shadow(color: .black.opacity(0.25), radius: 2.5, y: 1)
+
+            // Vinyl disc (right)
+            ZStack {
+                Circle().fill(Color(hex: "#141414") ?? .black)
+                Circle().stroke(Color.white.opacity(0.12), lineWidth: 1)
+                    .padding(pocketH * 0.08)
+                Circle().stroke(Color.white.opacity(0.08), lineWidth: 0.8)
+                    .padding(pocketH * 0.18)
+                Circle().fill(Color(hex: "#FF3B30") ?? .red)
+                    .frame(width: pocketH * 0.32, height: pocketH * 0.32)
+                Circle().fill(Color.black)
+                    .frame(width: pocketH * 0.09, height: pocketH * 0.09)
+            }
+            .frame(width: pocketH * 0.95, height: pocketH * 0.95)
+            .rotationEffect(.degrees(12))
+            .offset(x: pocketW * 0.18, y: -pocketH * 0.04)
+            .shadow(color: .black.opacity(0.35), radius: 3, y: 1.5)
+        }
     }
 }
