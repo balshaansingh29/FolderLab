@@ -19,7 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
 
-        // Check & ensure Finder Context Menu Quick Action is available
+        // Check & ensure Finder Context Menu Quick Action is available & enabled in pbs
         QuickActionManager.shared.autoInstallIfNeeded()
 
         // Check if a folder path was passed directly via CLI arguments
@@ -62,6 +62,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 Task { @MainActor in
                     IconStore.shared.stageFolder(url: url)
                     NSApplication.shared.activate(ignoringOtherApps: true)
+                    for window in NSApplication.shared.windows where !(window is NSPanel) {
+                        window.makeKeyAndOrderFront(nil)
+                    }
                 }
                 break
             }
@@ -76,6 +79,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             Task { @MainActor in
                 IconStore.shared.stageFolder(url: url)
                 NSApplication.shared.activate(ignoringOtherApps: true)
+                for window in NSApplication.shared.windows where !(window is NSPanel) {
+                    window.makeKeyAndOrderFront(nil)
+                }
             }
             return true
         }
@@ -98,6 +104,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     Task { @MainActor in
                         IconStore.shared.stageFolder(url: folderURL)
                         NSApplication.shared.activate(ignoringOtherApps: true)
+                        for window in NSApplication.shared.windows where !(window is NSPanel) {
+                            window.makeKeyAndOrderFront(nil)
+                        }
                     }
                 }
             }
@@ -107,6 +116,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 Task { @MainActor in
                     IconStore.shared.stageFolder(url: url)
                     NSApplication.shared.activate(ignoringOtherApps: true)
+                    for window in NSApplication.shared.windows where !(window is NSPanel) {
+                        window.makeKeyAndOrderFront(nil)
+                    }
                 }
             }
         }
@@ -134,6 +146,9 @@ struct FolderLabApp: App {
                             if FileManager.default.fileExists(atPath: folderURL.path, isDirectory: &isDir), isDir.boolValue {
                                 IconStore.shared.stageFolder(url: folderURL)
                                 NSApplication.shared.activate(ignoringOtherApps: true)
+                                for window in NSApplication.shared.windows where !(window is NSPanel) {
+                                    window.makeKeyAndOrderFront(nil)
+                                }
                             }
                         }
                     } else if url.isFileURL {
@@ -141,6 +156,9 @@ struct FolderLabApp: App {
                         if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir), isDir.boolValue {
                             IconStore.shared.stageFolder(url: url)
                             NSApplication.shared.activate(ignoringOtherApps: true)
+                            for window in NSApplication.shared.windows where !(window is NSPanel) {
+                                window.makeKeyAndOrderFront(nil)
+                            }
                         }
                     }
                 }

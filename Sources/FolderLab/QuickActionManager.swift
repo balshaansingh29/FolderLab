@@ -60,7 +60,7 @@ final class QuickActionManager: ObservableObject {
             let docWorkflowURL = contentsDir.appendingPathComponent("document.wflow")
             try documentWflowContent.write(to: docWorkflowURL, atomically: true, encoding: .utf8)
 
-            // 3. Update macOS Services cache via pbs
+            // 3. Update macOS Services cache & Finder preferences
             updateServicesCache()
 
             isInstalled = true
@@ -81,6 +81,7 @@ final class QuickActionManager: ObservableObject {
             if fm.fileExists(atPath: workflowURL.path) {
                 try fm.removeItem(at: workflowURL)
             }
+            cleanPbsPreferences()
             updateServicesCache()
             isInstalled = false
             let msg = "Removed 'Style with FolderLab…' from Finder Services."
@@ -102,26 +103,108 @@ final class QuickActionManager: ObservableObject {
     }
 
     func openShortcutsSettings() {
-        // Direct anchor to macOS Keyboard Shortcuts Services
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.keyboard?Shortcuts") {
             NSWorkspace.shared.open(url)
         }
     }
 
     private func updateServicesCache() {
-        // Refresh macOS Services daemon cache
+        // 1. Enable in pbs.plist
+        let pbsURL = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Preferences/pbs.plist")
+        if let data = try? Data(contentsOf: pbsURL),
+           var dict = (try? PropertyListSerialization.propertyList(from: data, options: .mutableContainersAndLeaves, format: nil)) as? [String: Any] {
+            var services = (dict["NSServicesStatus"] as? [String: Any]) ?? [:]
+            var finderActive = (dict["FinderActive"] as? [String: Any]) ?? [:]
+
+            let keys = [
+                "(null) - Style with FolderLab… - runWorkflowAsService",
+                "(null) - Style with FolderLab... - runWorkflowAsService",
+                "com.balshaansingh.folderlab.quickaction - Style with FolderLab… - runWorkflowAsService",
+                "com.balshaansingh.folderlab.quickaction - Style with FolderLab... - runWorkflowAsService"
+            ]
+
+            let statusDict: [String: Any] = [
+                "enabled_context_menu": true,
+                "enabled_services_menu": true
+            ]
+
+            for k in keys {
+                services[k] = statusDict
+                finderActive[k] = true
+            }
+            finderActive["Style with FolderLab…"] = true
+            finderActive["Style with FolderLab..."] = true
+
+            dict["NSServicesStatus"] = services
+            dict["FinderActive"] = finderActive
+
+            if let outData = try? PropertyListSerialization.data(fromPropertyList: dict, format: .binary, options: 0) {
+                try? outData.write(to: pbsURL, options: .atomic)
+            }
+        }
+
+        // 2. Register URL scheme and app with LaunchServices
+        let lsregister = "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+        if FileManager.default.fileExists(atPath: lsregister) {
+            let p = Process()
+            p.executableURL = URL(fileURLWithPath: lsregister)
+            p.arguments = ["-f", "/Applications/FolderLab.app", Bundle.main.bundlePath]
+            try? p.run()
+            p.waitUntilExit()
+        }
+
+        // 3. Update macOS Services daemon cache
         let pbs = Process()
         pbs.executableURL = URL(fileURLWithPath: "/System/Library/CoreServices/pbs")
         pbs.arguments = ["-update"]
         try? pbs.run()
         pbs.waitUntilExit()
 
-        // Also flush Pasteboard server cache
+        // 4. Flush Pasteboard server cache
         let pbsFlush = Process()
         pbsFlush.executableURL = URL(fileURLWithPath: "/System/Library/CoreServices/pbs")
         pbsFlush.arguments = ["-flush"]
         try? pbsFlush.run()
         pbsFlush.waitUntilExit()
+
+        // 5. Restart Finder so the context menu updates immediately
+        let killFinder = Process()
+        killFinder.executableURL = URL(fileURLWithPath: "/usr/bin/killall")
+        killFinder.arguments = ["Finder"]
+        try? killFinder.run()
+        killFinder.waitUntilExit()
+    }
+
+    private func cleanPbsPreferences() {
+        let pbsURL = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Preferences/pbs.plist")
+        guard let data = try? Data(contentsOf: pbsURL),
+              var dict = (try? PropertyListSerialization.propertyList(from: data, options: .mutableContainersAndLeaves, format: nil)) as? [String: Any] else { return }
+
+        var services = (dict["NSServicesStatus"] as? [String: Any]) ?? [:]
+        var finderActive = (dict["FinderActive"] as? [String: Any]) ?? [:]
+
+        let keys = [
+            "(null) - Style with FolderLab… - runWorkflowAsService",
+            "(null) - Style with FolderLab... - runWorkflowAsService",
+            "com.balshaansingh.folderlab.quickaction - Style with FolderLab… - runWorkflowAsService",
+            "com.balshaansingh.folderlab.quickaction - Style with FolderLab... - runWorkflowAsService",
+            "Style with FolderLab…",
+            "Style with FolderLab..."
+        ]
+
+        for k in keys {
+            services.removeValue(forKey: k)
+            finderActive.removeValue(forKey: k)
+        }
+
+        dict["NSServicesStatus"] = services
+        dict["FinderActive"] = finderActive
+
+        if let outData = try? PropertyListSerialization.data(fromPropertyList: dict, format: .binary, options: 0) {
+            try? outData.write(to: pbsURL, options: .atomic)
+        }
     }
 
     // MARK: - Workflow Template Plists
@@ -132,6 +215,12 @@ final class QuickActionManager: ObservableObject {
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
         <dict>
+        \t<key>CFBundleIdentifier</key>
+        \t<string>com.balshaansingh.folderlab.quickaction</string>
+        \t<key>CFBundleName</key>
+        \t<string>Style with FolderLab…</string>
+        \t<key>CFBundleShortVersionString</key>
+        \t<string>1.0</string>
         \t<key>NSServices</key>
         \t<array>
         \t\t<dict>
@@ -371,13 +460,15 @@ final class QuickActionManager: ObservableObject {
         \t\t<dict>
         \t\t\t<key>/System/Library/CoreServices/Finder.app</key>
         \t\t\t<string>com.apple.finder</string>
+        \t\t\t<key>com.apple.finder</key>
+        \t\t\t<string>/System/Library/CoreServices/Finder.app</string>
         \t\t</dict>
         \t\t<key>applicationPath</key>
         \t\t<string>/System/Library/CoreServices/Finder.app</string>
         \t\t<key>applicationPaths</key>
         \t\t<array>
         \t\t\t<string>/System/Library/CoreServices/Finder.app</string>
-        \t\t\t</array>
+        \t\t</array>
         \t\t<key>inputTypeIdentifier</key>
         \t\t<string>com.apple.Automator.fileSystemObject.folder</string>
         \t\t<key>outputTypeIdentifier</key>
