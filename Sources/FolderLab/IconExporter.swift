@@ -20,9 +20,13 @@ enum IconExporter {
         return rep.representation(using: .png, properties: [:])
     }
 
-    static func nsImage(_ spec: IconSpec, pixels: Int) -> NSImage? {
+    static func nsImage(_ spec: IconSpec, pixels: Int = 1024) -> NSImage? {
         guard let cg = cgImage(spec, pixels: pixels) else { return nil }
-        return NSImage(cgImage: cg, size: NSSize(width: pixels, height: pixels))
+        let rep = NSBitmapImageRep(cgImage: cg)
+        rep.size = NSSize(width: 512, height: 512)
+        let image = NSImage(size: NSSize(width: 512, height: 512))
+        image.addRepresentation(rep)
+        return image
     }
 
     // MARK: Copy to Clipboard
