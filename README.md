@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v0.3.1-brightgreen.svg" alt="Release v0.3.1">
+  <img src="https://img.shields.io/badge/Release-v0.4-brightgreen.svg" alt="Release v0.4">
   <img src="https://img.shields.io/badge/macOS-13%2B%20Ventura%20%7C%20Sonoma%20%7C%20Sequoia-blue.svg?logo=apple" alt="macOS 13+">
   <img src="https://img.shields.io/badge/Swift-5.9%2B-orange.svg?logo=swift" alt="Swift 5.9+">
   <img src="https://img.shields.io/badge/UI-SwiftUI%20%26%20AppKit-purple.svg" alt="SwiftUI & AppKit">
@@ -25,6 +25,8 @@
 
 ## 🌟 Highlights & Features
 
+- 🏷️ **Folder Nameplate / Label Banner on Icon (v0.4)**: Customizable horizontal text banner or embossed label across the folder flap! Choose from 6 distinct styles: **Retro Dymo Embossed Tape**, **Modern Glass Capsule**, **Engraved Brass Plaque**, **Cyber Neon Ribbon**, **Paper Masking Tape**, and **Minimal Clean Tag** with customizable vertical position, scale, text, and colors! 🏷️✨
+- 🔤 **Unicode Folder Renamer Studio (v0.4)**: Pick from 14 expressive Unicode typography styles (*Bold Sans, Bold Serif, Script / Calligraphy, Monospace, Double-Struck Blackboard, Fraktur Gothic, Circled / Dark Bubbles, Small Caps, Fullwidth*), preview live in real-time, and rename folders on your Mac directly on disk via Finder! 📁🖋️
 - 🪨 **Visual Texture Swatch Grid (v0.3)**: Interactive card preview gallery displaying tactile surface finishes (Carbon Fiber, Brushed Metal, Tactile Pebble Grain, Dot Matrix Grid, Diagonal Ribs) rendered live over active folder colors! 🎨
 - 🪄 **Surprise Me 2.0 (v0.3)**: Prominently placed at the top of Themes, generating procedural textures, 24 curated tri-color palettes, 3-stop mesh gradients, corner badges, monograms, and liquid glass with 1 click! ✨
 - 📦 **Unified Apply & Export Hub (v0.3)**: Centralized all export functions (Live Finder Folder Skinning, Batch Styler, Clipboard PNG, ICNS package, and .folderlab preset export/import) into the Apply tab! 🚀
@@ -35,7 +37,7 @@
 - ✍️ **Typography & 3D Depth Stamping (v0.2)**: SF Pro Rounded, SF Mono, and New York Serif fonts with Embossed or Engraved 3D tactile bevels! 🔮
 - ↩️ **Full Undo & Redo (v0.2)**: 30-level state history with `⌘Z` / `⇧⌘Z` keyboard shortcuts and canvas toolbar buttons! ⚡
 - 🕒 **Recently Applied Styles Shelf (v0.2)**: Horizontal recents gallery in the Themes inspector to quickly re-apply your favorite folder designs! 🎨
-- ⚡ **Automatic 1-Click In-App Updater (v0.3.1)**: Seamless silent background installation! Clicking "Update Now" automatically mounts the installer, upgrades , strips quarantine flags, and relaunches with zero manual dragging! 🚀
+- ⚡ **Automatic 1-Click In-App Updater (v0.4)**: Seamless silent background installation! Clicking "Update Now" automatically mounts the installer, upgrades , strips quarantine flags, and relaunches with zero manual dragging! 🚀
 - 🎯 **Direct Finder Drag & Drop**: Simply drag any folder from macOS Finder directly onto the preview stage to customize it instantly! ⚡
 - 🗂️ **Batch & Bulk Folder Styler**: Select multiple directories at once or re-theme all subfolders in a folder with one tap! 📁
 - 🖼️ **Custom Image & Stamp Importer**: Drop any PNG, JPG, or SVG image to stamp logos, team badges, or stickers onto the folder flap! 🎨
@@ -94,8 +96,8 @@ brew install --cask https://raw.githubusercontent.com/balshaansingh29/FolderLab/
 
 ### 📥 Manual Download (DMG / ZIP)
 Grab the latest pre-compiled build:
-- 💿 **[FolderLab-v0.3.1.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.3.1/FolderLab-v0.3.1.dmg)** *(Clean drag-and-drop installer for `/Applications`)*
-- 📦 **[FolderLab-v0.3.1.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.3.1/FolderLab-v0.3.1.zip)** *(Standalone application archive)*
+- 💿 **[FolderLab-v0.4.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.4/FolderLab-v0.4.dmg)** *(Clean drag-and-drop installer for `/Applications`)*
+- 📦 **[FolderLab-v0.4.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.4/FolderLab-v0.4.zip)** *(Standalone application archive)*
 
 > [!TIP]
 > **First time opening on macOS?**

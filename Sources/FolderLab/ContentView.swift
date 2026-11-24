@@ -187,11 +187,24 @@ final class IconStore: ObservableObject {
         notify(msg, isError: isErr)
     }
 
+    @Published var lastTargetFolderURL: URL? = nil
+
     func apply(to url: URL) {
+        lastTargetFolderURL = url
         addToRecents(spec)
         checkSmartSuggestion(for: url)
         let (ok, msg) = IconExporter.apply(spec: spec, to: url)
         notify(msg, isError: !ok)
+    }
+
+    func renameFolderDirectly(url: URL, newName: String) {
+        do {
+            let newURL = try UnicodeStyler.renameFolder(at: url, newName: newName)
+            lastTargetFolderURL = newURL
+            notify("Renamed folder to '\(newName)' in Finder! 🏷️")
+        } catch {
+            notify("Rename failed: \(error.localizedDescription)", isError: true)
+        }
     }
 
     func applyToItems() {
@@ -330,6 +343,7 @@ enum InspectorTab: String, CaseIterable, Identifiable {
     case presets = "Themes"
     case canvas = "Colors"
     case glyph = "Stamp"
+    case textTab = "Text"
     case export = "Apply"
 
     var id: String { rawValue }
@@ -339,6 +353,7 @@ enum InspectorTab: String, CaseIterable, Identifiable {
         case .presets: return "folder.fill"
         case .canvas: return "paintpalette.fill"
         case .glyph: return "sparkles"
+        case .textTab: return "textformat"
         case .export: return "arrow.down.doc.fill"
         }
     }
@@ -1117,6 +1132,8 @@ struct InspectorPanelView: View {
                         CanvasInspectorTab(store: store)
                     case .glyph:
                         GlyphInspectorTab(store: store)
+                    case .textTab:
+                        TextInspectorTab(store: store)
                     case .export:
                         ExportInspectorTab(store: store)
                     }
@@ -2283,6 +2300,454 @@ enum SymbolCategory: String, CaseIterable, Identifiable {
                 "tornado", "snowflake", "atom", "compass.drawing",
                 "map.fill", "airplane", "car.fill", "bicycle", "fuelpump.fill", "tent.fill"
             ]
+        }
+    }
+}
+
+// MARK: - Nameplate & Unicode Card Buttons
+
+struct NameplateCardButton: View {
+    let style: NameplateStyle
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 11) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color(nsColor: .controlBackgroundColor))
+                        .frame(width: 32, height: 32)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.18), lineWidth: 1)
+                        )
+
+                    Image(systemName: style.iconName)
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(Color.accentColor)
+                }
+                .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(style.rawValue)
+                        .font(.system(size: 12, weight: isSelected ? .bold : .semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+
+                    Text(styleSubtitle)
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(Color.accentColor)
+                }
+            }
+            .padding(10)
+            .background {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color.accentColor.opacity(0.12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .strokeBorder(Color.accentColor.opacity(0.6), lineWidth: 1.5)
+                        )
+                } else {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color(nsColor: .controlBackgroundColor).opacity(0.7))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.10), lineWidth: 1)
+                        )
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var styleSubtitle: String {
+        switch style {
+        case .retroTape: return "Dymo plastic embossed"
+        case .glassCapsule: return "Translucent frosted pill"
+        case .brassPlate: return "Metallic with corner rivets"
+        case .cyberRibbon: return "Obsidian neon glowing"
+        case .maskingTape: return "Semi-opaque washi paper"
+        case .cleanTag: return "Crisp minimal colored"
+        }
+    }
+}
+
+struct UnicodeStyleCardButton: View {
+    let style: UnicodeStyle
+    let sampleText: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(style.rawValue)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+
+                    Text(sampleText)
+                        .font(.system(size: 13, weight: isSelected ? .bold : .medium))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(Color.accentColor)
+                }
+            }
+            .padding(.horizontal, 11)
+            .padding(.vertical, 8)
+            .background {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                        .fill(Color.accentColor.opacity(0.12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                                .strokeBorder(Color.accentColor.opacity(0.6), lineWidth: 1.5)
+                        )
+                } else {
+                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                        .fill(Color(nsColor: .controlBackgroundColor).opacity(0.7))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.10), lineWidth: 1)
+                        )
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Text & Unicode Renamer Tab (v0.4)
+
+struct TextInspectorTab: View {
+    @ObservedObject var store: IconStore
+    @State private var renamerInput: String = "My Folder"
+    @State private var selectedUnicodeStyle: UnicodeStyle = .boldSans
+
+    private var transformedName: String {
+        UnicodeStyler.transform(renamerInput.isEmpty ? "My Folder" : renamerInput, style: selectedUnicodeStyle)
+    }
+
+    private let quickLabels = [
+        "PROJECTS", "ARCHIVE", "CONFIDENTIAL", "DEV", "2026", "TOP SECRET", "CLIENT", "VAULT", "CODE", "MUSIC"
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Feature 1: Folder Nameplate / Label Banner on Icon
+            InspectorCard {
+                InspectorSectionHeader(
+                    title: "Folder Nameplate Banner",
+                    subtitle: "Embossed label tape, glass capsule, or brass plate on flap",
+                    icon: "tag.fill",
+                    iconColor: .purple
+                )
+
+                Toggle("Show Nameplate on Folder", isOn: $store.spec.nameplateEnabled)
+                    .toggleStyle(.switch)
+                    .font(.system(size: 12, weight: .semibold))
+
+                if store.spec.nameplateEnabled {
+                    // Label Text Field
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Label Banner Text")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.secondary)
+
+                        HStack {
+                            TextField("e.g. PROJECTS or ARCHIVE", text: $store.spec.nameplateText)
+                                .textFieldStyle(.roundedBorder)
+                                .font(.system(size: 13, weight: .bold))
+
+                            if !store.spec.nameplateText.isEmpty {
+                                Button {
+                                    store.spec.nameplateText = ""
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundStyle(.secondary)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+
+                    // Quick Preset Words Pills
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 6) {
+                            ForEach(quickLabels, id: \.self) { word in
+                                Button(word) {
+                                    withAnimation(.spring(response: 0.25, dampingFraction: 0.75)) {
+                                        store.spec.nameplateText = word
+                                    }
+                                }
+                                .font(.system(size: 10, weight: store.spec.nameplateText == word ? .bold : .medium, design: .monospaced))
+                                .padding(.horizontal, 9)
+                                .padding(.vertical, 4)
+                                .background {
+                                    if store.spec.nameplateText == word {
+                                        Capsule().fill(Color(nsColor: .controlAccentColor).opacity(0.25))
+                                    } else {
+                                        Capsule().fill(Color(nsColor: .controlBackgroundColor).opacity(0.8))
+                                    }
+                                }
+                                .foregroundStyle(store.spec.nameplateText == word ? Color.accentColor : Color.primary)
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+
+                    // Nameplate Style Picker Grid
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Banner Appearance Style")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.secondary)
+
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                            ForEach(NameplateStyle.allCases) { style in
+                                NameplateCardButton(
+                                    style: style,
+                                    isSelected: store.spec.nameplateStyle == style
+                                ) {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                        store.spec.nameplateStyle = style
+                                        switch style {
+                                        case .retroTape:
+                                            store.spec.nameplateColor = Color(hex: "#1A1A1A") ?? .black
+                                            store.spec.nameplateTextColor = .white
+                                        case .glassCapsule:
+                                            store.spec.nameplateColor = store.spec.color1.darker(0.3)
+                                            store.spec.nameplateTextColor = .white
+                                        case .brassPlate:
+                                            store.spec.nameplateColor = Color(hex: "#E5A93C") ?? .orange
+                                            store.spec.nameplateTextColor = Color(hex: "#3D2400") ?? .black
+                                        case .cyberRibbon:
+                                            store.spec.nameplateColor = Color(hex: "#00F0FF") ?? .cyan
+                                            store.spec.nameplateTextColor = Color(hex: "#00F0FF") ?? .cyan
+                                        case .maskingTape:
+                                            store.spec.nameplateColor = Color(hex: "#F8F4E8") ?? .white
+                                            store.spec.nameplateTextColor = Color(hex: "#262626") ?? .black
+                                        case .cleanTag:
+                                            store.spec.nameplateColor = store.spec.color1
+                                            store.spec.nameplateTextColor = .white
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Color Customization
+                    ColorRowModern(title: "Plate Background", color: $store.spec.nameplateColor)
+                    ColorRowModern(title: "Text Color", color: $store.spec.nameplateTextColor)
+
+                    // Sliders
+                    ModernSlider(
+                        title: "Vertical Flap Position",
+                        value: $store.spec.nameplateYOffset,
+                        range: -0.2...0.45,
+                        format: "%.2f",
+                        onReset: { store.spec.nameplateYOffset = 0.22 }
+                    )
+
+                    ModernSlider(
+                        title: "Banner Width / Scale",
+                        value: $store.spec.nameplateScale,
+                        range: 0.35...0.95,
+                        format: "%.0f",
+                        multiplier: 100,
+                        unit: "%",
+                        onReset: { store.spec.nameplateScale = 0.72 }
+                    )
+                }
+            }
+
+            // Feature 2: Unicode Folder Renamer
+            InspectorCard {
+                InspectorSectionHeader(
+                    title: "Unicode Folder Renamer",
+                    subtitle: "Transform folder names with stylish Unicode typography in Finder",
+                    icon: "character.textbox",
+                    iconColor: .blue
+                )
+
+                // Input Textfield
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Original Folder Name")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+
+                    HStack {
+                        TextField("Folder name e.g. Documents", text: $renamerInput)
+                            .textFieldStyle(.roundedBorder)
+                            .font(.system(size: 13, weight: .medium))
+
+                        if let target = store.lastTargetFolderURL {
+                            Button("Use Active") {
+                                renamerInput = target.lastPathComponent
+                            }
+                            .font(.system(size: 11, weight: .semibold))
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                            .help("Load the name of the folder currently active in FolderLab")
+                        }
+                    }
+                }
+
+                // Styled Unicode Output Preview Box
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Styled Unicode Result Preview")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(transformedName)
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(.primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .lineLimit(1)
+                            .padding(.vertical, 4)
+
+                        HStack(spacing: 8) {
+                            Button {
+                                let pb = NSPasteboard.general
+                                pb.clearContents()
+                                pb.setString(transformedName, forType: .string)
+                                store.notify("Copied Unicode name '\(transformedName)'! 📋")
+                            } label: {
+                                HStack(spacing: 5) {
+                                    Image(systemName: "doc.on.doc.fill")
+                                    Text("Copy Name")
+                                }
+                                .font(.system(size: 11, weight: .semibold))
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+
+                            Button {
+                                store.spec.nameplateEnabled = true
+                                store.spec.nameplateText = transformedName
+                                store.notify("Applied '\(transformedName)' to Nameplate! 🏷️")
+                            } label: {
+                                HStack(spacing: 5) {
+                                    Image(systemName: "tag.fill")
+                                    Text("Set on Nameplate")
+                                }
+                                .font(.system(size: 11, weight: .semibold))
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                        }
+                    }
+                    .padding(12)
+                    .background(Color(nsColor: .textBackgroundColor).opacity(0.45))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .strokeBorder(Color.accentColor.opacity(0.35), lineWidth: 1)
+                    )
+                }
+
+                // Unicode Styles Grid
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Choose Typography Style")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                        ForEach(UnicodeStyle.allCases) { style in
+                            let sample = UnicodeStyler.transform(renamerInput.isEmpty ? "Folder" : renamerInput, style: style)
+                            UnicodeStyleCardButton(
+                                style: style,
+                                sampleText: sample,
+                                isSelected: selectedUnicodeStyle == style
+                            ) {
+                                withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                                    selectedUnicodeStyle = style
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Direct Finder Action Buttons
+                VStack(spacing: 10) {
+                    Button {
+                        let panel = NSOpenPanel()
+                        panel.title = "Select Folder to Rename with Unicode Typography"
+                        panel.canChooseFiles = false
+                        panel.canChooseDirectories = true
+                        panel.allowsMultipleSelection = false
+                        if panel.runModal() == .OK, let selectedURL = panel.url {
+                            store.renameFolderDirectly(url: selectedURL, newName: transformedName)
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "folder.badge.gearshape.fill")
+                                .font(.system(size: 14))
+                            Text("Choose Folder & Rename on Mac…")
+                                .font(.system(size: 13, weight: .bold))
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 11, weight: .semibold))
+                                .opacity(0.7)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(Color.accentColor)
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .shadow(color: Color.accentColor.opacity(0.3), radius: 4, y: 1.5)
+                    }
+                    .buttonStyle(.plain)
+
+                    if let targetURL = store.lastTargetFolderURL {
+                        Button {
+                            store.renameFolderDirectly(url: targetURL, newName: transformedName)
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "arrow.right.circle.fill")
+                                    .foregroundStyle(Color.accentColor)
+                                Text("Rename Current Folder: '\(targetURL.lastPathComponent)' → '\(transformedName)'")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .lineLimit(1)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color(nsColor: .controlBackgroundColor))
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.top, 4)
+            }
         }
     }
 }

@@ -65,6 +65,15 @@ struct IconSpec: Equatable {
     var syncFinderTag = false
     var selectedFinderTag: FinderTagColor? = nil
 
+    // Folder Nameplate / Label Banner (v0.4)
+    var nameplateEnabled: Bool = false
+    var nameplateText: String = "PROJECTS"
+    var nameplateStyle: NameplateStyle = .retroTape
+    var nameplateColor: Color = Color(hex: "#1E222A") ?? .black
+    var nameplateTextColor: Color = .white
+    var nameplateYOffset: Double = 0.22      // vertical position on folder flap (0.0 = center, positive = lower, negative = higher)
+    var nameplateScale: Double = 0.72        // width fraction of flap
+
     // Outer drop shadow (only with macMargin)
     var dropShadow = true
 }
@@ -175,6 +184,28 @@ public enum SurfaceTexture: String, CaseIterable, Identifiable, Codable {
     public var id: String { rawValue }
 }
 
+public enum NameplateStyle: String, CaseIterable, Identifiable, Codable {
+    case retroTape = "Retro Embossed Tape"
+    case glassCapsule = "Modern Glass Capsule"
+    case brassPlate = "Engraved Brass Plaque"
+    case cyberRibbon = "Cyber Neon Banner"
+    case maskingTape = "Paper Masking Tape"
+    case cleanTag = "Minimal Clean Badge"
+
+    public var id: String { rawValue }
+
+    public var iconName: String {
+        switch self {
+        case .retroTape: return "rectangle.fill"
+        case .glassCapsule: return "capsule.fill"
+        case .brassPlate: return "shield.lefthalf.filled"
+        case .cyberRibbon: return "bolt.horizontal.fill"
+        case .maskingTape: return "line.diagonal"
+        case .cleanTag: return "tag.fill"
+        }
+    }
+}
+
 // MARK: - Shareable Theme Preset (.folderlab)
 
 struct FolderLabPreset: Codable {
@@ -217,6 +248,14 @@ struct FolderLabPreset: Codable {
     var textDepthStyle: String? = "Flat Clean"
     var cornerBadge: String? = "None"
     var cornerBadgeColorHex: String? = "#FFFFFF"
+    // v0.4 Nameplate Extensions
+    var nameplateEnabled: Bool? = false
+    var nameplateText: String? = "PROJECTS"
+    var nameplateStyle: String? = "Retro Embossed Tape"
+    var nameplateColorHex: String? = "#1E222A"
+    var nameplateTextColorHex: String? = "#FFFFFF"
+    var nameplateYOffset: Double? = 0.22
+    var nameplateScale: Double? = 0.72
 }
 
 enum SymbolMode: String, CaseIterable, Identifiable {
@@ -259,6 +298,13 @@ extension IconSpec {
         s.customImageData = old.customImageData
         s.customImageTinted = old.customImageTinted
         s.customImageName = old.customImageName
+        s.nameplateEnabled = old.nameplateEnabled
+        s.nameplateText = old.nameplateText
+        s.nameplateStyle = old.nameplateStyle
+        s.nameplateColor = old.nameplateColor
+        s.nameplateTextColor = old.nameplateTextColor
+        s.nameplateYOffset = old.nameplateYOffset
+        s.nameplateScale = old.nameplateScale
 
         switch style {
         case .bigSur:       // light tile, colored glyph, like Apple's own apps
@@ -728,7 +774,14 @@ extension IconSpec {
             textFontFamily: textFontFamily.rawValue,
             textDepthStyle: textDepthStyle.rawValue,
             cornerBadge: cornerBadge.rawValue,
-            cornerBadgeColorHex: cornerBadgeColor.hexString
+            cornerBadgeColorHex: cornerBadgeColor.hexString,
+            nameplateEnabled: nameplateEnabled,
+            nameplateText: nameplateText,
+            nameplateStyle: nameplateStyle.rawValue,
+            nameplateColorHex: nameplateColor.hexString,
+            nameplateTextColorHex: nameplateTextColor.hexString,
+            nameplateYOffset: nameplateYOffset,
+            nameplateScale: nameplateScale
         )
     }
 
@@ -770,6 +823,13 @@ extension IconSpec {
         if let td = preset.textDepthStyle { s.textDepthStyle = TextDepthStyle(rawValue: td) ?? .flat }
         if let cb = preset.cornerBadge { s.cornerBadge = CornerBadge(rawValue: cb) ?? .none }
         if let cbc = preset.cornerBadgeColorHex { s.cornerBadgeColor = Color(hex: cbc) ?? .white }
+        if let ne = preset.nameplateEnabled { s.nameplateEnabled = ne }
+        if let nt = preset.nameplateText { s.nameplateText = nt }
+        if let ns = preset.nameplateStyle { s.nameplateStyle = NameplateStyle(rawValue: ns) ?? .retroTape }
+        if let nch = preset.nameplateColorHex { s.nameplateColor = Color(hex: nch) ?? s.nameplateColor }
+        if let ntch = preset.nameplateTextColorHex { s.nameplateTextColor = Color(hex: ntch) ?? s.nameplateTextColor }
+        if let nyo = preset.nameplateYOffset { s.nameplateYOffset = nyo }
+        if let nsc = preset.nameplateScale { s.nameplateScale = nsc }
         return s
     }
 }

@@ -83,6 +83,11 @@ struct IconCanvas: View {
             }
             glyph
                 .offset(y: glyphBaseOffset + ref * spec.glyphYOffset)
+
+            if spec.base == .tile && spec.nameplateEnabled && !spec.nameplateText.isEmpty {
+                NameplateBannerView(spec: spec, folderW: tileSide, folderH: tileSide)
+                    .offset(y: tileSide * CGFloat(spec.nameplateYOffset))
+            }
         }
         .frame(width: size, height: size)
     }
@@ -296,6 +301,12 @@ struct IconCanvas: View {
                 .frame(width: badgeSize, height: badgeSize)
                 .offset(x: folderW * 0.36, y: -folderH * 0.06)
             }
+
+            // 6. Folder Nameplate / Label Banner (v0.4)
+            if spec.nameplateEnabled && !spec.nameplateText.isEmpty {
+                NameplateBannerView(spec: spec, folderW: folderW, folderH: folderH)
+                    .offset(y: folderH * 0.08 + folderH * CGFloat(spec.nameplateYOffset))
+            }
         }
         .frame(width: folderW, height: folderH)
         .shadow(color: .black.opacity(spec.dropShadow ? 0.32 : 0),
@@ -466,5 +477,245 @@ struct FolderTextureOverlay: View {
             }
         }
         .opacity(opacity)
+    }
+}
+
+
+// MARK: - Folder Nameplate / Label Banner View (v0.4)
+
+struct NameplateBannerView: View {
+    let spec: IconSpec
+    let folderW: CGFloat
+    let folderH: CGFloat
+
+    private var bannerWidth: CGFloat {
+        folderW * CGFloat(spec.nameplateScale)
+    }
+
+    private var bannerHeight: CGFloat {
+        max(12, folderH * 0.125)
+    }
+
+    var body: some View {
+        ZStack {
+            switch spec.nameplateStyle {
+            case .retroTape:
+                retroTapeView
+            case .glassCapsule:
+                glassCapsuleView
+            case .brassPlate:
+                brassPlateView
+            case .cyberRibbon:
+                cyberRibbonView
+            case .maskingTape:
+                maskingTapeView
+            case .cleanTag:
+                cleanTagView
+            }
+        }
+        .frame(width: bannerWidth, height: bannerHeight)
+    }
+
+    // 1. Retro Embossed Dymo Label Tape
+    private var retroTapeView: some View {
+        ZStack {
+            // Tape base
+            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                .fill(spec.nameplateColor)
+
+            // Top glossy tape reflection
+            VStack(spacing: 0) {
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [.white.opacity(0.35), .white.opacity(0.08), .clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .frame(height: bannerHeight * 0.48)
+                Spacer()
+            }
+
+            // Cut edges on left & right
+            HStack {
+                Rectangle()
+                    .fill(Color.white.opacity(0.18))
+                    .frame(width: 1)
+                Spacer()
+                Rectangle()
+                    .fill(Color.white.opacity(0.18))
+                    .frame(width: 1)
+            }
+
+            // Embossed 3D White Stamped Text
+            Text(spec.nameplateText.uppercased())
+                .font(.system(size: bannerHeight * 0.58, weight: .heavy, design: .monospaced))
+                .tracking(1.4)
+                .lineLimit(1)
+                .minimumScaleFactor(0.4)
+                .foregroundStyle(spec.nameplateTextColor)
+                .shadow(color: .white.opacity(0.85), radius: 0.5, x: 0, y: 0.8)
+                .shadow(color: .black.opacity(0.75), radius: 0.6, x: 0, y: -0.8)
+                .padding(.horizontal, bannerHeight * 0.3)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 2, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.20), lineWidth: 0.8)
+        )
+        .shadow(color: .black.opacity(0.40), radius: folderH * 0.016, x: 0, y: folderH * 0.008)
+    }
+
+    // 2. Modern Glass Capsule / Pill
+    private var glassCapsuleView: some View {
+        ZStack {
+            Capsule()
+                .fill(
+                    LinearGradient(
+                        colors: [spec.nameplateColor.opacity(0.45), spec.nameplateColor.opacity(0.75)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+
+            // Specular highlight rim
+            Capsule()
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [.white.opacity(0.85), .white.opacity(0.20)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: max(1, bannerHeight * 0.08)
+                )
+
+            Text(spec.nameplateText)
+                .font(.system(size: bannerHeight * 0.52, weight: .bold, design: .rounded))
+                .lineLimit(1)
+                .minimumScaleFactor(0.4)
+                .foregroundStyle(spec.nameplateTextColor)
+                .shadow(color: .black.opacity(0.35), radius: 1, y: 1)
+                .padding(.horizontal, bannerHeight * 0.4)
+        }
+        .shadow(color: .black.opacity(0.30), radius: folderH * 0.016, y: folderH * 0.008)
+    }
+
+    // 3. Engraved Brass Plaque
+    private var brassPlateView: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(hex: "#FFE57F") ?? .yellow,
+                            Color(hex: "#E5A93C") ?? .orange,
+                            Color(hex: "#B87A14") ?? .brown
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+
+            // Subtle beveled stroke
+            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [.white.opacity(0.85), Color(hex: "#5A3A00") ?? .black],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 1
+                )
+
+            // 4 Corner screws/rivets
+            HStack {
+                Circle()
+                    .fill(Color(hex: "#5C3B00") ?? .black)
+                    .frame(width: max(2, bannerHeight * 0.16), height: max(2, bannerHeight * 0.16))
+                    .overlay(Circle().stroke(Color.white.opacity(0.5), lineWidth: 0.5))
+                    .padding(.leading, bannerHeight * 0.2)
+                Spacer()
+                Circle()
+                    .fill(Color(hex: "#5C3B00") ?? .black)
+                    .frame(width: max(2, bannerHeight * 0.16), height: max(2, bannerHeight * 0.16))
+                    .overlay(Circle().stroke(Color.white.opacity(0.5), lineWidth: 0.5))
+                    .padding(.trailing, bannerHeight * 0.2)
+            }
+
+            // Engraved inset typography
+            Text(spec.nameplateText)
+                .font(.system(size: bannerHeight * 0.50, weight: .bold, design: .serif))
+                .lineLimit(1)
+                .minimumScaleFactor(0.4)
+                .foregroundStyle(Color(hex: "#3D2400") ?? .black)
+                .shadow(color: .white.opacity(0.65), radius: 0.5, x: 0, y: 0.8)
+                .shadow(color: .black.opacity(0.6), radius: 0.5, x: 0, y: -0.5)
+                .padding(.horizontal, bannerHeight * 0.45)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
+        .shadow(color: .black.opacity(0.40), radius: folderH * 0.018, y: folderH * 0.010)
+    }
+
+    // 4. Cyber Neon Banner
+    private var cyberRibbonView: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(Color(hex: "#090D16") ?? .black)
+
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .strokeBorder(spec.nameplateColor, lineWidth: 1.5)
+                .shadow(color: spec.nameplateColor.opacity(0.85), radius: 3)
+
+            Text(spec.nameplateText.uppercased())
+                .font(.system(size: bannerHeight * 0.52, weight: .heavy, design: .monospaced))
+                .tracking(1.2)
+                .lineLimit(1)
+                .minimumScaleFactor(0.4)
+                .foregroundStyle(spec.nameplateTextColor)
+                .shadow(color: spec.nameplateTextColor.opacity(0.9), radius: 3)
+                .padding(.horizontal, bannerHeight * 0.3)
+        }
+        .shadow(color: .black.opacity(0.50), radius: folderH * 0.018, y: folderH * 0.010)
+    }
+
+    // 5. Paper Masking Tape
+    private var maskingTapeView: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 1, style: .continuous)
+                .fill(Color(hex: "#F8F4E8")?.opacity(0.92) ?? Color.white.opacity(0.9))
+
+            // Fiber grain
+            Rectangle()
+                .strokeBorder(Color.black.opacity(0.08), lineWidth: 0.5)
+
+            Text(spec.nameplateText)
+                .font(.system(size: bannerHeight * 0.52, weight: .semibold, design: .monospaced))
+                .lineLimit(1)
+                .minimumScaleFactor(0.4)
+                .foregroundStyle(Color(hex: "#262626") ?? .black)
+                .padding(.horizontal, bannerHeight * 0.3)
+        }
+        .shadow(color: .black.opacity(0.22), radius: folderH * 0.014, y: folderH * 0.008)
+    }
+
+    // 6. Minimal Clean Badge
+    private var cleanTagView: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(spec.nameplateColor)
+
+            Text(spec.nameplateText)
+                .font(.system(size: bannerHeight * 0.52, weight: .bold, design: .default))
+                .lineLimit(1)
+                .minimumScaleFactor(0.4)
+                .foregroundStyle(spec.nameplateTextColor)
+                .padding(.horizontal, bannerHeight * 0.35)
+        }
+        .overlay(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.18), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.28), radius: folderH * 0.015, y: folderH * 0.008)
     }
 }
