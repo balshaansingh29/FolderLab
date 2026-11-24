@@ -110,8 +110,13 @@ struct IconCanvas: View {
             case .folder: folder
             case .none:   EmptyView()
             }
-            glyph
-                .offset(y: glyphBaseOffset + ref * spec.glyphYOffset)
+            if spec.xlFolderEnabled {
+                XLFolderGridPlateView(spec: spec, refSize: ref)
+                    .offset(y: glyphBaseOffset + ref * spec.glyphYOffset)
+            } else {
+                glyph
+                    .offset(y: glyphBaseOffset + ref * spec.glyphYOffset)
+            }
 
             if spec.base == .tile && spec.nameplateEnabled && !spec.nameplateText.isEmpty {
                 NameplateBannerView(spec: spec, folderW: tileSide, folderH: tileSide)
@@ -1105,5 +1110,181 @@ struct FolderPeekContentView: View {
             .offset(x: pocketW * 0.18, y: -pocketH * 0.04)
             .shadow(color: .black.opacity(0.35), radius: 3, y: 1.5)
         }
+    }
+}
+
+
+// MARK: - XL Folder (iOS 2x2 App Grid) View
+
+struct XLFolderGridPlateView: View {
+    let spec: IconSpec
+    let refSize: CGFloat
+
+    private var items: [XLFolderItem] {
+        if spec.xlFolderPreset == .custom {
+            if spec.xlFolderCustomItems.count >= 4 {
+                return Array(spec.xlFolderCustomItems.prefix(4))
+            }
+            return spec.xlFolderPreset.items
+        }
+        return spec.xlFolderPreset.items
+    }
+
+    private var traySize: CGFloat {
+        refSize * CGFloat(spec.xlFolderScale)
+    }
+
+    private var trayCornerRadius: CGFloat {
+        traySize * 0.2237 // Apple continuous squircle
+    }
+
+    private var innerPadding: CGFloat {
+        traySize * 0.08
+    }
+
+    private var tileSpacing: CGFloat {
+        traySize * 0.065
+    }
+
+    private var tileSize: CGFloat {
+        (traySize - (innerPadding * 2) - tileSpacing) / 2
+    }
+
+    private var tileCornerRadius: CGFloat {
+        tileSize * 0.2237
+    }
+
+    var body: some View {
+        ZStack {
+            // Frosted Glass Squircle Tray
+            if spec.xlFolderFrostedTray {
+                // Background shadow
+                RoundedRectangle(cornerRadius: trayCornerRadius, style: .continuous)
+                    .fill(Color.black.opacity(0.20))
+                    .blur(radius: traySize * 0.04)
+                    .offset(y: traySize * 0.02)
+
+                // Frosted Glass Fill
+                RoundedRectangle(cornerRadius: trayCornerRadius, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.32),
+                                Color.white.opacity(0.16),
+                                Color.white.opacity(0.10)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+
+                // Ambient contrast tint
+                RoundedRectangle(cornerRadius: trayCornerRadius, style: .continuous)
+                    .fill(Color.black.opacity(0.08))
+
+                // Diagonal specular sheen
+                RoundedRectangle(cornerRadius: trayCornerRadius, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.28),
+                                Color.white.opacity(0.04),
+                                Color.clear
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: UnitPoint(x: 0.65, y: 0.65)
+                        )
+                    )
+
+                // Specular rim chamfer
+                RoundedRectangle(cornerRadius: trayCornerRadius, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.80),
+                                Color.white.opacity(0.25),
+                                Color.white.opacity(0.55)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: max(1.0, traySize * 0.016)
+                    )
+            }
+
+            // 2x2 Grid of App Tiles
+            VStack(spacing: tileSpacing) {
+                HStack(spacing: tileSpacing) {
+                    if items.count > 0 {
+                        tileView(item: items[0])
+                    }
+                    if items.count > 1 {
+                        tileView(item: items[1])
+                    }
+                }
+                HStack(spacing: tileSpacing) {
+                    if items.count > 2 {
+                        tileView(item: items[2])
+                    }
+                    if items.count > 3 {
+                        tileView(item: items[3])
+                    }
+                }
+            }
+            .padding(innerPadding)
+        }
+        .frame(width: traySize, height: traySize)
+    }
+
+    @ViewBuilder
+    private func tileView(item: XLFolderItem) -> some View {
+        let bgStart = Color(hex: item.bgGradientStart) ?? .blue
+        let bgEnd = Color(hex: item.bgGradientEnd) ?? .indigo
+        let iconCol = Color(hex: item.iconColorHex) ?? .white
+
+        ZStack {
+            // Drop shadow for tactile squircle depth
+            RoundedRectangle(cornerRadius: tileCornerRadius, style: .continuous)
+                .fill(Color.black.opacity(0.30))
+                .blur(radius: tileSize * 0.08)
+                .offset(y: tileSize * 0.04)
+
+            // Vibrant Linear Gradient Background
+            RoundedRectangle(cornerRadius: tileCornerRadius, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [bgStart, bgEnd],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+
+            // Specular Gloss Highlight (top sheen)
+            RoundedRectangle(cornerRadius: tileCornerRadius, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.38),
+                            Color.white.opacity(0.06),
+                            Color.clear
+                        ],
+                        startPoint: .top,
+                        endPoint: UnitPoint(x: 0.5, y: 0.54)
+                    )
+                )
+
+            // Subtle perimeter border
+            RoundedRectangle(cornerRadius: tileCornerRadius, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.24), lineWidth: max(0.5, tileSize * 0.022))
+
+            // Central Icon Symbol
+            Image(systemName: item.symbol)
+                .resizable()
+                .scaledToFit()
+                .frame(width: tileSize * 0.50, height: tileSize * 0.50)
+                .foregroundStyle(iconCol)
+                .shadow(color: Color.black.opacity(0.35), radius: max(0.5, tileSize * 0.03), y: max(0.5, tileSize * 0.02))
+        }
+        .frame(width: tileSize, height: tileSize)
     }
 }
