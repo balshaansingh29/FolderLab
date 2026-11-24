@@ -1959,6 +1959,302 @@ struct PeekInsideInspectorCard: View {
     }
 }
 
+// MARK: - Match Desktop Wallpaper Palette Extractor (v0.6+)
+
+struct WallpaperSuggestionCardButton: View {
+    let suggestion: WallpaperThemeSuggestion
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 9) {
+                // Live mini preview
+                IconCanvas(spec: suggestion.previewSpec, size: 36)
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .shadow(color: .black.opacity(0.18), radius: 2, y: 1)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 4) {
+                        Image(systemName: suggestion.iconName)
+                            .font(.system(size: 9))
+                            .foregroundStyle(Color.accentColor)
+                        Text(suggestion.name)
+                            .font(.system(size: 11, weight: .semibold))
+                            .lineLimit(1)
+                    }
+
+                    Text(suggestion.subtitle)
+                        .font(.system(size: 9))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+
+                    // Swatch dots
+                    HStack(spacing: 3) {
+                        ForEach(Array(suggestion.gradientColors.enumerated()), id: \.offset) { _, c in
+                            Circle()
+                                .fill(c)
+                                .frame(width: 7, height: 7)
+                        }
+                    }
+                    .padding(.top, 1)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(8)
+            .background(Color(nsColor: .controlBackgroundColor).opacity(isSelected ? 0.95 : 0.45))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(
+                        isSelected ? Color.accentColor : Color.white.opacity(0.08),
+                        lineWidth: isSelected ? 1.5 : 0.8
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+        .help("Apply \(suggestion.name) theme")
+    }
+}
+
+struct WallpaperMatcherInspectorCard: View {
+    @ObservedObject var store: IconStore
+    @ObservedObject private var extractor = WallpaperPaletteExtractor.shared
+    @State private var selectedSuggestion: WallpaperThemeSuggestion? = nil
+
+    var body: some View {
+        InspectorCard {
+            HStack(alignment: .center) {
+                InspectorSectionHeader(
+                    title: "Match Desktop Wallpaper",
+                    subtitle: "Sample dominant & accent colors from your active macOS desktop",
+                    icon: "desktopcomputer",
+                    iconColor: .cyan
+                )
+                Spacer()
+                Button {
+                    extractor.refresh()
+                    store.notify("Resampled wallpaper colors! 🎨")
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 11, weight: .semibold))
+                        .padding(6)
+                        .background(Color(nsColor: .controlBackgroundColor))
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .help("Resample active desktop wallpaper")
+            }
+
+            // Active Wallpaper Banner + 1-Click Match
+            HStack(spacing: 12) {
+                // Thumbnail
+                ZStack {
+                    if let thumb = extractor.wallpaperThumbnail {
+                        Image(nsImage: thumb)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 84, height: 56)
+                            .clipped()
+                    } else {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(
+                                LinearGradient(
+                                    colors: [extractor.dominantColor1, extractor.dominantColor2],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 84, height: 56)
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.18), lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(0.15), radius: 3, y: 1)
+
+                // Details
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Text(extractor.wallpaperName)
+                            .font(.system(size: 11, weight: .semibold))
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+
+                        // Light/Dark indicator pill
+                        HStack(spacing: 3) {
+                            Image(systemName: extractor.isDarkWallpaper ? "moon.fill" : "sun.max.fill")
+                                .font(.system(size: 8))
+                            Text(extractor.isDarkWallpaper ? "Dark" : "Light")
+                                .font(.system(size: 9, weight: .semibold))
+                        }
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(extractor.isDarkWallpaper ? Color.purple.opacity(0.2) : Color.orange.opacity(0.2))
+                        .foregroundStyle(extractor.isDarkWallpaper ? Color.purple : Color.orange)
+                        .clipShape(Capsule())
+                    }
+
+                    Text("Sampled \(extractor.themeSuggestions.count) theme suggestions")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+
+                    // 1-Click Match Primary Button
+                    Button {
+                        extractor.applyPrimaryTheme(to: store)
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "sparkles")
+                            Text("1-Click Match Wallpaper")
+                        }
+                        .font(.system(size: 11, weight: .semibold))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            LinearGradient(
+                                colors: [extractor.dominantColor2, extractor.dominantColor1],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                        .shadow(color: extractor.dominantColor1.opacity(0.3), radius: 3, y: 1)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(10)
+            .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+            // Palette Swatches Row
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text("Extracted Palette:")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Text("Click swatch to apply")
+                        .font(.system(size: 9))
+                        .foregroundStyle(.secondary.opacity(0.8))
+                }
+
+                HStack(spacing: 8) {
+                    ForEach(Array(extractor.paletteSwatches.enumerated()), id: \.offset) { idx, color in
+                        Button {
+                            store.snapshotUndo()
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                store.spec.color1 = color
+                            }
+                            store.notify("Applied swatch #\(idx + 1) ✨")
+                        } label: {
+                            Circle()
+                                .fill(color)
+                                .frame(width: 22, height: 22)
+                                .overlay(
+                                    Circle()
+                                        .strokeBorder(Color.white.opacity(0.3), lineWidth: 1.2)
+                                )
+                                .shadow(color: .black.opacity(0.12), radius: 2, y: 1)
+                        }
+                        .buttonStyle(.plain)
+                        .help("Apply \(idx < extractor.paletteHexes.count ? extractor.paletteHexes[idx] : "")")
+                    }
+                }
+            }
+            .padding(.top, 2)
+
+            Divider()
+                .padding(.vertical, 2)
+
+            // Theme Suggestions Grid
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Theme Suggestions")
+                        .font(.system(size: 11, weight: .semibold))
+                    Spacer()
+                    Text("\(extractor.themeSuggestions.count) Styles")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                    ForEach(extractor.themeSuggestions) { suggestion in
+                        WallpaperSuggestionCardButton(
+                            suggestion: suggestion,
+                            isSelected: selectedSuggestion == suggestion
+                        ) {
+                            selectedSuggestion = suggestion
+                            suggestion.apply(to: store)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct WallpaperColorsStrip: View {
+    @ObservedObject var store: IconStore
+    @ObservedObject private var extractor = WallpaperPaletteExtractor.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "desktopcomputer")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color.cyan)
+                Text("Desktop Wallpaper Palette")
+                    .font(.system(size: 11, weight: .semibold))
+                Spacer()
+                Button {
+                    extractor.applyPrimaryTheme(to: store)
+                } label: {
+                    HStack(spacing: 3) {
+                        Image(systemName: "sparkles")
+                        Text("Match")
+                    }
+                    .font(.system(size: 10, weight: .medium))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.accentColor.opacity(0.15))
+                    .foregroundStyle(Color.accentColor)
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+
+            HStack(spacing: 8) {
+                ForEach(Array(extractor.paletteSwatches.enumerated()), id: \.offset) { idx, color in
+                    Button {
+                        store.snapshotUndo()
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            store.spec.color1 = color
+                        }
+                        store.notify("Applied wallpaper swatch #\(idx + 1) ✨")
+                    } label: {
+                        Circle()
+                            .fill(color)
+                            .frame(width: 22, height: 22)
+                            .overlay(
+                                Circle().strokeBorder(Color.white.opacity(0.25), lineWidth: 1)
+                            )
+                            .shadow(color: color.opacity(0.35), radius: 2, y: 1)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Apply \(idx < extractor.paletteHexes.count ? extractor.paletteHexes[idx] : "")")
+                }
+            }
+        }
+        .padding(10)
+        .background(Color(nsColor: .controlBackgroundColor).opacity(0.4))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+}
+
 // MARK: - Presets Tab (Includes Light, Dark, Clear, Tinted App Icons)
 
 struct PresetsInspectorTab: View {
@@ -1991,43 +2287,64 @@ struct PresetsInspectorTab: View {
                     iconColor: .yellow
                 )
 
-                HStack(spacing: 12) {
+                HStack(spacing: 8) {
                     Button {
                         selectedTheme = nil
                         store.randomize()
                     } label: {
-                        HStack(spacing: 6) {
+                        HStack(spacing: 5) {
                             Image(systemName: "sparkles")
                             Text("Surprise Me")
                         }
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
+                        .padding(.vertical, 9)
                         .background(
                             LinearGradient(colors: [Color.blue, Color.purple], startPoint: .leading, endPoint: .trailing)
                         )
                         .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                        .shadow(color: .blue.opacity(0.3), radius: 6, y: 3)
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .shadow(color: .blue.opacity(0.3), radius: 5, y: 2)
                     }
                     .buttonStyle(.plain)
 
                     Button {
                         selectedTheme = nil
+                        WallpaperPaletteExtractor.shared.applyPrimaryTheme(to: store)
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "desktopcomputer")
+                            Text("Match Wallpaper")
+                        }
+                        .font(.system(size: 12, weight: .semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 9)
+                        .background(
+                            LinearGradient(colors: [Color.cyan, Color.blue], startPoint: .leading, endPoint: .trailing)
+                        )
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .shadow(color: .cyan.opacity(0.3), radius: 5, y: 2)
+                    }
+                    .buttonStyle(.plain)
+                    .help("1-click match your desktop wallpaper")
+
+                    Button {
+                        selectedTheme = nil
                         store.resetToDefaults()
                     } label: {
-                        HStack(spacing: 6) {
+                        HStack(spacing: 5) {
                             Image(systemName: "arrow.counterclockwise")
-                            Text("Reset Default")
+                            Text("Reset")
                         }
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
+                        .padding(.vertical, 9)
                         .background(Color(nsColor: .controlBackgroundColor))
                         .foregroundStyle(.primary)
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
                                 .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
                         )
                     }
@@ -2047,6 +2364,9 @@ struct PresetsInspectorTab: View {
                 .toggleStyle(.switch)
                 .padding(.top, 4)
             }
+
+            // Match Desktop Wallpaper Card (v0.6+)
+            WallpaperMatcherInspectorCard(store: store)
 
             // Recently Used Styles Shelf (v0.2)
             if !store.recentSpecs.isEmpty {
@@ -2508,6 +2828,9 @@ struct CanvasInspectorTab: View {
                 }
 
                 ColorRowModern(title: store.spec.useGradient ? "Front Flap Color" : "Folder Color", color: $store.spec.color1)
+
+                // Desktop Wallpaper Palette Strip (v0.6+)
+                WallpaperColorsStrip(store: store)
 
                 // Native macOS Tag Colors
                 VStack(alignment: .leading, spacing: 8) {
