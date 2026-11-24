@@ -265,29 +265,56 @@ final class IconStore: ObservableObject {
         // Detect saved FolderLab design from xattr or local history
         let prev = IconExporter.readStoredSpec(for: url) ?? folderDesignHistory[url.path]
 
+        snapshotUndo()
+
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-            self.stagedFolder = StagedFolder(url: url, originalIcon: icon, originalTags: tags, previousSpec: prev)
+            // Immediately load the imported folder design directly into the Studio so user edits that design
+            if let prev = prev {
+                self.spec = prev
+            } else {
+                let customIconPath = url.appendingPathComponent("Icon\r").path
+                let hasCustomIcon = FileManager.default.fileExists(atPath: customIconPath)
+
+                if hasCustomIcon,
+                   let tiff = icon.tiffRepresentation,
+                   let rep = NSBitmapImageRep(data: tiff),
+                   let png = rep.representation(using: .png, properties: [:]) {
+                    var customSpec = IconSpec()
+                    customSpec.base = .folder
+                    customSpec.glyphKind = .customImage
+                    customSpec.customImageData = png
+                    customSpec.customImageName = "\(url.lastPathComponent) Icon"
+                    customSpec.glyphScale = 0.50
+                    customSpec.nameplateText = url.lastPathComponent.uppercased()
+                    self.spec = customSpec
+                } else {
+                    var baselineSpec = IconSpec()
+                    baselineSpec.base = .folder
+                    baselineSpec.nameplateText = url.lastPathComponent.uppercased()
+
+                    if let firstTag = tags.first,
+                       let matched = FinderTagColor.allCases.first(where: { $0.rawValue.caseInsensitiveCompare(firstTag) == .orderedSame }) {
+                        baselineSpec.selectedFinderTag = matched
+                        baselineSpec.syncFinderTag = true
+                        baselineSpec.color1 = matched.primaryColor
+                        baselineSpec.color2 = matched.secondaryColor
+                    } else {
+                        baselineSpec.color1 = Color(hex: "#6CD0FF") ?? .blue
+                        baselineSpec.color2 = Color(hex: "#2F9DF4") ?? .blue
+                        baselineSpec.gloss = false
+                        baselineSpec.innerRim = false
+                    }
+                    self.spec = baselineSpec
+                }
+            }
+
+            self.stagedFolder = StagedFolder(url: url, originalIcon: icon, originalTags: tags, previousSpec: self.spec)
             self.lastTargetFolderURL = url
             self.comparisonMode = .sideBySide
-
-            // If finder tag color matches, suggest/apply
-            if let firstTag = tags.first,
-               let matched = FinderTagColor.allCases.first(where: { $0.rawValue.caseInsensitiveCompare(firstTag) == .orderedSame }) {
-                self.applyFinderTag(matched)
-            }
-
-            // Intelligently suggest folder nameplate text if currently default
-            if spec.nameplateEnabled && (spec.nameplateText.isEmpty || spec.nameplateText == "FOLDER") {
-                spec.nameplateText = url.lastPathComponent.uppercased()
-            }
         }
 
         checkSmartSuggestion(for: url)
-        if prev != nil {
-            notify("Staged '\(url.lastPathComponent)' • Previous design detected! Click 'Edit Previous Design' to tweak it. ✏️")
-        } else {
-            notify("Staged '\(url.lastPathComponent)'! Tweak your design and click Apply.")
-        }
+        notify("Loaded '\(url.lastPathComponent)' into Studio! You can now customize this design directly. 🎨")
     }
 
     func stageFolderFromOpenPanel() {
