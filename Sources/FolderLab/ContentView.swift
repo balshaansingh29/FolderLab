@@ -813,10 +813,20 @@ struct StudioCanvasView: View {
                         .shadow(color: .purple.opacity(0.35), radius: 3, y: 1)
                 }
 
-                Text("FolderLab")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
+                HStack(spacing: 5) {
+                    Text("FolderLab")
+                        .font(.system(size: 14, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.primary)
+
+                    Text("STUDIO")
+                        .font(.system(size: 8, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color.accentColor)
+                        .padding(.horizontal, 4.5)
+                        .padding(.vertical, 1.5)
+                        .background(Color.accentColor.opacity(0.14))
+                        .clipShape(Capsule())
+                }
+                .lineLimit(1)
             }
             .fixedSize(horizontal: true, vertical: false)
             .layoutPriority(1)
