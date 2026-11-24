@@ -3,22 +3,24 @@ import AppKit
 
 // MARK: - Staged Folder Model (v0.5)
 
-public struct StagedFolder: Identifiable, Equatable {
-    public let id: UUID
-    public let url: URL
-    public let name: String
-    public let path: String
-    public let originalIcon: NSImage
-    public let originalTags: [String]
-    public var isApplied: Bool
+struct StagedFolder: Identifiable, Equatable {
+    let id: UUID
+    let url: URL
+    let name: String
+    let path: String
+    let originalIcon: NSImage
+    let originalTags: [String]
+    var previousSpec: IconSpec?
+    var isApplied: Bool
 
-    public init(url: URL, originalIcon: NSImage, originalTags: [String], isApplied: Bool = false) {
+    init(url: URL, originalIcon: NSImage, originalTags: [String], previousSpec: IconSpec? = nil, isApplied: Bool = false) {
         self.id = UUID()
         self.url = url
         self.name = url.lastPathComponent
         self.path = url.path
         self.originalIcon = originalIcon
         self.originalTags = originalTags
+        self.previousSpec = previousSpec
         self.isApplied = isApplied
     }
 
@@ -27,14 +29,14 @@ public struct StagedFolder: Identifiable, Equatable {
     }
 }
 
-public enum FolderComparisonMode: String, CaseIterable, Identifiable {
+enum FolderComparisonMode: String, CaseIterable, Identifiable {
     case sideBySide = "Side-by-Side"
     case live = "After (Live)"
     case original = "Before (Original)"
 
-    public var id: String { rawValue }
+    var id: String { rawValue }
 
-    public var iconName: String {
+    var iconName: String {
         switch self {
         case .sideBySide: return "rectangle.split.2x1"
         case .live: return "sparkles"
@@ -245,14 +247,18 @@ final class IconStore: ObservableObject {
     // MARK: - Folder Staging & Live Before/After Comparison (v0.5)
     @Published var stagedFolder: StagedFolder? = nil
     @Published var comparisonMode: FolderComparisonMode = .sideBySide
+    @Published var folderDesignHistory: [String: IconSpec] = [:]
 
     func stageFolder(url: URL) {
         let icon = NSWorkspace.shared.icon(forFile: url.path)
         icon.size = NSSize(width: 512, height: 512)
         let tags = IconExporter.getFinderTags(for: url)
 
+        // Detect saved FolderLab design from xattr or local history
+        let prev = IconExporter.readStoredSpec(for: url) ?? folderDesignHistory[url.path]
+
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-            self.stagedFolder = StagedFolder(url: url, originalIcon: icon, originalTags: tags)
+            self.stagedFolder = StagedFolder(url: url, originalIcon: icon, originalTags: tags, previousSpec: prev)
             self.lastTargetFolderURL = url
             self.comparisonMode = .sideBySide
 
@@ -269,7 +275,11 @@ final class IconStore: ObservableObject {
         }
 
         checkSmartSuggestion(for: url)
-        notify("Staged '\(url.lastPathComponent)'! Tweak your design and click Apply.")
+        if prev != nil {
+            notify("Staged '\(url.lastPathComponent)' • Previous design detected! Click 'Edit Previous Design' to tweak it. ✏️")
+        } else {
+            notify("Staged '\(url.lastPathComponent)'! Tweak your design and click Apply.")
+        }
     }
 
     func stageFolderFromOpenPanel() {
@@ -284,11 +294,37 @@ final class IconStore: ObservableObject {
         }
     }
 
+    func loadPreviousDesignForStagedFolder() {
+        guard let staged = stagedFolder else { return }
+        snapshotUndo()
+
+        if let prev = staged.previousSpec {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                self.spec = prev
+            }
+            notify("Loaded previous design for '\(staged.name)' into Studio! ✏️🎨")
+        } else {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                self.spec.base = .folder
+                if self.spec.nameplateEnabled {
+                    self.spec.nameplateText = staged.name.uppercased()
+                }
+                if let firstTag = staged.originalTags.first,
+                   let matched = FinderTagColor.allCases.first(where: { $0.rawValue.caseInsensitiveCompare(firstTag) == .orderedSame }) {
+                    self.applyFinderTag(matched)
+                }
+            }
+            notify("Loaded folder baseline for '\(staged.name)' into Studio! ✏️")
+        }
+    }
+
     func applyToStagedFolder() {
         guard let staged = stagedFolder else { return }
+        folderDesignHistory[staged.url.path] = spec
         apply(to: staged.url)
         withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
             stagedFolder?.isApplied = true
+            stagedFolder?.previousSpec = spec
         }
     }
 
@@ -296,11 +332,13 @@ final class IconStore: ObservableObject {
         guard let staged = stagedFolder else { return }
         let success = NSWorkspace.shared.setIcon(nil, forFile: staged.url.path, options: [])
         if success {
+            IconExporter.removeStoredSpec(for: staged.url)
+            folderDesignHistory.removeValue(forKey: staged.url.path)
             NSWorkspace.shared.noteFileSystemChanged(staged.url.path)
             let refreshedIcon = NSWorkspace.shared.icon(forFile: staged.url.path)
             refreshedIcon.size = NSSize(width: 512, height: 512)
             withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                stagedFolder = StagedFolder(url: staged.url, originalIcon: refreshedIcon, originalTags: staged.originalTags, isApplied: false)
+                stagedFolder = StagedFolder(url: staged.url, originalIcon: refreshedIcon, originalTags: staged.originalTags, previousSpec: nil, isApplied: false)
             }
             notify("Restored '\(staged.name)' to default macOS icon! ↩️")
         } else {
@@ -950,7 +988,7 @@ struct StudioCanvasView: View {
                 }
             }
             .frame(
-                width: (store.stagedFolder != nil && store.comparisonMode == .sideBySide) ? 520 : (canvasSize + 40),
+                width: (store.stagedFolder != nil && store.comparisonMode == .sideBySide) ? 560 : (canvasSize + 40),
                 height: canvasSize + 40
             )
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: store.comparisonMode)
@@ -1030,13 +1068,25 @@ struct StudioCanvasView: View {
                     } else {
                         HStack(spacing: 3) {
                             Image(systemName: "circle.circle.fill")
-                            Text("Staged (Live Preview)")
+                            Text("Staged Live")
                         }
                         .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(.orange)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(Capsule().fill(Color.orange.opacity(0.15)))
+                    }
+
+                    if staged.previousSpec != nil {
+                        HStack(spacing: 3) {
+                            Image(systemName: "sparkles")
+                            Text("Custom Design")
+                        }
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(Color.accentColor)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 1.5)
+                        .background(Capsule().fill(Color.accentColor.opacity(0.15)))
                     }
                 }
 
@@ -1049,6 +1099,26 @@ struct StudioCanvasView: View {
 
             Spacer()
 
+            // 1-Click Edit Previous Design button on Staging Bar
+            Button {
+                store.loadPreviousDesignForStagedFolder()
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "pencil.line")
+                        .font(.system(size: 10, weight: .bold))
+                    Text(staged.previousSpec != nil ? "Edit Previous" : "Edit Baseline")
+                        .font(.system(size: 11, weight: .semibold))
+                }
+                .padding(.horizontal, 9)
+                .padding(.vertical, 4)
+                .background(Color.accentColor.opacity(0.15))
+                .foregroundStyle(Color.accentColor)
+                .clipShape(Capsule())
+                .overlay(Capsule().strokeBorder(Color.accentColor.opacity(0.3), lineWidth: 0.8))
+            }
+            .buttonStyle(.plain)
+            .help("Load this folder's design into the studio so you can edit and tweak it")
+
             Picker("View", selection: $store.comparisonMode) {
                 ForEach(FolderComparisonMode.allCases) { mode in
                     HStack(spacing: 4) {
@@ -1059,7 +1129,7 @@ struct StudioCanvasView: View {
                 }
             }
             .pickerStyle(.segmented)
-            .frame(width: 280)
+            .frame(width: 270)
 
             Button {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
@@ -1081,90 +1151,194 @@ struct StudioCanvasView: View {
                 .strokeBorder(Color.white.opacity(0.14), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.08), radius: 6, y: 2)
-        .frame(maxWidth: 520)
+        .frame(maxWidth: 580)
     }
 
     private func sideBySideComparisonView(staged: StagedFolder) -> some View {
         HStack(spacing: 16) {
-            // BEFORE (Original)
+            // BEFORE (Original) Card
             VStack(spacing: 8) {
+                HStack {
+                    HStack(spacing: 4) {
+                        Image(systemName: "clock.arrow.circlepath")
+                            .font(.system(size: 10, weight: .bold))
+                        Text("BEFORE")
+                            .font(.system(size: 11, weight: .heavy))
+                    }
+                    .foregroundStyle(.secondary)
+
+                    Spacer()
+
+                    Text(staged.previousSpec != nil ? "Saved Design" : "Original")
+                        .font(.system(size: 9, weight: .bold))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Capsule().fill(Color.secondary.opacity(0.15)))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.top, 10)
+
+                // Icon Preview
                 ZStack {
-                    Image(nsImage: staged.originalIcon)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 185, height: 185)
-                        .shadow(color: .black.opacity(0.2), radius: 10, y: 5)
+                    if let prev = staged.previousSpec {
+                        IconCanvas(spec: prev, size: 145)
+                    } else {
+                        Image(nsImage: staged.originalIcon)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 145, height: 145)
+                            .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
+                    }
                 }
-                .frame(width: 215, height: 215)
-                .background(Color(nsColor: .controlBackgroundColor).opacity(0.45), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
-                )
+                .frame(width: 200, height: 160)
 
-                HStack(spacing: 4) {
-                    Image(systemName: "clock.arrow.circlepath")
-                    Text("BEFORE (Original)")
-                        .font(.system(size: 11, weight: .bold))
+                // Edit Previous Design Action Button
+                Button {
+                    store.loadPreviousDesignForStagedFolder()
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "pencil.and.outline")
+                            .font(.system(size: 11, weight: .bold))
+                        Text(staged.previousSpec != nil ? "Edit Previous Design" : "Edit Baseline")
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+                    .background(Color.accentColor.opacity(0.12))
+                    .foregroundStyle(Color.accentColor)
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .strokeBorder(Color.accentColor.opacity(0.25), lineWidth: 0.8)
+                    )
                 }
-                .foregroundStyle(.secondary)
+                .buttonStyle(.plain)
+                .help("Load this exact previous design into the studio to make edits")
                 .padding(.horizontal, 10)
-                .padding(.vertical, 3)
-                .background(Capsule().fill(Color.secondary.opacity(0.12)))
+                .padding(.bottom, 10)
             }
+            .frame(width: 225, height: 255)
+            .background(Color(nsColor: .controlBackgroundColor).opacity(0.55), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
 
-            // Center Indicator
-            VStack(spacing: 4) {
+            // Center Transition Divider
+            VStack(spacing: 5) {
                 Image(systemName: "arrow.right.circle.fill")
                     .font(.system(size: 24))
-                    .foregroundStyle(Color.accentColor.opacity(0.8))
-                Text("LIVE")
-                    .font(.system(size: 9, weight: .heavy))
                     .foregroundStyle(Color.accentColor)
+                    .shadow(color: Color.accentColor.opacity(0.35), radius: 4, y: 2)
+                Text("TRANSFORM")
+                    .font(.system(size: 8, weight: .heavy))
+                    .foregroundStyle(Color.accentColor)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .background(Capsule().fill(Color.accentColor.opacity(0.12)))
             }
 
-            // AFTER (Live Design)
+            // AFTER (Live Design) Card
             VStack(spacing: 8) {
-                ZStack {
-                    IconCanvas(spec: store.spec, size: 185)
-                }
-                .frame(width: 215, height: 215)
-                .background(Color(nsColor: .controlBackgroundColor).opacity(0.45), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(Color.accentColor.opacity(0.4), lineWidth: 1.5)
-                )
+                HStack {
+                    HStack(spacing: 4) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 10, weight: .bold))
+                        Text("AFTER")
+                            .font(.system(size: 11, weight: .heavy))
+                    }
+                    .foregroundStyle(Color.accentColor)
 
-                HStack(spacing: 4) {
-                    Image(systemName: "sparkles")
-                    Text("AFTER (Live Design)")
-                        .font(.system(size: 11, weight: .bold))
+                    Spacer()
+
+                    HStack(spacing: 3) {
+                        Circle().fill(Color.green).frame(width: 5, height: 5)
+                        Text("Live Studio")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(.green)
+                    }
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Capsule().fill(Color.green.opacity(0.15)))
                 }
-                .foregroundStyle(Color.accentColor)
+                .padding(.horizontal, 12)
+                .padding(.top, 10)
+
+                // Live Studio Preview
+                ZStack {
+                    IconCanvas(spec: store.spec, size: 145)
+                }
+                .frame(width: 200, height: 160)
+
+                // Live Indicator pill
+                HStack(spacing: 4) {
+                    Image(systemName: "slider.horizontal.3")
+                        .font(.system(size: 10))
+                    Text("Updates live from inspector")
+                        .font(.system(size: 10, weight: .medium))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 6)
+                .background(Color(nsColor: .controlBackgroundColor).opacity(0.4))
+                .foregroundStyle(.secondary)
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 .padding(.horizontal, 10)
-                .padding(.vertical, 3)
-                .background(Capsule().fill(Color.accentColor.opacity(0.15)))
+                .padding(.bottom, 10)
             }
+            .frame(width: 225, height: 255)
+            .background(Color(nsColor: .controlBackgroundColor).opacity(0.55), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(Color.accentColor.opacity(0.4), lineWidth: 1.5)
+            )
+            .shadow(color: Color.accentColor.opacity(0.1), radius: 10, y: 3)
         }
+        .frame(maxWidth: 580)
     }
 
     private func beforeOriginalView(staged: StagedFolder, size: CGFloat) -> some View {
-        VStack(spacing: 12) {
-            Image(nsImage: staged.originalIcon)
-                .resizable()
-                .scaledToFit()
-                .frame(width: size, height: size)
-                .shadow(color: .black.opacity(0.25), radius: 18, y: 8)
-
-            HStack(spacing: 5) {
-                Image(systemName: "clock.arrow.circlepath")
-                Text("BEFORE: Original Finder Icon")
-                    .font(.system(size: 12, weight: .bold))
+        VStack(spacing: 14) {
+            ZStack {
+                if let prev = staged.previousSpec {
+                    IconCanvas(spec: prev, size: size)
+                } else {
+                    Image(nsImage: staged.originalIcon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: size, height: size)
+                        .shadow(color: .black.opacity(0.25), radius: 18, y: 8)
+                }
             }
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 5)
-            .background(Capsule().fill(Color.secondary.opacity(0.15)))
+
+            HStack(spacing: 8) {
+                HStack(spacing: 5) {
+                    Image(systemName: "clock.arrow.circlepath")
+                    Text("BEFORE: Original Finder Icon")
+                        .font(.system(size: 12, weight: .bold))
+                }
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 5)
+                .background(Capsule().fill(Color.secondary.opacity(0.15)))
+
+                Button {
+                    store.loadPreviousDesignForStagedFolder()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "pencil.line")
+                        Text("Edit Previous Design")
+                    }
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(Color.accentColor)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.accentColor.opacity(0.15))
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
         }
     }
 
@@ -1230,7 +1404,7 @@ struct StudioCanvasView: View {
     }
 
     private func stagedFolderActionButtons(staged: StagedFolder) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             Button {
                 store.applyToStagedFolder()
             } label: {
@@ -1240,7 +1414,7 @@ struct StudioCanvasView: View {
                 }
                 .font(.system(size: 13, weight: .bold))
                 .foregroundStyle(.white)
-                .padding(.horizontal, 18)
+                .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .shadow(color: Color.accentColor.opacity(0.35), radius: 6, y: 2)
@@ -1249,15 +1423,35 @@ struct StudioCanvasView: View {
             .help("Apply this live custom design to '\(staged.name)' in Finder")
 
             Button {
+                store.loadPreviousDesignForStagedFolder()
+            } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: "pencil.line")
+                    Text("Edit Previous")
+                }
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Color.accentColor)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Color.accentColor.opacity(0.25), lineWidth: 0.8)
+                )
+            }
+            .buttonStyle(.plain)
+            .help("Load the folder's existing design into the studio for editing")
+
+            Button {
                 store.revertStagedFolder()
             } label: {
                 HStack(spacing: 5) {
                     Image(systemName: "arrow.counterclockwise")
-                    Text("Revert / Restore Original")
+                    Text("Restore Original")
                 }
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.primary)
-                .padding(.horizontal, 13)
+                .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .overlay(
@@ -1279,7 +1473,7 @@ struct StudioCanvasView: View {
                 }
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, 11)
+                .padding(.horizontal, 10)
                 .padding(.vertical, 8)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .overlay(

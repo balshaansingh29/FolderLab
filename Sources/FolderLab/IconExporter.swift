@@ -97,6 +97,38 @@ enum IconExporter {
         }
     }
 
+    // MARK: - Folder Metadata & Design Persistence (xattr)
+
+    public static let xattrSpecKey = "com.folderlab.spec"
+
+    public static func saveStoredSpec(_ spec: IconSpec, for url: URL) -> Bool {
+        let preset = spec.toPreset(name: url.lastPathComponent)
+        guard let data = try? JSONEncoder().encode(preset) else { return false }
+        return data.withUnsafeBytes { buffer in
+            guard let base = buffer.baseAddress else { return false }
+            return setxattr(url.path, xattrSpecKey, base, buffer.count, 0, 0) == 0
+        }
+    }
+
+    public static func readStoredSpec(for url: URL) -> IconSpec? {
+        let length = getxattr(url.path, xattrSpecKey, nil, 0, 0, 0)
+        guard length > 0 else { return nil }
+        var data = Data(count: length)
+        let readLen = data.withUnsafeMutableBytes { buffer in
+            guard let base = buffer.baseAddress else { return -1 }
+            return getxattr(url.path, xattrSpecKey, base, length, 0, 0)
+        }
+        guard readLen > 0,
+              let preset = try? JSONDecoder().decode(FolderLabPreset.self, from: data) else {
+            return nil
+        }
+        return IconSpec.fromPreset(preset)
+    }
+
+    public static func removeStoredSpec(for url: URL) {
+        removexattr(url.path, xattrSpecKey, 0)
+    }
+
     // MARK: Apply to files / folders
 
     static func apply(spec: IconSpec, to url: URL) -> (success: Bool, message: String) {
@@ -105,6 +137,7 @@ enum IconExporter {
         }
         let success = NSWorkspace.shared.setIcon(image, forFile: url.path, options: [])
         if success {
+            _ = saveStoredSpec(spec, for: url)
             if spec.syncFinderTag, let tag = spec.selectedFinderTag {
                 _ = setFinderTag(tag.rawValue, for: url)
             }
