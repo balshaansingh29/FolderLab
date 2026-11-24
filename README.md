@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshot.png?v=2" width="880" alt="FolderLab Studio Screenshot" />
+  <img src="docs/screenshot.png?v=0.7" width="880" alt="FolderLab Studio Screenshot" />
 </p>
 
 ---
