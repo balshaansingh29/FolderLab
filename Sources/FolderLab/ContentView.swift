@@ -612,12 +612,14 @@ enum InspectorTab: String, CaseIterable, Identifiable {
 enum ActiveAppSheet: String, Identifiable {
     case settings
     case update
+    case onboarding
     var id: String { rawValue }
 }
 
 struct ContentView: View {
     @ObservedObject private var store = IconStore.shared
     @ObservedObject private var updateManager = UpdateManager.shared
+    @AppStorage("hasCompletedOnboarding_v1") private var hasCompletedOnboarding: Bool = false
     @State private var activeTab: InspectorTab = .presets
     @State private var activeSheet: ActiveAppSheet? = nil
 
@@ -633,7 +635,14 @@ struct ContentView: View {
     var body: some View {
         HStack(spacing: 0) {
             // Main Stage Preview Area
-            StudioCanvasView(store: store, showSettingsSheet: settingsSheetBinding)
+            StudioCanvasView(
+                store: store,
+                showSettingsSheet: settingsSheetBinding,
+                showOnboardingSheet: Binding(
+                    get: { activeSheet == .onboarding },
+                    set: { isShown in activeSheet = isShown ? .onboarding : nil }
+                )
+            )
                 .frame(minWidth: 540)
 
             // Vertical subtle divider
@@ -649,9 +658,20 @@ struct ContentView: View {
         .sheet(item: $activeSheet) { sheet in
             switch sheet {
             case .settings:
-                SettingsView()
+                SettingsView(showOnboarding: {
+                    activeSheet = .onboarding
+                })
             case .update:
                 UpdateSheetView()
+            case .onboarding:
+                OnboardingView()
+            }
+        }
+        .onAppear {
+            if !hasCompletedOnboarding {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                    activeSheet = .onboarding
+                }
             }
         }
         .alert(store.desktopAlertTitle, isPresented: $store.showDesktopAlert) {
@@ -728,6 +748,7 @@ struct StudioCanvasView: View {
     @ObservedObject var store: IconStore
     @ObservedObject private var updateManager = UpdateManager.shared
     @Binding var showSettingsSheet: Bool
+    @Binding var showOnboardingSheet: Bool
     @State private var hoverTilt = CGSize.zero
     @State private var isHovering = false
     @State private var surpriseRotation: Double = 0
@@ -961,6 +982,23 @@ struct StudioCanvasView: View {
                 .help("New version available: \(release.tagName) (Click to update)")
             }
 
+            // Help & Welcome Tour Button
+            Button {
+                showOnboardingSheet = true
+            } label: {
+                Image(systemName: "questionmark.circle.fill")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(Color.accentColor)
+                    .frame(width: 26, height: 26)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .strokeBorder(Color.accentColor.opacity(0.3), lineWidth: 0.8)
+                    )
+            }
+            .buttonStyle(.plain)
+            .help("Welcome Tour & Feature Guide")
+
             // Settings Button
             Button {
                 showSettingsSheet = true
@@ -1119,7 +1157,7 @@ struct StudioCanvasView: View {
                     }
                 }
             } else {
-                Text(isDropTargeted ? "Release to stage folder & compare live!" : "📁 Drag & drop any folder from Finder onto the canvas to stage & compare live")
+                Text(isDropTargeted ? "Drop it like it's hot! ✨ Staging folder..." : "📁 Drop any folder here from Finder to preview, skin & transform in real-time")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(isDropTargeted ? Color.accentColor : Color.secondary)
             }

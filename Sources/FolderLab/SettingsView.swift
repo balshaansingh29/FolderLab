@@ -4,6 +4,7 @@ import AppKit
 // MARK: - Settings View
 
 struct SettingsView: View {
+    var showOnboarding: (() -> Void)? = nil
     @ObservedObject private var iconManager = AppIconManager.shared
     @ObservedObject private var updateManager = UpdateManager.shared
     @AppStorage("autoCheckForUpdates") private var autoCheckForUpdates: Bool = true
@@ -137,6 +138,23 @@ struct SettingsView: View {
                             .lineSpacing(2)
 
                         HStack(spacing: 12) {
+                            if let showOnboarding = showOnboarding {
+                                Button {
+                                    dismiss()
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                        showOnboarding()
+                                    }
+                                } label: {
+                                    Label("Replay Welcome Tour", systemImage: "sparkles")
+                                        .font(.system(size: 11, weight: .semibold))
+                                        .foregroundStyle(Color.accentColor)
+                                }
+                                .buttonStyle(.plain)
+
+                                Text("•")
+                                    .foregroundStyle(.secondary.opacity(0.5))
+                            }
+
                             Link(destination: URL(string: "https://github.com/balshaansingh29/FolderLab")!) {
                                 Label("GitHub Repository", systemImage: "link")
                                     .font(.system(size: 11, weight: .medium))
