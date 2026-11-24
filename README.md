@@ -123,6 +123,30 @@ Or simply open `Package.swift` in Xcode and press **⌘R** to run! ▶️
 
 ---
 
+## 🛡️ Security & Privacy: Is FolderLab Safe?
+
+When opening FolderLab for the first time, macOS may show a prompt saying **"Apple could not verify FolderLab.app is free of malware"**. Here is why this happens and why FolderLab is completely safe to run.
+
+### ❓ Why Does This Popup Appear?
+1. **Apple Developer Program Fee (\$99/year)**: Apple requires developers to pay an annual subscription to notarize Mac apps. Because **FolderLab is 100% free, independent, and open-source**, we do not charge users or pay Apple's commercial developer fee.
+2. **Default Gatekeeper Warning**: macOS displays this generic automated warning for *any* application downloaded from the internet without an Apple Developer ID. It does **not** mean the app contains malware, viruses, or security risks.
+
+### 🔒 4 Reasons Why FolderLab is 100% Safe:
+- 📖 **100% Open Source & Auditable**: Every single line of Swift code is public and transparently viewable right here in this GitHub repository.
+- 🚫 **Zero Tracking & No Analytics**: FolderLab operates entirely offline on your Mac. No telemetry, no background network beacons, no tracking, and no ads.
+- 🍏 **Native Apple AppKit & SwiftUI APIs**: Folder icon changes are applied locally using Apple's official `NSWorkspace.shared.setIcon` system framework. No background daemons, system extensions, or kernel modifications.
+- 🛠️ **Build It Yourself Anytime**: If you have Xcode or the Swift toolchain installed, you can inspect the code and compile the entire project directly with `swift run`.
+
+### 🚀 How to Open FolderLab (Takes 2 Seconds):
+- **Option 1 (Right-Click)**: Right-click `FolderLab.app` in `/Applications` → click **Open** → click **Open**. macOS will remember your permission permanently.
+- **Option 2 (System Settings)**: Go to **System Settings  → Privacy & Security** → scroll down and click **Open Anyway**.
+- **Option 3 (1-Line Terminal Quick-Install — Zero Popups)**:
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/balshaansingh29/FolderLab/main/install.sh | bash
+  ```
+
+---
+
 ## 📄 License
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details. Enjoy skinning your folders! 📁✨

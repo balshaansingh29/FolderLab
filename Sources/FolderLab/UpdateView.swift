@@ -98,7 +98,7 @@ public struct UpdateSheetView: View {
             Text("Ready to check for updates")
                 .font(.system(size: 13, weight: .medium))
             Button("Check Now") {
-                updater.checkForUpdates(userInitiated: true)
+                updater.checkForUpdates()
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.regular)
@@ -281,7 +281,7 @@ public struct UpdateSheetView: View {
                 .padding(.horizontal, 20)
 
             Button("Retry") {
-                updater.checkForUpdates(userInitiated: true)
+                updater.checkForUpdates()
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.small)
@@ -295,7 +295,7 @@ public struct UpdateSheetView: View {
         switch updater.state {
         case .idle, .error:
             Button("Check Again") {
-                updater.checkForUpdates(userInitiated: true)
+                updater.checkForUpdates()
             }
             .buttonStyle(.bordered)
 

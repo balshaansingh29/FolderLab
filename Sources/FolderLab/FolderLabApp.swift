@@ -15,7 +15,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let autoCheck = UserDefaults.standard.object(forKey: "autoCheckForUpdates") as? Bool ?? true
         if autoCheck {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-                UpdateManager.shared.checkForUpdates(userInitiated: false)
+                UpdateManager.shared.checkForUpdates(showModal: false)
             }
         }
     }
@@ -39,7 +39,7 @@ struct FolderLabApp: App {
         .commands {
             CommandGroup(after: .appInfo) {
                 Button("Check for Updates…") {
-                    UpdateManager.shared.checkForUpdates(userInitiated: true)
+                    UpdateManager.shared.checkForUpdates(showModal: true)
                 }
                 Divider()
             }

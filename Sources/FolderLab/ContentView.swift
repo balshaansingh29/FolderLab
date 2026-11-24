@@ -347,16 +347,31 @@ enum InspectorTab: String, CaseIterable, Identifiable {
 
 // MARK: - Main ContentView
 
+enum ActiveAppSheet: String, Identifiable {
+    case settings
+    case update
+    var id: String { rawValue }
+}
+
 struct ContentView: View {
     @ObservedObject private var store = IconStore.shared
     @ObservedObject private var updateManager = UpdateManager.shared
     @State private var activeTab: InspectorTab = .presets
-    @State private var showSettingsSheet = false
+    @State private var activeSheet: ActiveAppSheet? = nil
+
+    private var settingsSheetBinding: Binding<Bool> {
+        Binding(
+            get: { activeSheet == .settings },
+            set: { isShown in
+                activeSheet = isShown ? .settings : nil
+            }
+        )
+    }
 
     var body: some View {
         HStack(spacing: 0) {
             // Main Stage Preview Area
-            StudioCanvasView(store: store, showSettingsSheet: $showSettingsSheet)
+            StudioCanvasView(store: store, showSettingsSheet: settingsSheetBinding)
                 .frame(minWidth: 540)
 
             // Vertical subtle divider
@@ -369,11 +384,25 @@ struct ContentView: View {
                 .frame(width: 420)
         }
         .frame(minWidth: 1060, minHeight: 740)
-        .sheet(isPresented: $showSettingsSheet) {
-            SettingsView()
+        .sheet(item: $activeSheet) { sheet in
+            switch sheet {
+            case .settings:
+                SettingsView()
+            case .update:
+                UpdateSheetView()
+            }
         }
-        .sheet(isPresented: $updateManager.isUpdateSheetPresented) {
-            UpdateSheetView()
+        .onChange(of: updateManager.isUpdateSheetPresented) { presented in
+            if presented {
+                activeSheet = .update
+            } else if activeSheet == .update {
+                activeSheet = nil
+            }
+        }
+        .onChange(of: activeSheet) { current in
+            if current != .update {
+                updateManager.isUpdateSheetPresented = false
+            }
         }
     }
 }

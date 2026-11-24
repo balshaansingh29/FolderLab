@@ -65,7 +65,7 @@ struct SettingsView: View {
                             Spacer()
 
                             Button {
-                                updateManager.checkForUpdates(userInitiated: true)
+                                updateManager.checkForUpdates(showModal: false)
                             } label: {
                                 if updateManager.state == .checking {
                                     ProgressView()
@@ -100,8 +100,11 @@ struct SettingsView: View {
                             Spacer()
 
                             if case .updateAvailable = updateManager.state {
-                                Button("Update…") {
-                                    updateManager.isUpdateSheetPresented = true
+                                Button("Update Now…") {
+                                    dismiss()
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                        updateManager.isUpdateSheetPresented = true
+                                    }
                                 }
                                 .buttonStyle(.borderedProminent)
                                 .controlSize(.small)

@@ -130,11 +130,11 @@ public final class UpdateManager: NSObject, ObservableObject {
 
     // MARK: - Check for Updates
 
-    public func checkForUpdates(userInitiated: Bool = false) {
+    public func checkForUpdates(showModal: Bool = false) {
         guard state != .checking && !isDownloading else { return }
 
         state = .checking
-        if userInitiated {
+        if showModal {
             isUpdateSheetPresented = true
         }
 
@@ -178,10 +178,6 @@ public final class UpdateManager: NSObject, ObservableObject {
 
                 if Self.isVersion(release.cleanVersion, higherThan: Self.currentVersion) {
                     self.state = .updateAvailable(release: release)
-                    if !userInitiated {
-                        // Notify user unobtrusively
-                        self.isUpdateSheetPresented = true
-                    }
                 } else {
                     self.state = .upToDate(version: Self.currentVersion, lastChecked: Date())
                 }
