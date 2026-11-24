@@ -2279,6 +2279,36 @@ struct GlyphInspectorTab: View {
                         }
                     }
 
+                    // 1-Tap Engrave Icon Toggle
+                    Toggle(isOn: Binding(
+                        get: {
+                            store.spec.textDepthStyle == .engraved && store.spec.glyphEngravedFolderTint
+                        },
+                        set: { enabled in
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                if enabled {
+                                    store.spec.textDepthStyle = .engraved
+                                    store.spec.glyphEngravedFolderTint = true
+                                    store.notify("Enabled Native Engraved Icon! ")
+                                } else {
+                                    store.spec.textDepthStyle = .flat
+                                    store.spec.glyphEngravedFolderTint = false
+                                    store.notify("Disabled Engraved Icon")
+                                }
+                            }
+                        }
+                    )) {
+                        HStack(spacing: 5) {
+                            Image(systemName: "applelogo")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(Color.accentColor)
+                            Text("1-Tap Native Engraved Icon")
+                                .font(.system(size: 11, weight: .semibold))
+                        }
+                    }
+                    .toggleStyle(.switch)
+                    .help("1-Tap toggle to carve and deboss the icon directly into the folder flap like native macOS folders")
+
                     Picker("Depth", selection: $store.spec.textDepthStyle) {
                         ForEach(TextDepthStyle.allCases) { d in
                             Text(d.rawValue).tag(d)
@@ -2554,16 +2584,32 @@ struct TextInspectorTab: View {
                         .font(.system(size: 11, weight: .medium))
                         .help("Automatically shifts the folder logo/icon into the upper flap area so it sits gracefully above the nameplate")
 
-                    // 1-Tap Engraved Match Shortcut
-                    Button {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                            store.spec.nameplateStyle = .folderEngraved
-                            store.spec.textDepthStyle = .engraved
-                            store.spec.glyphEngravedFolderTint = true
-                            store.spec.nameplateMoveIconAbove = true
+                    // 1-Tap Engraved Match Toggle
+                    Toggle(isOn: Binding(
+                        get: {
+                            store.spec.textDepthStyle == .engraved &&
+                            store.spec.glyphEngravedFolderTint &&
+                            store.spec.nameplateStyle == .folderEngraved
+                        },
+                        set: { enabled in
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                if enabled {
+                                    store.spec.nameplateStyle = .folderEngraved
+                                    store.spec.textDepthStyle = .engraved
+                                    store.spec.glyphEngravedFolderTint = true
+                                    store.spec.nameplateMoveIconAbove = true
+                                    store.notify("Applied macOS Native Folder Engraving! 📁✨")
+                                } else {
+                                    store.spec.textDepthStyle = .flat
+                                    store.spec.glyphEngravedFolderTint = false
+                                    if store.spec.nameplateStyle == .folderEngraved {
+                                        store.spec.nameplateStyle = .cleanTag
+                                    }
+                                    store.notify("Disabled Engraved Deboss")
+                                }
+                            }
                         }
-                        store.notify("Applied macOS Native Folder Engraving! 📁✨")
-                    } label: {
+                    )) {
                         HStack(spacing: 6) {
                             Image(systemName: "applelogo")
                                 .font(.system(size: 11, weight: .bold))
@@ -2575,13 +2621,9 @@ struct TextInspectorTab: View {
                                 .font(.system(size: 10))
                                 .foregroundStyle(.secondary)
                         }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(Color.accentColor.opacity(0.12))
-                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
-                    .buttonStyle(.plain)
-                    .help("Carves both the icon logo and namebar directly into the folder flap, matching native macOS folders")
+                    .toggleStyle(.switch)
+                    .help("1-Tap toggle to carve both the icon logo and namebar directly into the folder flap, matching native macOS folders")
                     // Label Text Field
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Label Banner Text")
