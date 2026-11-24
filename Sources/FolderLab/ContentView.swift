@@ -69,6 +69,12 @@ final class IconStore: ObservableObject {
     @Published var canvasBackdrop: CanvasBackdrop = .studio
     @Published var canvasScale: CGFloat = 1.0
 
+    // MARK: - Desktop Folder Alert Popup
+    @Published var showDesktopAlert = false
+    @Published var desktopAlertTitle = "Desktop Folder Notice"
+    @Published var desktopAlertMessage = "macOS caches Desktop icons. Please open the folder once in Finder to show the change immediately."
+    @Published var desktopAlertURL: URL? = nil
+
     // MARK: - Undo & Redo (v0.2)
     private var undoStack: [IconSpec] = []
     private var redoStack: [IconSpec] = []
@@ -223,6 +229,13 @@ final class IconStore: ObservableObject {
         addToRecents(spec)
         let (ok, msg) = IconExporter.apply(spec: spec, to: url)
         notify(msg, isError: !ok)
+
+        if ok && IconExporter.isDesktopFolder(url) {
+            desktopAlertURL = url
+            desktopAlertTitle = "Desktop Folder Updated"
+            desktopAlertMessage = "Custom icon applied! macOS caches Desktop icons, so please open '\(url.lastPathComponent)' once in Finder to show the change immediately."
+            showDesktopAlert = true
+        }
     }
 
     // MARK: - Folder Staging & Live Before/After Comparison (v0.5)
@@ -287,6 +300,13 @@ final class IconStore: ObservableObject {
 
             let detected = self.detectPeekContent(for: url)
             self.spec.peekDetectedType = detected
+
+            if IconExporter.isDesktopFolder(url) {
+                self.desktopAlertURL = url
+                self.desktopAlertTitle = "Desktop Folder Detected"
+                self.desktopAlertMessage = "This folder is located on your Desktop. macOS caches Desktop icons, so remember to open the folder once in Finder after applying to show the change."
+                self.showDesktopAlert = true
+            }
         }
 
         notify("Loaded '\(url.lastPathComponent)' into Studio! You can now customize this design directly. 🎨")
@@ -397,6 +417,10 @@ final class IconStore: ObservableObject {
                 stagedFolder = StagedFolder(url: staged.url, originalIcon: refreshedIcon, originalTags: staged.originalTags, previousSpec: nil, isApplied: false)
             }
             if staged.isDesktop {
+                desktopAlertURL = staged.url
+                desktopAlertTitle = "Desktop Folder Restored"
+                desktopAlertMessage = "Default macOS icon restored! Please open '\(staged.name)' once in Finder to refresh its icon on your Desktop."
+                showDesktopAlert = true
                 notify("Restored '\(staged.name)'! ↩️ (Desktop tip: open folder once to show change)")
             } else {
                 notify("Restored '\(staged.name)' to default macOS icon! ↩️")
@@ -424,15 +448,29 @@ final class IconStore: ObservableObject {
     }
 
     func applyToItems() {
-        let msg = IconExporter.applyToItems(spec)
+        let (msg, desktopURLs) = IconExporter.applyToItems(spec)
         let isErr = msg.contains("failed")
         notify(msg, isError: isErr)
+        if !desktopURLs.isEmpty {
+            desktopAlertURL = desktopURLs.first
+            desktopAlertTitle = "Desktop Folder Notice"
+            desktopAlertMessage = desktopURLs.count == 1
+                ? "macOS caches Desktop icons. Please open '\(desktopURLs[0].lastPathComponent)' once in Finder to show the change immediately."
+                : "macOS caches Desktop icons. Please open the customized Desktop folders once in Finder to show the changes immediately."
+            showDesktopAlert = true
+        }
     }
 
     func resetItems() {
-        let msg = IconExporter.resetItems()
+        let (msg, desktopURLs) = IconExporter.resetItems()
         let isErr = msg.contains("failed")
         notify(msg, isError: isErr)
+        if !desktopURLs.isEmpty {
+            desktopAlertURL = desktopURLs.first
+            desktopAlertTitle = "Desktop Folder Restored"
+            desktopAlertMessage = "Default icon restored! For folders on your Desktop, please open the folder once in Finder to refresh its icon."
+            showDesktopAlert = true
+        }
     }
 
     func applyBatchSubfolders() {
@@ -622,6 +660,16 @@ struct ContentView: View {
             case .update:
                 UpdateSheetView()
             }
+        }
+        .alert(store.desktopAlertTitle, isPresented: $store.showDesktopAlert) {
+            if let url = store.desktopAlertURL {
+                Button("Open in Finder") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(store.desktopAlertMessage)
         }
         .onChange(of: updateManager.isUpdateSheetPresented) { presented in
             if presented {
@@ -1056,14 +1104,25 @@ struct StudioCanvasView: View {
                     }
 
                     if staged.isDesktop {
-                        HStack(spacing: 5) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .font(.system(size: 11))
-                                .foregroundStyle(.orange)
-                            Text("Desktop folder: Open the folder once in Finder after applying to show change.")
-                                .font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(.orange)
+                        Button {
+                            store.desktopAlertURL = staged.url
+                            store.desktopAlertTitle = "Desktop Folder Tip"
+                            store.desktopAlertMessage = "For folders located on your Desktop, open '\(staged.name)' once in Finder after applying to immediately display your custom icon (due to macOS Desktop caching)."
+                            store.showDesktopAlert = true
+                        } label: {
+                            HStack(spacing: 5) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.orange)
+                                Text("Desktop folder: Open the folder once in Finder after applying to show change.")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(.orange)
+                                Image(systemName: "info.circle")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.orange.opacity(0.8))
+                            }
                         }
+                        .buttonStyle(.plain)
                     }
                 }
             } else {
@@ -3738,14 +3797,25 @@ struct ExportInspectorTab: View {
                             }
 
                             if staged.isDesktop {
-                                HStack(spacing: 5) {
-                                    Image(systemName: "exclamationmark.triangle.fill")
-                                        .font(.system(size: 10))
-                                        .foregroundStyle(.orange)
-                                    Text("Desktop folder: Open the folder once after applying to show change.")
-                                        .font(.system(size: 10, weight: .medium))
-                                        .foregroundStyle(.orange)
+                                Button {
+                                    store.desktopAlertURL = staged.url
+                                    store.desktopAlertTitle = "Desktop Folder Tip"
+                                    store.desktopAlertMessage = "For folders located on your Desktop, open '\(staged.name)' once in Finder after applying to immediately display your custom icon (due to macOS Desktop caching)."
+                                    store.showDesktopAlert = true
+                                } label: {
+                                    HStack(spacing: 5) {
+                                        Image(systemName: "exclamationmark.triangle.fill")
+                                            .font(.system(size: 10))
+                                            .foregroundStyle(.orange)
+                                        Text("Desktop folder: Open the folder once after applying to show change.")
+                                            .font(.system(size: 10, weight: .medium))
+                                            .foregroundStyle(.orange)
+                                        Image(systemName: "info.circle")
+                                            .font(.system(size: 9))
+                                            .foregroundStyle(.orange.opacity(0.8))
+                                    }
                                 }
+                                .buttonStyle(.plain)
                                 .padding(.top, 2)
                             }
                         }

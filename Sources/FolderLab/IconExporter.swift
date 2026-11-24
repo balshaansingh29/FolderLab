@@ -198,20 +198,20 @@ enum IconExporter {
         }
     }
 
-    static func applyToItems(_ spec: IconSpec) -> String {
+    static func applyToItems(_ spec: IconSpec) -> (message: String, desktopURLs: [URL]) {
         let panel = NSOpenPanel()
         panel.message = "Choose one or more folders to apply this custom icon"
         panel.prompt = "Customize Folder"
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = true
-        guard panel.runModal() == .OK, !panel.urls.isEmpty else { return "Cancelled." }
+        guard panel.runModal() == .OK, !panel.urls.isEmpty else { return ("Cancelled.", []) }
 
         var ok = 0, failed = 0
-        var hasDesktop = false
+        var desktopURLs: [URL] = []
         for url in panel.urls {
             if isDesktopFolder(url) {
-                hasDesktop = true
+                desktopURLs.append(url)
             }
             let (success, _) = apply(spec: spec, to: url)
             if success {
@@ -220,31 +220,26 @@ enum IconExporter {
                 failed += 1
             }
         }
-        if failed == 0 {
-            if hasDesktop {
-                return "Customized \(ok) folder(s)! ✨ (Desktop tip: open folder once to show change)"
-            } else {
-                return "Customized \(ok) folder(s)! ✨"
-            }
-        } else {
-            return "Applied to \(ok), failed for \(failed) (check folder permissions)."
-        }
+        let msg = (failed == 0)
+            ? (desktopURLs.isEmpty ? "Customized \(ok) folder(s)! ✨" : "Customized \(ok) folder(s)! ✨ (Desktop tip: open folder once to show change)")
+            : "Applied to \(ok), failed for \(failed) (check folder permissions)."
+        return (msg, desktopURLs)
     }
 
-    static func resetItems() -> String {
+    static func resetItems() -> (message: String, desktopURLs: [URL]) {
         let panel = NSOpenPanel()
         panel.message = "Choose folders to restore Apple default icon"
         panel.prompt = "Restore Default"
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = true
-        guard panel.runModal() == .OK, !panel.urls.isEmpty else { return "Cancelled." }
+        guard panel.runModal() == .OK, !panel.urls.isEmpty else { return ("Cancelled.", []) }
 
         var ok = 0, failed = 0
-        var hasDesktop = false
+        var desktopURLs: [URL] = []
         for url in panel.urls {
             if isDesktopFolder(url) {
-                hasDesktop = true
+                desktopURLs.append(url)
             }
             if NSWorkspace.shared.setIcon(nil, forFile: url.path, options: []) {
                 removeStoredSpec(for: url)
@@ -254,15 +249,10 @@ enum IconExporter {
                 failed += 1
             }
         }
-        if failed == 0 {
-            if hasDesktop {
-                return "Restored \(ok) folder(s) to default icon. (Desktop: open folder once to show change)"
-            } else {
-                return "Restored \(ok) folder(s) to default macOS icon."
-            }
-        } else {
-            return "Reset \(ok), failed for \(failed)."
-        }
+        let msg = (failed == 0)
+            ? (desktopURLs.isEmpty ? "Restored \(ok) folder(s) to default macOS icon." : "Restored \(ok) folder(s) to default icon. (Desktop: open folder once to show change)")
+            : "Reset \(ok), failed for \(failed)."
+        return (msg, desktopURLs)
     }
 
     // MARK: - Batch Subfolders Styler (Feature 2)
