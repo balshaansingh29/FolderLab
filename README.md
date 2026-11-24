@@ -76,6 +76,13 @@ Grab the latest pre-compiled build:
 - 💿 **[FolderLab-v0.2.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.2.dmg)** *(Recommended: drag to `/Applications`)*
 - 📦 **[FolderLab-v0.2.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.2.zip)** *(Standalone application archive)*
 
+> [!TIP]
+> **First time opening on macOS?**
+> Because FolderLab is a free community open-source app (not distributed via the \$99/yr Apple Developer Program), macOS Gatekeeper may show *"Apple could not verify FolderLab.app"*.
+> - **Option 1**: **Right-click** (or Control-click) `FolderLab.app` in Finder → select **Open** → click **Open**.
+> - **Option 2**: Go to **System Settings → Privacy & Security** → scroll down and click **Open Anyway**.
+> - **Option 3**: In Terminal: `xattr -cr /Applications/FolderLab.app`
+
 ---
 
 ### 📋 Prerequisites (For Developers)
