@@ -1261,6 +1261,39 @@ struct PresetsInspectorTab: View {
 
             Divider().padding(.vertical, 4)
 
+            // Surface Textures Grid (v0.2)
+            InspectorSectionHeader(title: "Tactile Surface Textures", subtitle: "Visual finishes: carbon fiber, brushed metal, tactile grain & more")
+
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                ForEach(SurfaceTexture.allCases) { tex in
+                    TextureCardButton(
+                        texture: tex,
+                        isSelected: store.spec.texture == tex,
+                        folderColor1: store.spec.color1,
+                        folderColor2: store.spec.color2
+                    ) {
+                        store.snapshotUndo()
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                            store.spec.texture = tex
+                            if tex != .none && store.spec.textureOpacity < 0.10 {
+                                store.spec.textureOpacity = 0.22
+                            }
+                        }
+                    }
+                }
+            }
+
+            if store.spec.texture != .none {
+                VStack(alignment: .leading, spacing: 6) {
+                    ModernSlider(title: "Texture Contrast / Opacity", value: $store.spec.textureOpacity, range: 0.05...0.60, format: "%.0f%%", multiplier: 100)
+                }
+                .padding(10)
+                .background(Color(nsColor: .controlBackgroundColor).opacity(0.4))
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            }
+
+            Divider().padding(.vertical, 4)
+
             // One-Click Actions
             InspectorSectionHeader(title: "Creative Tools", subtitle: "Instant variations & quick reset")
 
@@ -1429,6 +1462,103 @@ struct PresetCardButton: View {
     }
 }
 
+// MARK: - Texture Card Button (Visual Texture Preview)
+
+struct TextureCardButton: View {
+    let texture: SurfaceTexture
+    let isSelected: Bool
+    let folderColor1: Color
+    let folderColor2: Color
+    let action: () -> Void
+
+    private var textureDescription: String {
+        switch texture {
+        case .none: return "Smooth satin clean"
+        case .carbon: return "Woven crosshatch"
+        case .brushed: return "Anodized horizontal"
+        case .leather: return "Tactile pebble grain"
+        case .grid: return "Precision dot array"
+        case .stripes: return "45° tactile ribs"
+        }
+    }
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 11) {
+                // Live preview swatch showing folder color + texture!
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [folderColor1, folderColor2],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+
+                    if texture != .none {
+                        FolderTextureOverlay(texture: texture, opacity: 0.65)
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    } else {
+                        LinearGradient(
+                            colors: [.white.opacity(0.35), .white.opacity(0.05), .clear],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                }
+                .frame(width: 32, height: 32)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.22), lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(0.2), radius: 3, y: 1)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(texture.rawValue)
+                        .font(.system(size: 13, weight: isSelected ? .bold : .semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+
+                    Text(textureDescription)
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(Color.accentColor)
+                }
+            }
+            .padding(10)
+            .background {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color.accentColor.opacity(0.12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .strokeBorder(Color.accentColor.opacity(0.6), lineWidth: 1.5)
+                        )
+                } else {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color(nsColor: .controlBackgroundColor).opacity(0.7))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.10), lineWidth: 1)
+                        )
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 // MARK: - Folder Canvas & Finish Tab
 
 struct CanvasInspectorTab: View {
@@ -1590,14 +1720,38 @@ struct CanvasInspectorTab: View {
                             .foregroundStyle(Color.accentColor)
                         Text("Surface Texture & Patterns (v0.2)")
                             .font(.system(size: 12, weight: .semibold))
-                    }
-
-                    Picker("Texture", selection: $store.spec.texture) {
-                        ForEach(SurfaceTexture.allCases) { tex in
-                            Text(tex.rawValue).tag(tex)
+                        Spacer()
+                        if store.spec.texture != .none {
+                            Button("Clear") {
+                                store.snapshotUndo()
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                    store.spec.texture = .none
+                                }
+                            }
+                            .font(.system(size: 11, weight: .medium))
+                            .buttonStyle(.plain)
+                            .foregroundStyle(.secondary)
                         }
                     }
-                    .pickerStyle(.menu)
+
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                        ForEach(SurfaceTexture.allCases) { tex in
+                            TextureCardButton(
+                                texture: tex,
+                                isSelected: store.spec.texture == tex,
+                                folderColor1: store.spec.color1,
+                                folderColor2: store.spec.color2
+                            ) {
+                                store.snapshotUndo()
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                    store.spec.texture = tex
+                                    if tex != .none && store.spec.textureOpacity < 0.10 {
+                                        store.spec.textureOpacity = 0.22
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     if store.spec.texture != .none {
                         ModernSlider(title: "Texture Contrast / Opacity", value: $store.spec.textureOpacity, range: 0.05...0.60, format: "%.0f%%", multiplier: 100)

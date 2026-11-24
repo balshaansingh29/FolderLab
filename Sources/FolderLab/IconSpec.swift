@@ -403,47 +403,158 @@ extension IconSpec {
     }
 
     /// Generates an inspiring randomized icon with harmonious palette and aesthetic symbol.
+    /// Generates an inspiring randomized icon with harmonious palette, procedural surface textures, and aesthetic symbols.
     static func random() -> IconSpec {
         func c(_ hex: String) -> Color { Color(hex: hex) ?? .blue }
 
-        let palettes: [(String, String)] = [
-            ("#36D1DC", "#5B86E5"),
-            ("#FF8A5B", "#EA3B7A"),
-            ("#8E54E9", "#4776E6"),
-            ("#43E97B", "#38F9D7"),
-            ("#F7971E", "#FFD200"),
-            ("#0BA360", "#3CBA92"),
-            ("#667EEA", "#764BA2"),
-            ("#FC5C7D", "#6A82FB"),
-            ("#30CFD0", "#330867"),
-            ("#F857A6", "#FF5858"),
-            ("#4FACFE", "#00F2FE"),
-            ("#2E3192", "#1BFFFF"),
-            ("#B92B27", "#1565C0"),
-            ("#24243E", "#0F0C20")
+        // Curated 3-color harmonious gradient design palettes with matching glyph colors
+        let palettes: [(c1: String, c2: String, c3: String, glyph1: String, glyph2: String)] = [
+            ("#36D1DC", "#5B86E5", "#1E3C72", "#FFFFFF", "#E0F2FE"), // Hyper Blue
+            ("#FF8A5B", "#EA3B7A", "#6A11CB", "#FFFFFF", "#FFE4E6"), // Sunset Flame
+            ("#FF007F", "#7928CA", "#00F0FF", "#00F0FF", "#FFFFFF"), // Cyber Neon
+            ("#11998E", "#38EF7D", "#059669", "#FFFFFF", "#D1FAE5"), // Mint Emerald
+            ("#F7971E", "#FFD200", "#FF512F", "#FFFFFF", "#FEF3C7"), // Solar Amber
+            ("#3A3D45", "#141518", "#0B0C10", "#FFFFFF", "#94A3B8"), // Obsidian Titanium
+            ("#8E54E9", "#4776E6", "#141E30", "#FFFFFF", "#DDD6FE"), // Deep Nebula
+            ("#FC5C7D", "#6A82FB", "#A78BFA", "#FFFFFF", "#FBCFE8"), // Cotton Candy
+            ("#30CFD0", "#330867", "#1CB5E0", "#FFFFFF", "#CFFAFE"), // Nordic Ice
+            ("#ED213A", "#93291E", "#4B1212", "#FFFFFF", "#FECDD3"), // Crimson Ruby
+            ("#FF7E5F", "#FEB47B", "#7F00FF", "#FFFFFF", "#FED7AA"), // Vaporwave Dusk
+            ("#0D1117", "#161B22", "#00FF66", "#00FF66", "#FFFFFF"), // Hacker Matrix
+            ("#F5AF19", "#E65C00", "#FFE000", "#FFFFFF", "#FEF08A"), // Prestige Gold
+            ("#654EA3", "#EAAFC8", "#3B185F", "#FFFFFF", "#F3E8FF"), // Royal Amethyst
+            ("#6CD0FF", "#2F9DF4", "#0A84FF", "#FFFFFF", "#E0F2FE"), // Apple Finder Blue
+            ("#134E5E", "#71B280", "#0B3C49", "#FFFFFF", "#D1FAE5"), // Forest Moss
+            ("#0F2027", "#203A43", "#2C5364", "#FFFFFF", "#93C5FD"), // Midnight Oceanic
+            ("#485563", "#29323C", "#1E293B", "#FFFFFF", "#E2E8F0"), // Titanium Slate
+            ("#7F00FF", "#E100FF", "#3B0764", "#FFFFFF", "#F5D0FE"), // Electric Violet
+            ("#ED4264", "#FFEDBC", "#F43F5E", "#FFFFFF", "#FFE4E6"), // Peach Cream
+            ("#43E97B", "#38F9D7", "#10B981", "#FFFFFF", "#A7F3D0"), // Toxic Lime
+            ("#8A2387", "#E94057", "#F27121", "#FFFFFF", "#FED7AA"), // Bronze Copper
+            ("#2C3E50", "#3498DB", "#1A252F", "#FFFFFF", "#BAE6FD"), // Minimal Chalk
+            ("#18191C", "#23272A", "#7289DA", "#7289DA", "#FFFFFF")  // Stealth Discord
         ]
 
         let symbols = [
-            "star.fill", "bolt.fill", "sparkles", "flame.fill", "heart.fill",
-            "terminal.fill", "gearshape.fill", "wand.and.stars", "macbook",
-            "cpu.fill", "cube.transparent.fill", "waveform.path.ecg",
-            "paintpalette.fill", "rocket.fill", "globe.americas.fill",
-            "shield.checkerboard", "crown.fill", "music.note", "camera.fill"
+            // Developer & Tech
+            "terminal.fill", "cpu.fill", "gearshape.2.fill", "macbook", "chevron.left.forwardslash.chevron.right",
+            "server.rack", "swift", "waveform.path.ecg", "network", "externaldrive.fill",
+            // Creative & Design
+            "paintpalette.fill", "wand.and.stars", "sparkles", "cube.transparent.fill", "camera.fill",
+            "pencil.and.outline", "eyeglasses", "slider.horizontal.3", "circle.hexagongrid.fill",
+            // Energy & Nature
+            "flame.fill", "bolt.fill", "drop.fill", "leaf.fill", "sun.max.fill", "moon.stars.fill",
+            // Power & Status
+            "star.fill", "crown.fill", "shield.checkerboard", "trophy.fill", "diamond.fill", "rosette",
+            // Media & Sound
+            "music.note", "headphones", "film.fill", "mic.fill", "bubble.left.and.bubble.right.fill",
+            // Exploration & Tools
+            "rocket.fill", "globe.americas.fill", "airplane", "paperplane.fill", "magnifyingglass",
+            "folder.badge.gearshape.fill", "chart.xyaxis.line", "lock.shield.fill", "key.fill", "heart.fill"
+        ]
+
+        let textMonograms = [
+            "A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "X", "Y", "Z",
+            "🚀", "⚡️", "💎", "🔥", "🪐", "💡", "🎨", "👾", "🦊", "🎧", "☕️", "✨", "🛡️", "🔮", "🍀", "🍎", "🧬", "🕹️"
         ]
 
         var s = IconSpec()
         s.base = .folder
-        s.shape = [.squircle, .squircle, .squircle, .circle].randomElement() ?? .squircle
-        let pair = palettes.randomElement() ?? palettes[0]
-        s.color1 = c(pair.0)
-        s.color2 = c(pair.1)
-        s.gradientAngle = [45.0, 90.0, 135.0, 180.0].randomElement() ?? 90.0
+        s.shape = .squircle
+
+        // Pick palette
+        let pal = palettes.randomElement() ?? palettes[0]
+        s.color1 = c(pal.c1)
+        s.color2 = c(pal.c2)
+        s.color3 = c(pal.c3)
+
+        // 3-Color Gradient (~38% probability)
+        let use3Stop = Double.random(in: 0...1) < 0.38
+        s.useThreeColorGradient = use3Stop
+
+        // Dynamic Angles
+        s.gradientAngle = [0.0, 45.0, 90.0, 120.0, 135.0, 180.0, 225.0, 270.0].randomElement() ?? 90.0
+
+        // Procedural Surface Textures (~58% probability)
+        let textureChance = Double.random(in: 0...1)
+        if textureChance < 0.58 {
+            let textures: [SurfaceTexture] = [.carbon, .brushed, .leather, .grid, .stripes]
+            s.texture = textures.randomElement() ?? .carbon
+            switch s.texture {
+            case .carbon:
+                s.textureOpacity = Double.random(in: 0.18...0.36)
+            case .brushed:
+                s.textureOpacity = Double.random(in: 0.22...0.42)
+            case .leather:
+                s.textureOpacity = Double.random(in: 0.18...0.34)
+            case .grid:
+                s.textureOpacity = Double.random(in: 0.18...0.32)
+            case .stripes:
+                s.textureOpacity = Double.random(in: 0.16...0.30)
+            case .none:
+                s.textureOpacity = 0.22
+            }
+        } else {
+            s.texture = .none
+        }
+
+        // Liquid Glass Mode (~18% probability)
+        let isGlass = Double.random(in: 0...1) < 0.18
+        if isGlass {
+            s.liquidGlass = true
+            s.glassOpacity = Double.random(in: 0.38...0.55)
+            s.specularRimWidth = 0.007
+        } else {
+            s.liquidGlass = false
+        }
+
+        // Corner Badges (~22% probability)
+        let badgeChance = Double.random(in: 0...1)
+        if badgeChance < 0.22 {
+            let badges: [CornerBadge] = [.lock, .star, .checkmark, .warning, .cloud, .heart, .tag, .bookmark, .pin]
+            s.cornerBadge = badges.randomElement() ?? .star
+            let badgeColors: [Color] = [.white, c("#FFD700"), c("#00F0FF"), c("#FF3B30"), c("#30D158")]
+            s.cornerBadgeColor = badgeColors.randomElement() ?? .white
+        } else {
+            s.cornerBadge = .none
+        }
+
+        // Glyph Kind: ~22% Monogram / Emoji, ~78% SF Symbol
+        let glyphKindChance = Double.random(in: 0...1)
+        if glyphKindChance < 0.22 {
+            s.glyphKind = .text
+            s.text = textMonograms.randomElement() ?? "A"
+            s.textFontFamily = TextFontFamily.allCases.randomElement() ?? .rounded
+            s.textDepthStyle = TextDepthStyle.allCases.randomElement() ?? .embossed
+            s.glyphScale = Double.random(in: 0.36...0.46)
+        } else {
+            s.glyphKind = .symbol
+            s.symbolName = symbols.randomElement() ?? "sparkles"
+            s.glyphScale = Double.random(in: 0.34...0.44)
+        }
+
+        // Glyph Gradient & Coloring
+        let glyphGradientChance = Double.random(in: 0...1)
+        if glyphGradientChance < 0.35 {
+            s.glyphGradient = true
+            s.glyphColor = c(pal.glyph1)
+            s.glyphColor2 = c(pal.glyph2)
+        } else {
+            s.glyphGradient = false
+            s.glyphColor = c(pal.glyph1)
+        }
+
+        // Occasional slight playful tilt (-6...6 deg) on symbols
+        if Double.random(in: 0...1) < 0.15 {
+            s.glyphRotation = Double(Int.random(in: -6...6))
+        } else {
+            s.glyphRotation = 0.0
+        }
+
+        s.glyphOpacity = Double.random(in: 0.90...1.0)
+        s.glyphShadow = true
         s.gloss = true
         s.innerRim = true
-        s.symbolName = symbols.randomElement() ?? "star.fill"
-        s.glyphColor = .white
-        s.glyphScale = Double.random(in: 0.46...0.56)
-        s.glyphShadow = true
         s.dropShadow = true
         return s
     }
