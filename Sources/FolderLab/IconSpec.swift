@@ -88,13 +88,6 @@ struct IconSpec: Equatable {
         return peekContentType
     }
 
-    // Large / XL Folder (iOS 2x2 App Grid)
-    var xlFolderEnabled: Bool = false
-    var xlFolderPreset: XLFolderPreset = .developer
-    var xlFolderFrostedTray: Bool = true
-    var xlFolderScale: Double = 0.52
-    var xlFolderCustomItems: [XLFolderItem] = XLFolderPreset.developer.items
-
     // Outer drop shadow (only with macMargin)
     var dropShadow = true
 }
@@ -273,112 +266,6 @@ public enum PeekContentType: String, CaseIterable, Identifiable, Codable {
     }
 }
 
-// MARK: - XL Folder (iOS 2x2 App Grid)
-
-public struct XLFolderItem: Equatable, Codable {
-    public var symbol: String
-    public var bgGradientStart: String
-    public var bgGradientEnd: String
-    public var iconColorHex: String
-
-    public init(symbol: String, bgStart: String, bgEnd: String, iconColor: String = "#FFFFFF") {
-        self.symbol = symbol
-        self.bgGradientStart = bgStart
-        self.bgGradientEnd = bgEnd
-        self.iconColorHex = iconColor
-    }
-}
-
-public enum XLFolderPreset: String, CaseIterable, Identifiable, Codable {
-    case developer = "Developer"
-    case creative = "Creative"
-    case media = "Media"
-    case productivity = "Productivity"
-    case utilities = "Utilities"
-    case social = "Social"
-    case custom = "Custom"
-
-    public var id: String { rawValue }
-
-    public var iconName: String {
-        switch self {
-        case .developer: return "chevron.left.forwardslash.chevron.right"
-        case .creative: return "paintpalette.fill"
-        case .media: return "music.note"
-        case .productivity: return "doc.text.fill"
-        case .utilities: return "gearshape.2.fill"
-        case .social: return "bubble.left.and.bubble.right.fill"
-        case .custom: return "slider.horizontal.3"
-        }
-    }
-
-    public var subtitle: String {
-        switch self {
-        case .developer: return "Terminal, Code, Xcode Hammer & Apple Silicon CPU"
-        case .creative: return "Paintbrush, Studio Palette, Camera & Sparkles"
-        case .media: return "Music Note, TV Player, Headphones & Studio Mic"
-        case .productivity: return "Document, Calendar, Analytics Chart & Mail"
-        case .utilities: return "Settings, NVMe Disk, Network Mesh & Shield Lock"
-        case .social: return "Messages, Safari Web, Paperplane & Heart"
-        case .custom: return "Customizable 4-tile squircle layout"
-        }
-    }
-
-    public var items: [XLFolderItem] {
-        switch self {
-        case .developer:
-            return [
-                XLFolderItem(symbol: "terminal.fill", bgStart: "#2D3748", bgEnd: "#1A202C"),
-                XLFolderItem(symbol: "hammer.fill", bgStart: "#3B82F6", bgEnd: "#1D4ED8"),
-                XLFolderItem(symbol: "chevron.left.forwardslash.chevron.right", bgStart: "#F97316", bgEnd: "#EA580C"),
-                XLFolderItem(symbol: "cpu.fill", bgStart: "#8B5CF6", bgEnd: "#6D28D9")
-            ]
-        case .creative:
-            return [
-                XLFolderItem(symbol: "paintbrush.fill", bgStart: "#EC4899", bgEnd: "#BE185D"),
-                XLFolderItem(symbol: "paintpalette.fill", bgStart: "#8B5CF6", bgEnd: "#6366F1"),
-                XLFolderItem(symbol: "camera.fill", bgStart: "#F59E0B", bgEnd: "#D97706"),
-                XLFolderItem(symbol: "sparkles", bgStart: "#06B6D4", bgEnd: "#0284C7")
-            ]
-        case .media:
-            return [
-                XLFolderItem(symbol: "music.note", bgStart: "#EF4444", bgEnd: "#DC2626"),
-                XLFolderItem(symbol: "play.tv.fill", bgStart: "#3B82F6", bgEnd: "#2563EB"),
-                XLFolderItem(symbol: "headphones", bgStart: "#10B981", bgEnd: "#059669"),
-                XLFolderItem(symbol: "mic.fill", bgStart: "#F59E0B", bgEnd: "#EA580C")
-            ]
-        case .productivity:
-            return [
-                XLFolderItem(symbol: "doc.text.fill", bgStart: "#3B82F6", bgEnd: "#1D4ED8"),
-                XLFolderItem(symbol: "calendar", bgStart: "#EF4444", bgEnd: "#B91C1C"),
-                XLFolderItem(symbol: "chart.bar.xaxis", bgStart: "#10B981", bgEnd: "#047857"),
-                XLFolderItem(symbol: "envelope.fill", bgStart: "#06B6D4", bgEnd: "#0E7490")
-            ]
-        case .utilities:
-            return [
-                XLFolderItem(symbol: "gearshape.2.fill", bgStart: "#64748B", bgEnd: "#475569"),
-                XLFolderItem(symbol: "externaldrive.fill", bgStart: "#3B82F6", bgEnd: "#1E40AF"),
-                XLFolderItem(symbol: "network", bgStart: "#8B5CF6", bgEnd: "#5B21B6"),
-                XLFolderItem(symbol: "lock.shield.fill", bgStart: "#10B981", bgEnd: "#065F46")
-            ]
-        case .social:
-            return [
-                XLFolderItem(symbol: "bubble.left.and.bubble.right.fill", bgStart: "#10B981", bgEnd: "#059669"),
-                XLFolderItem(symbol: "safari.fill", bgStart: "#3B82F6", bgEnd: "#1D4ED8"),
-                XLFolderItem(symbol: "paperplane.fill", bgStart: "#06B6D4", bgEnd: "#0284C7"),
-                XLFolderItem(symbol: "heart.fill", bgStart: "#F43F5E", bgEnd: "#BE185D")
-            ]
-        case .custom:
-            return [
-                XLFolderItem(symbol: "star.fill", bgStart: "#F59E0B", bgEnd: "#D97706"),
-                XLFolderItem(symbol: "bolt.fill", bgStart: "#8B5CF6", bgEnd: "#6D28D9"),
-                XLFolderItem(symbol: "flame.fill", bgStart: "#EF4444", bgEnd: "#DC2626"),
-                XLFolderItem(symbol: "heart.fill", bgStart: "#EC4899", bgEnd: "#BE185D")
-            ]
-        }
-    }
-}
-
 // MARK: - Shareable Theme Preset (.folderlab)
 
 struct FolderLabPreset: Codable {
@@ -434,12 +321,6 @@ struct FolderLabPreset: Codable {
     // v0.5+ Peek Inside Extensions
     var peekInsideEnabled: Bool? = false
     var peekContentType: String? = "Documents Stack"
-    // XL Folder Extensions
-    var xlFolderEnabled: Bool? = false
-    var xlFolderPreset: String? = "Developer"
-    var xlFolderFrostedTray: Bool? = true
-    var xlFolderScale: Double? = 0.52
-    var xlFolderCustomItems: [XLFolderItem]? = nil
 }
 
 enum SymbolMode: String, CaseIterable, Identifiable {
@@ -492,11 +373,6 @@ extension IconSpec {
         s.peekInsideEnabled = old.peekInsideEnabled
         s.peekContentType = old.peekContentType
         s.peekDetectedType = old.peekDetectedType
-        s.xlFolderEnabled = old.xlFolderEnabled
-        s.xlFolderPreset = old.xlFolderPreset
-        s.xlFolderFrostedTray = old.xlFolderFrostedTray
-        s.xlFolderScale = old.xlFolderScale
-        s.xlFolderCustomItems = old.xlFolderCustomItems
 
         switch style {
         case .bigSur:       // light tile, colored glyph, like Apple's own apps
@@ -1198,12 +1074,7 @@ extension IconSpec {
             nameplateMoveIconAbove: nameplateMoveIconAbove,
             glyphEngravedFolderTint: glyphEngravedFolderTint,
             peekInsideEnabled: peekInsideEnabled,
-            peekContentType: peekContentType.rawValue,
-            xlFolderEnabled: xlFolderEnabled,
-            xlFolderPreset: xlFolderPreset.rawValue,
-            xlFolderFrostedTray: xlFolderFrostedTray,
-            xlFolderScale: xlFolderScale,
-            xlFolderCustomItems: xlFolderCustomItems
+            peekContentType: peekContentType.rawValue
         )
     }
 
@@ -1256,11 +1127,6 @@ extension IconSpec {
         if let gt = preset.glyphEngravedFolderTint { s.glyphEngravedFolderTint = gt }
         if let pie = preset.peekInsideEnabled { s.peekInsideEnabled = pie }
         if let pct = preset.peekContentType, let type = PeekContentType(rawValue: pct) { s.peekContentType = type }
-        if let xfe = preset.xlFolderEnabled { s.xlFolderEnabled = xfe }
-        if let xlp = preset.xlFolderPreset, let p = XLFolderPreset(rawValue: xlp) { s.xlFolderPreset = p }
-        if let ft = preset.xlFolderFrostedTray { s.xlFolderFrostedTray = ft }
-        if let xs = preset.xlFolderScale { s.xlFolderScale = xs }
-        if let items = preset.xlFolderCustomItems { s.xlFolderCustomItems = items }
         return s
     }
 }
