@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v0.1-brightgreen.svg" alt="Release v0.1">
+  <img src="https://img.shields.io/badge/Release-v0.2-brightgreen.svg" alt="Release v0.2">
   <img src="https://img.shields.io/badge/macOS-13%2B%20Ventura%20%7C%20Sonoma%20%7C%20Sequoia-blue.svg?logo=apple" alt="macOS 13+">
   <img src="https://img.shields.io/badge/Swift-5.9%2B-orange.svg?logo=swift" alt="Swift 5.9+">
   <img src="https://img.shields.io/badge/UI-SwiftUI%20%26%20AppKit-purple.svg" alt="SwiftUI & AppKit">
@@ -25,6 +25,14 @@
 
 ## 🌟 Highlights & Features
 
+- 🪄 **Smart Folder Auto-Suggestions (v0.2)**: Intelligent directory detection (Code, Documents, Photos, Music, Finance, Archive, etc.) with instant 1-tap style recommendations! 📁
+- 🧶 **Procedural Surface Textures (v0.2)**: Vector-sharp Carbon Fiber, Brushed Metal, Tactile Leather Grain, Dot Matrix Grid, and Diagonal Ribs! 🪨
+- 🎨 **3-Stop Multi-Color Gradients (v0.2)**: Rich multi-stop gradients with middle accent color transitions for modern mesh aesthetics! ✨
+- 🏷️ **Corner Status Mini-Badges (v0.2)**: Engrave discrete corner badges (Lock 🔒, Star ⭐, Checkmark ✅, Warning ⚠️, Cloud ☁️, Tag 🏷️) with custom tinting!
+- ✍️ **Typography & 3D Depth Stamping (v0.2)**: SF Pro Rounded, SF Mono, and New York Serif fonts with Embossed or Engraved 3D tactile bevels! 🔮
+- ↩️ **Full Undo & Redo (v0.2)**: 30-level state history with `⌘Z` / `⇧⌘Z` keyboard shortcuts and canvas toolbar buttons! ⚡
+- 🕒 **Recently Applied Styles Shelf (v0.2)**: Horizontal recents gallery in the Themes inspector to quickly re-apply your favorite folder designs! 🎨
+- 🔄 **In-App Software Updater (v0.2)**: Check GitHub releases right from the app menu or Settings, and download & mount DMGs with 1 click! 📦
 - 🎯 **Direct Finder Drag & Drop**: Simply drag any folder from macOS Finder directly onto the preview stage to customize it instantly! ⚡
 - 🗂️ **Batch & Bulk Folder Styler**: Select multiple directories at once or re-theme all subfolders in a folder with one tap! 📁
 - 🖼️ **Custom Image & Stamp Importer**: Drop any PNG, JPG, or SVG image to stamp logos, team badges, or stickers onto the folder flap! 🎨
