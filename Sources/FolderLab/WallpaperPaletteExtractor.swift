@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import ImageIO
 
 // MARK: - Wallpaper Theme Suggestion Model
 
@@ -69,7 +70,7 @@ final class WallpaperPaletteExtractor: ObservableObject {
 
     @Published var wallpaperThumbnail: NSImage? = nil
     @Published var wallpaperURL: URL? = nil
-    @Published var wallpaperName: String = "Desktop Picture"
+    @Published var wallpaperName: String = "Default Wallpaper"
     @Published var isDarkWallpaper: Bool = false
     @Published var averageLuminance: Double = 0.5
     @Published var dominantColor1: Color = Color(hex: "#2F9DF4") ?? .blue
@@ -85,12 +86,24 @@ final class WallpaperPaletteExtractor: ObservableObject {
 
     private init() {
         extractPalette()
-        setupNotificationObserver()
+        setupNotificationObservers()
     }
 
-    private func setupNotificationObserver() {
+    private func setupNotificationObservers() {
+        // Space changes
         NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.activeSpaceDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { _ in
+            Task { @MainActor in
+                WallpaperPaletteExtractor.shared.extractPalette()
+            }
+        }
+
+        // Screen configuration changes (multi-monitor plug/unplug)
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
             object: nil,
             queue: .main
         ) { _ in
@@ -110,37 +123,15 @@ final class WallpaperPaletteExtractor: ObservableObject {
         isExtracting = true
         defer { isExtracting = false }
 
-        let screen = NSScreen.main ?? NSScreen.screens.first
-        var url: URL? = nil
-
-        if let scr = screen {
-            url = NSWorkspace.shared.desktopImageURL(for: scr)
-        }
-
-        // Fallbacks if desktopImageURL is nil or file doesn't exist
-        if url == nil || !(FileManager.default.fileExists(atPath: url!.path)) {
-            let possiblePaths = [
-                NSHomeDirectory() + "/Library/Safari Shared Data/Safari Desktop Picture.jpg",
-                "/System/Library/CoreServices/DefaultDesktop.heic",
-                "/System/Library/Wallpapers/.default/DefaultAerial.heic"
-            ]
-            for path in possiblePaths {
-                if FileManager.default.fileExists(atPath: path) {
-                    url = URL(fileURLWithPath: path)
-                    break
-                }
-            }
-        }
-
-        guard let imageURL = url, let sourceImage = NSImage(contentsOf: imageURL) else {
+        guard let (sourceImage, name, url) = resolveActiveWallpaperImage() else {
             generateFallbackSuggestions()
             return
         }
 
-        wallpaperURL = imageURL
-        wallpaperName = imageURL.lastPathComponent
+        self.wallpaperURL = url
+        self.wallpaperName = name
 
-        // Generate thumbnail
+        // Generate clean thumbnail
         generateThumbnail(from: sourceImage)
 
         // Downsample to 48x48 for fast, accurate pixel clustering
@@ -259,6 +250,127 @@ final class WallpaperPaletteExtractor: ObservableObject {
 
         buildSuggestions(cDom1: cDom1, cDom2: cDom2, cAccent: cAccent, cHighlight: cHighlight, cShadow: cShadow, isDark: isDarkWallpaper)
         lastExtractedDate = Date()
+    }
+
+    // MARK: - Multi-Strategy Wallpaper Image Resolver
+
+    private func resolveActiveWallpaperImage() -> (image: NSImage, displayName: String, url: URL)? {
+        let fm = FileManager.default
+
+        // Strategy 1: Read macOS Sonoma / Sequoia com.apple.wallpaper Index.plist
+        let indexPlistPath = ("~/Library/Application Support/com.apple.wallpaper/Store/Index.plist" as NSString).expandingTildeInPath
+        if fm.fileExists(atPath: indexPlistPath),
+           let data = try? Data(contentsOf: URL(fileURLWithPath: indexPlistPath)),
+           let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any] {
+
+            var bestChoice: [String: Any]? = nil
+            var bestDate: Date? = nil
+
+            func traverse(dict: [String: Any]) {
+                if let desktop = dict["Desktop"] as? [String: Any] {
+                    let date = (desktop["LastSet"] as? Date) ?? (desktop["LastUse"] as? Date)
+                    if let content = desktop["Content"] as? [String: Any],
+                       let choices = content["Choices"] as? [[String: Any]],
+                       let first = choices.first {
+                        if let d = date {
+                            if bestDate == nil || d > bestDate! {
+                                bestDate = d
+                                bestChoice = first
+                            }
+                        } else if bestChoice == nil {
+                            bestChoice = first
+                        }
+                    }
+                }
+                for (_, v) in dict {
+                    if let sub = v as? [String: Any] {
+                        traverse(dict: sub)
+                    }
+                }
+            }
+
+            traverse(dict: plist)
+
+            if let choice = bestChoice,
+               let cfgData = choice["Configuration"] as? Data,
+               let cfg = try? PropertyListSerialization.propertyList(from: cfgData, options: [], format: nil) as? [String: Any] {
+
+                // A: User Image or Default Wallpaper file URL
+                if let urlDict = cfg["url"] as? [String: Any],
+                   let relStr = urlDict["relative"] as? String,
+                   let fileURL = URL(string: relStr),
+                   fileURL.isFileURL,
+                   fm.fileExists(atPath: fileURL.path) {
+                    if let img = loadFrameAwareImage(from: fileURL) {
+                        return (img, fileURL.deletingPathExtension().lastPathComponent, fileURL)
+                    }
+                }
+
+                // B: macOS Sonoma / Sequoia Dynamic Aerial Wallpaper
+                if let assetID = cfg["assetID"] as? String {
+                    let aerialThumbPath = ("~/Library/Application Support/com.apple.wallpaper/aerials/thumbnails/\(assetID).png" as NSString).expandingTildeInPath
+                    if fm.fileExists(atPath: aerialThumbPath),
+                       let img = NSImage(contentsOfFile: aerialThumbPath) {
+                        return (img, "Dynamic Aerial Wallpaper", URL(fileURLWithPath: aerialThumbPath))
+                    }
+                }
+            }
+        }
+
+        // Strategy 2: NSWorkspace.shared.desktopImageURL
+        if let screen = NSScreen.main ?? NSScreen.screens.first,
+           let desktopURL = NSWorkspace.shared.desktopImageURL(for: screen),
+           fm.fileExists(atPath: desktopURL.path) {
+            if let img = loadFrameAwareImage(from: desktopURL) {
+                return (img, desktopURL.deletingPathExtension().lastPathComponent, desktopURL)
+            }
+        }
+
+        // Strategy 3: Standard macOS Default Wallpapers & Symlinks
+        let candidatePaths = [
+            ("~/Library/Safari Shared Data/Safari Desktop Picture.jpg" as NSString).expandingTildeInPath,
+            "/System/Library/Desktop Pictures/.wallpapers/Sonoma Horizon/Sonoma Horizon.heic",
+            "/System/Library/Desktop Pictures/Sonoma.heic",
+            "/System/Library/CoreServices/DefaultDesktop.heic",
+            "/System/Library/Wallpapers/.default/DefaultAerial.heic",
+            "/System/Library/Desktop Pictures/Ventura Graphic.heic",
+            "/System/Library/Desktop Pictures/Monterey Graphic.heic",
+            "/System/Library/Desktop Pictures/Big Sur Graphic.heic",
+            "/System/Library/Desktop Pictures/Catalina.heic"
+        ]
+
+        for path in candidatePaths {
+            if fm.fileExists(atPath: path) {
+                let u = URL(fileURLWithPath: path)
+                if let img = loadFrameAwareImage(from: u) {
+                    return (img, u.deletingPathExtension().lastPathComponent, u)
+                }
+            }
+        }
+
+        return nil
+    }
+
+    // MARK: - Frame-Aware Image Loader (HEIC Light/Dark Dynamic Wallpapers)
+
+    private func loadFrameAwareImage(from url: URL) -> NSImage? {
+        // Multi-frame HEIC dynamic wallpaper support
+        if let source = CGImageSourceCreateWithURL(url as CFURL, nil) {
+            let count = CGImageSourceGetCount(source)
+            if count > 1 {
+                // If system is in Dark mode, sample the Dark frame (usually frame 1)
+                let isDark = NSAppearance.currentDrawing().bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                let targetIndex = isDark ? min(1, count - 1) : 0
+                if let cg = CGImageSourceCreateImageAtIndex(source, targetIndex, nil) {
+                    return NSImage(cgImage: cg, size: NSSize(width: cg.width, height: cg.height))
+                }
+            } else if count == 1 {
+                if let cg = CGImageSourceCreateImageAtIndex(source, 0, nil) {
+                    return NSImage(cgImage: cg, size: NSSize(width: cg.width, height: cg.height))
+                }
+            }
+        }
+        return NSImage(contentsOf: url)
     }
 
     private func generateThumbnail(from image: NSImage) {
