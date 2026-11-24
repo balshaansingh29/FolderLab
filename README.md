@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v0.2-brightgreen.svg" alt="Release v0.2">
+  <img src="https://img.shields.io/badge/Release-v0.3-brightgreen.svg" alt="Release v0.3">
   <img src="https://img.shields.io/badge/macOS-13%2B%20Ventura%20%7C%20Sonoma%20%7C%20Sequoia-blue.svg?logo=apple" alt="macOS 13+">
   <img src="https://img.shields.io/badge/Swift-5.9%2B-orange.svg?logo=swift" alt="Swift 5.9+">
   <img src="https://img.shields.io/badge/UI-SwiftUI%20%26%20AppKit-purple.svg" alt="SwiftUI & AppKit">
@@ -25,7 +25,10 @@
 
 ## 🌟 Highlights & Features
 
-- 🪄 **Smart Folder Auto-Suggestions (v0.2)**: Intelligent directory detection (Code, Documents, Photos, Music, Finance, Archive, etc.) with instant 1-tap style recommendations! 📁
+- 🪨 **Visual Texture Swatch Grid (v0.3)**: Interactive card preview gallery displaying tactile surface finishes (Carbon Fiber, Brushed Metal, Tactile Pebble Grain, Dot Matrix Grid, Diagonal Ribs) rendered live over active folder colors! 🎨
+- 🪄 **Surprise Me 2.0 (v0.3)**: Prominently placed at the top of Themes, generating procedural textures, 24 curated tri-color palettes, 3-stop mesh gradients, corner badges, monograms, and liquid glass with 1 click! ✨
+- 📦 **Unified Apply & Export Hub (v0.3)**: Centralized all export functions (Live Finder Folder Skinning, Batch Styler, Clipboard PNG, ICNS package, and .folderlab preset export/import) into the Apply tab! 🚀
+- 🪄 **Smart Folder Auto-Suggestions**: Intelligent directory detection (Code, Documents, Photos, Music, Finance, Archive, etc.) with instant 1-tap style recommendations! 📁
 - 🧶 **Procedural Surface Textures (v0.2)**: Vector-sharp Carbon Fiber, Brushed Metal, Tactile Leather Grain, Dot Matrix Grid, and Diagonal Ribs! 🪨
 - 🎨 **3-Stop Multi-Color Gradients (v0.2)**: Rich multi-stop gradients with middle accent color transitions for modern mesh aesthetics! ✨
 - 🏷️ **Corner Status Mini-Badges (v0.2)**: Engrave discrete corner badges (Lock 🔒, Star ⭐, Checkmark ✅, Warning ⚠️, Cloud ☁️, Tag 🏷️) with custom tinting!
@@ -91,8 +94,8 @@ brew install --cask https://raw.githubusercontent.com/balshaansingh29/FolderLab/
 
 ### 📥 Manual Download (DMG / ZIP)
 Grab the latest pre-compiled build:
-- 💿 **[FolderLab-v0.2.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.2.dmg)** *(Clean drag-and-drop installer for `/Applications`)*
-- 📦 **[FolderLab-v0.2.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.2.zip)** *(Standalone application archive)*
+- 💿 **[FolderLab-v0.3.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.3.dmg)** *(Clean drag-and-drop installer for `/Applications`)*
+- 📦 **[FolderLab-v0.3.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.3.zip)** *(Standalone application archive)*
 
 > [!TIP]
 > **First time opening on macOS?**
