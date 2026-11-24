@@ -300,13 +300,6 @@ final class IconStore: ObservableObject {
 
             let detected = self.detectPeekContent(for: url)
             self.spec.peekDetectedType = detected
-
-            if IconExporter.isDesktopFolder(url) {
-                self.desktopAlertURL = url
-                self.desktopAlertTitle = "Desktop Folder Detected"
-                self.desktopAlertMessage = "This folder is located on your Desktop. macOS caches Desktop icons, so remember to open the folder once in Finder after applying to show the change."
-                self.showDesktopAlert = true
-            }
         }
 
         notify("Loaded '\(url.lastPathComponent)' into Studio! You can now customize this design directly. 🎨")
