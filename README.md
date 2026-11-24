@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v0.4-brightgreen.svg" alt="Release v0.4">
+  <img src="https://img.shields.io/badge/Release-v0.5-brightgreen.svg" alt="Release v0.5">
   <img src="https://img.shields.io/badge/macOS-13%2B%20Ventura%20%7C%20Sonoma%20%7C%20Sequoia-blue.svg?logo=apple" alt="macOS 13+">
   <img src="https://img.shields.io/badge/Swift-5.9%2B-orange.svg?logo=swift" alt="Swift 5.9+">
   <img src="https://img.shields.io/badge/UI-SwiftUI%20%26%20AppKit-purple.svg" alt="SwiftUI & AppKit">
@@ -96,8 +96,8 @@ brew install --cask https://raw.githubusercontent.com/balshaansingh29/FolderLab/
 
 ### 📥 Manual Download (DMG / ZIP)
 Grab the latest pre-compiled build:
-- 💿 **[FolderLab-v0.4.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.4/FolderLab-v0.4.dmg)** *(Clean drag-and-drop installer for `/Applications`)*
-- 📦 **[FolderLab-v0.4.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.4/FolderLab-v0.4.zip)** *(Standalone application archive)*
+- 💿 **[FolderLab-v0.5.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.5/FolderLab-v0.5.dmg)** *(Clean drag-and-drop installer for `/Applications`)*
+- 📦 **[FolderLab-v0.5.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.5/FolderLab-v0.5.zip)** *(Standalone application archive)*
 
 > [!TIP]
 > **First time opening on macOS?**

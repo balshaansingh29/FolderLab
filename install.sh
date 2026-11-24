@@ -7,7 +7,7 @@ LATEST_RELEASE=$(curl -s https://api.github.com/repos/balshaansingh29/FolderLab/
 DMG_URL=$(echo "$LATEST_RELEASE" | grep "browser_download_url.*FolderLab-.*\.dmg" | head -n 1 | cut -d '"' -f 4)
 
 if [ -z "$DMG_URL" ]; then
-    DMG_URL="https://github.com/balshaansingh29/FolderLab/releases/download/v0.4/FolderLab-v0.4.dmg"
+    DMG_URL="https://github.com/balshaansingh29/FolderLab/releases/download/v0.5/FolderLab-v0.5.dmg"
 fi
 
 TMP_DIR=$(mktemp -d)
