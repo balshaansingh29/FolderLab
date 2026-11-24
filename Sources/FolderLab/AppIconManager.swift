@@ -195,31 +195,33 @@ final class AppIconManager: ObservableObject {
 
     func loadIconComposerImage(for variant: AppIconVariant) -> NSImage? {
         let actual = (variant == .automatic) ? activeResolvedVariant : variant
-        let baseName: String
+        let candidates: [String]
         switch actual {
-        case .light, .automatic: baseName = "AppIcon_Light"
-        case .dark: baseName = "AppIcon_Dark"
-        case .clearLight: baseName = "AppIcon_ClearLight"
-        case .clearDark: baseName = "AppIcon_ClearDark"
-        case .tinted: baseName = "AppIcon_Tinted"
+        case .light, .automatic: candidates = ["AppIcon", "AppIcon_Light"]
+        case .dark: candidates = ["AppIcon_Dark", "AppIcon"]
+        case .clearLight: candidates = ["AppIcon_ClearLight", "AppIcon_Clear", "AppIcon"]
+        case .clearDark: candidates = ["AppIcon_ClearDark", "AppIcon_Clear", "AppIcon"]
+        case .tinted: candidates = ["AppIcon_Tinted", "AppIcon"]
         }
 
-        if let cached = imageCache[baseName] {
-            return cached
-        }
+        for baseName in candidates {
+            if let cached = imageCache[baseName] {
+                return cached
+            }
 
-        // 1. Check Bundle.module
-        if let url = Bundle.module.url(forResource: baseName, withExtension: "png"),
-           let img = NSImage(contentsOf: url) {
-            imageCache[baseName] = img
-            return img
-        }
+            // 1. Check Bundle.module
+            if let url = Bundle.module.url(forResource: baseName, withExtension: "png"),
+               let img = NSImage(contentsOf: url) {
+                imageCache[baseName] = img
+                return img
+            }
 
-        // 2. Check Bundle.main
-        if let url = Bundle.main.url(forResource: baseName, withExtension: "png"),
-           let img = NSImage(contentsOf: url) {
-            imageCache[baseName] = img
-            return img
+            // 2. Check Bundle.main
+            if let url = Bundle.main.url(forResource: baseName, withExtension: "png"),
+               let img = NSImage(contentsOf: url) {
+                imageCache[baseName] = img
+                return img
+            }
         }
 
         return nil
