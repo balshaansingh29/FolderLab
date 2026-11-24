@@ -141,7 +141,12 @@ enum IconExporter {
             if spec.syncFinderTag, let tag = spec.selectedFinderTag {
                 _ = setFinderTag(tag.rawValue, for: url)
             }
+            try? FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: url.path)
             NSWorkspace.shared.noteFileSystemChanged(url.path)
+            let parent = url.deletingLastPathComponent().path
+            if !parent.isEmpty {
+                NSWorkspace.shared.noteFileSystemChanged(parent)
+            }
             return (true, "Customized folder '\(url.lastPathComponent)'! ✨")
         } else {
             return (false, "Failed to customize '\(url.lastPathComponent)'. Check permissions.")
@@ -156,12 +161,11 @@ enum IconExporter {
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = true
         guard panel.runModal() == .OK, !panel.urls.isEmpty else { return "Cancelled." }
-        guard let image = nsImage(spec, pixels: 1024) else { return "Could not render icon." }
 
         var ok = 0, failed = 0
         for url in panel.urls {
-            if NSWorkspace.shared.setIcon(image, forFile: url.path, options: []) {
-                NSWorkspace.shared.noteFileSystemChanged(url.path)
+            let (success, _) = apply(spec: spec, to: url)
+            if success {
                 ok += 1
             } else {
                 failed += 1
@@ -184,7 +188,13 @@ enum IconExporter {
         var ok = 0, failed = 0
         for url in panel.urls {
             if NSWorkspace.shared.setIcon(nil, forFile: url.path, options: []) {
+                removeStoredSpec(for: url)
+                try? FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: url.path)
                 NSWorkspace.shared.noteFileSystemChanged(url.path)
+                let parent = url.deletingLastPathComponent().path
+                if !parent.isEmpty {
+                    NSWorkspace.shared.noteFileSystemChanged(parent)
+                }
                 ok += 1
             } else {
                 failed += 1
@@ -219,15 +229,10 @@ enum IconExporter {
             return "No subfolders found in '\(parentDir.lastPathComponent)'."
         }
 
-        guard let image = nsImage(spec, pixels: 1024) else { return "Could not render icon." }
-
         var ok = 0, failed = 0
         for folder in subfolders {
-            if NSWorkspace.shared.setIcon(image, forFile: folder.path, options: []) {
-                if spec.syncFinderTag, let tag = spec.selectedFinderTag {
-                    _ = setFinderTag(tag.rawValue, for: folder)
-                }
-                NSWorkspace.shared.noteFileSystemChanged(folder.path)
+            let (success, _) = apply(spec: spec, to: folder)
+            if success {
                 ok += 1
             } else {
                 failed += 1
@@ -264,7 +269,13 @@ enum IconExporter {
         var ok = 0, failed = 0
         for folder in subfolders {
             if NSWorkspace.shared.setIcon(nil, forFile: folder.path, options: []) {
+                removeStoredSpec(for: folder)
+                try? FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: folder.path)
                 NSWorkspace.shared.noteFileSystemChanged(folder.path)
+                let parent = folder.deletingLastPathComponent().path
+                if !parent.isEmpty {
+                    NSWorkspace.shared.noteFileSystemChanged(parent)
+                }
                 ok += 1
             } else {
                 failed += 1

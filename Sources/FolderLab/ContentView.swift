@@ -1073,7 +1073,7 @@ struct StudioCanvasView: View {
                         .background(Color.accentColor.opacity(0.14).clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous)))
                         .overlay {
                             VStack(spacing: 8) {
-                                Image(systemName: "folder.badge.gearshape.fill")
+                                Image(systemName: "folder.badge.gearshape")
                                     .font(.system(size: 40))
                                     .foregroundStyle(Color.accentColor)
                                 Text("Drop Folder to Stage & Compare Live!")
@@ -1447,7 +1447,7 @@ struct StudioCanvasView: View {
                 store.applyToItems()
             } label: {
                 HStack(spacing: 6) {
-                    Image(systemName: "folder.badge.gearshape.fill")
+                    Image(systemName: "folder.badge.gearshape")
                     Text("Apply to Folder…")
                 }
                 .font(.system(size: 13, weight: .semibold))
@@ -1508,7 +1508,7 @@ struct StudioCanvasView: View {
                 store.applyToStagedFolder()
             } label: {
                 HStack(spacing: 6) {
-                    Image(systemName: staged.isApplied ? "checkmark.circle.fill" : "folder.badge.gearshape.fill")
+                    Image(systemName: staged.isApplied ? "checkmark.circle.fill" : "folder.badge.gearshape")
                     Text(staged.isApplied ? "Re-Apply to '\(staged.name)'" : "Apply to '\(staged.name)'")
                 }
                 .font(.system(size: 13, weight: .bold))
@@ -3667,7 +3667,7 @@ struct TextInspectorTab: View {
                         }
                     } label: {
                         HStack(spacing: 8) {
-                            Image(systemName: "folder.badge.gearshape.fill")
+                            Image(systemName: "folder.badge.gearshape")
                                 .font(.system(size: 14))
                             Text("Choose Folder & Rename on Mac…")
                                 .font(.system(size: 13, weight: .bold))
@@ -3727,7 +3727,7 @@ struct ExportInspectorTab: View {
                 InspectorSectionHeader(
                     title: "Folder Applier (Finder Live)",
                     subtitle: "Apply your customized folder icon directly to folders on your Mac",
-                    icon: "folder.badge.gearshape.fill",
+                    icon: "folder.badge.gearshape",
                     iconColor: .accentColor
                 )
 
@@ -3770,7 +3770,7 @@ struct ExportInspectorTab: View {
                                     store.applyToStagedFolder()
                                 } label: {
                                     HStack(spacing: 5) {
-                                        Image(systemName: staged.isApplied ? "checkmark.circle.fill" : "folder.badge.gearshape.fill")
+                                        Image(systemName: staged.isApplied ? "checkmark.circle.fill" : "folder.badge.gearshape")
                     Text(staged.isApplied ? "Re-Apply to '\(staged.name)'" : "Apply to '\(staged.name)'")
                                     }
                                     .font(.system(size: 12, weight: .bold))
@@ -3834,7 +3834,7 @@ struct ExportInspectorTab: View {
                         store.applyToItems()
                     } label: {
                         HStack(spacing: 10) {
-                            Image(systemName: "folder.badge.gearshape.fill")
+                            Image(systemName: "folder.badge.gearshape")
                                 .font(.system(size: 18))
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("Apply to Folder in Finder…")
