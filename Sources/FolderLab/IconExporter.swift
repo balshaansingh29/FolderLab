@@ -133,6 +133,39 @@ enum IconExporter {
         removexattr(url.path, xattrSpecKey, 0)
     }
 
+    // MARK: - Finder Desktop & Window Invalidation
+
+    public static func refreshFinder(for url: URL) {
+        try? FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: url.path)
+        let iconPath = url.appendingPathComponent("Icon\r").path
+        if FileManager.default.fileExists(atPath: iconPath) {
+            try? FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: iconPath)
+        }
+
+        NSWorkspace.shared.noteFileSystemChanged(url.path)
+        let parent = url.deletingLastPathComponent().path
+        if !parent.isEmpty {
+            NSWorkspace.shared.noteFileSystemChanged(parent)
+        }
+
+        DispatchQueue.global(qos: .utility).async {
+            let escaped = url.path.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
+            let script = """
+            tell application "Finder"
+                try
+                    update (POSIX file "\(escaped)" as alias)
+                    update desktop
+                end try
+            end tell
+            """
+            let p = Process()
+            p.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+            p.arguments = ["-e", script]
+            try? p.run()
+            p.waitUntilExit()
+        }
+    }
+
     // MARK: Apply to files / folders
 
     static func apply(spec: IconSpec, to url: URL) -> (success: Bool, message: String) {
@@ -145,12 +178,7 @@ enum IconExporter {
             if spec.syncFinderTag, let tag = spec.selectedFinderTag {
                 _ = setFinderTag(tag.rawValue, for: url)
             }
-            try? FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: url.path)
-            NSWorkspace.shared.noteFileSystemChanged(url.path)
-            let parent = url.deletingLastPathComponent().path
-            if !parent.isEmpty {
-                NSWorkspace.shared.noteFileSystemChanged(parent)
-            }
+            refreshFinder(for: url)
             return (true, "Customized folder '\(url.lastPathComponent)'! ✨")
         } else {
             return (false, "Failed to customize '\(url.lastPathComponent)'. Check permissions.")
@@ -193,12 +221,7 @@ enum IconExporter {
         for url in panel.urls {
             if NSWorkspace.shared.setIcon(nil, forFile: url.path, options: []) {
                 removeStoredSpec(for: url)
-                try? FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: url.path)
-                NSWorkspace.shared.noteFileSystemChanged(url.path)
-                let parent = url.deletingLastPathComponent().path
-                if !parent.isEmpty {
-                    NSWorkspace.shared.noteFileSystemChanged(parent)
-                }
+                refreshFinder(for: url)
                 ok += 1
             } else {
                 failed += 1
@@ -274,12 +297,7 @@ enum IconExporter {
         for folder in subfolders {
             if NSWorkspace.shared.setIcon(nil, forFile: folder.path, options: []) {
                 removeStoredSpec(for: folder)
-                try? FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: folder.path)
-                NSWorkspace.shared.noteFileSystemChanged(folder.path)
-                let parent = folder.deletingLastPathComponent().path
-                if !parent.isEmpty {
-                    NSWorkspace.shared.noteFileSystemChanged(parent)
-                }
+                refreshFinder(for: folder)
                 ok += 1
             } else {
                 failed += 1

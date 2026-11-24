@@ -129,41 +129,7 @@ final class IconStore: ObservableObject {
         }
     }
 
-    // MARK: - Smart Folder Suggestions (v0.2)
-    @Published var activeSuggestion: FolderSuggestion? = nil
 
-    func checkSmartSuggestion(for url: URL) {
-        if let suggestion = SmartFolderSuggester.suggest(for: url) {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
-                self.activeSuggestion = suggestion
-            }
-        }
-    }
-
-    func applySuggestion(_ suggestion: FolderSuggestion) {
-        snapshotUndo()
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-            spec.color1 = suggestion.color1
-            spec.color2 = suggestion.color2
-            if let c3 = suggestion.color3 {
-                spec.useThreeColorGradient = true
-                spec.color3 = c3
-            } else {
-                spec.useThreeColorGradient = false
-            }
-            spec.texture = suggestion.texture
-            spec.cornerBadge = suggestion.badge
-            spec.glyphKind = .symbol
-            spec.symbolName = suggestion.symbolName
-            if let peek = suggestion.peekContentType {
-                spec.peekInsideEnabled = true
-                spec.peekContentType = peek
-            }
-            activeSuggestion = nil
-        }
-        addToRecents(spec)
-        notify("Applied smart '\(suggestion.title)' style! 🪄")
-    }
 
     init() {
         loadRecents()
@@ -251,7 +217,6 @@ final class IconStore: ObservableObject {
     func apply(to url: URL) {
         lastTargetFolderURL = url
         addToRecents(spec)
-        checkSmartSuggestion(for: url)
         let (ok, msg) = IconExporter.apply(spec: spec, to: url)
         notify(msg, isError: !ok)
     }
@@ -320,7 +285,6 @@ final class IconStore: ObservableObject {
             self.spec.peekDetectedType = detected
         }
 
-        checkSmartSuggestion(for: url)
         notify("Loaded '\(url.lastPathComponent)' into Studio! You can now customize this design directly. 🎨")
     }
 
@@ -422,7 +386,7 @@ final class IconStore: ObservableObject {
         if success {
             IconExporter.removeStoredSpec(for: staged.url)
             folderDesignHistory.removeValue(forKey: staged.url.path)
-            NSWorkspace.shared.noteFileSystemChanged(staged.url.path)
+            IconExporter.refreshFinder(for: staged.url)
             let refreshedIcon = NSWorkspace.shared.icon(forFile: staged.url.path)
             refreshedIcon.size = NSSize(width: 512, height: 512)
             withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
@@ -732,54 +696,7 @@ struct StudioCanvasView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 14)
 
-                // Smart Folder Suggestion Banner (v0.2)
-                if let suggestion = store.activeSuggestion {
-                    HStack(spacing: 12) {
-                        Image(systemName: "wand.and.stars")
-                            .foregroundStyle(.yellow)
-                            .font(.system(size: 14, weight: .bold))
 
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack(spacing: 6) {
-                                Text("Smart Suggestion:")
-                                    .font(.system(size: 11, weight: .bold))
-                                    .foregroundStyle(.secondary)
-                                Text(suggestion.title)
-                                    .font(.system(size: 12, weight: .bold))
-                                    .foregroundStyle(.primary)
-                            }
-                            Text(suggestion.reason)
-                                .font(.system(size: 10))
-                                .foregroundStyle(.secondary)
-                        }
-
-                        Spacer()
-
-                        Button("Apply Style") {
-                            store.applySuggestion(suggestion)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.small)
-
-                        Button {
-                            withAnimation { store.activeSuggestion = nil }
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 14))
-                                .foregroundStyle(.secondary)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .strokeBorder(Color.yellow.opacity(0.35), lineWidth: 1)
-                    )
-                    .padding(.horizontal, 16)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                }
 
                 Spacer(minLength: 10)
 
