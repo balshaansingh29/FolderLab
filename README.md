@@ -25,10 +25,10 @@
 
 ## 🌟 Highlights & Features
 
-- 🏷️ **Folder Nameplate / Label Banner on Icon (v0.4)**: Customizable horizontal text banner or embossed label across the folder flap! Choose from 6 distinct styles: **Retro Dymo Embossed Tape**, **Modern Glass Capsule**, **Engraved Brass Plaque**, **Cyber Neon Ribbon**, **Paper Masking Tape**, and **Minimal Clean Tag** with customizable vertical position, scale, text, and colors! 🏷️✨
+- 🏷️ **Folder Nameplate / Label Banner on Icon (v0.4)**: Customizable horizontal text banner or embossed label across the folder flap! Choose from 7 distinct styles: **Retro Dymo Embossed Tape**, **Modern Glass Capsule**, **Engraved Brass Plaque**, **Cyber Neon Ribbon**, **Paper Masking Tape**, **Minimal Clean Tag**, and **Text Only**, with authentic native macOS folder debossed/engraved styling, customizable vertical position, scale, text, and colors! 🏷️✨
 - 🔤 **Unicode Folder Renamer Studio (v0.4)**: Pick from 14 expressive Unicode typography styles (*Bold Sans, Bold Serif, Script / Calligraphy, Monospace, Double-Struck Blackboard, Fraktur Gothic, Circled / Dark Bubbles, Small Caps, Fullwidth*), preview live in real-time, and rename folders on your Mac directly on disk via Finder! 📁🖋️
 - 🪨 **Visual Texture Swatch Grid (v0.3)**: Interactive card preview gallery displaying tactile surface finishes (Carbon Fiber, Brushed Metal, Tactile Pebble Grain, Dot Matrix Grid, Diagonal Ribs) rendered live over active folder colors! 🎨
-- 🪄 **Surprise Me 2.0 (v0.3)**: Prominently placed at the top of Themes, generating procedural textures, 24 curated tri-color palettes, 3-stop mesh gradients, corner badges, monograms, and liquid glass with 1 click! ✨
+- 🪄 **Surprise Me (v0.4 Enhanced)**: Prominently placed at the top of Themes, generating procedural textures, 24 curated tri-color palettes, 3-stop mesh gradients, corner badges, monograms, liquid glass, and procedural nameplates across 6 intelligent aesthetic archetypes with 1 click! ✨
 - 📦 **Unified Apply & Export Hub (v0.3)**: Centralized all export functions (Live Finder Folder Skinning, Batch Styler, Clipboard PNG, ICNS package, and .folderlab preset export/import) into the Apply tab! 🚀
 - 🪄 **Smart Folder Auto-Suggestions**: Intelligent directory detection (Code, Documents, Photos, Music, Finance, Archive, etc.) with instant 1-tap style recommendations! 📁
 - 🧶 **Procedural Surface Textures (v0.2)**: Vector-sharp Carbon Fiber, Brushed Metal, Tactile Leather Grain, Dot Matrix Grid, and Diagonal Ribs! 🪨
@@ -37,7 +37,7 @@
 - ✍️ **Typography & 3D Depth Stamping (v0.2)**: SF Pro Rounded, SF Mono, and New York Serif fonts with Embossed or Engraved 3D tactile bevels! 🔮
 - ↩️ **Full Undo & Redo (v0.2)**: 30-level state history with `⌘Z` / `⇧⌘Z` keyboard shortcuts and canvas toolbar buttons! ⚡
 - 🕒 **Recently Applied Styles Shelf (v0.2)**: Horizontal recents gallery in the Themes inspector to quickly re-apply your favorite folder designs! 🎨
-- ⚡ **Automatic 1-Click In-App Updater (v0.4)**: Seamless silent background installation! Clicking "Update Now" automatically mounts the installer, upgrades , strips quarantine flags, and relaunches with zero manual dragging! 🚀
+- ⚡ **Automatic 1-Click In-App Updater (v0.4)**: Seamless silent background installation! Clicking "Update Now" automatically mounts the installer, upgrades FolderLab, strips quarantine flags, and relaunches with zero manual dragging! 🚀
 - 🎯 **Direct Finder Drag & Drop**: Simply drag any folder from macOS Finder directly onto the preview stage to customize it instantly! ⚡
 - 🗂️ **Batch & Bulk Folder Styler**: Select multiple directories at once or re-theme all subfolders in a folder with one tap! 📁
 - 🖼️ **Custom Image & Stamp Importer**: Drop any PNG, JPG, or SVG image to stamp logos, team badges, or stickers onto the folder flap! 🎨
