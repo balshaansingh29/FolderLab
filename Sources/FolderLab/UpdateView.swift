@@ -55,6 +55,10 @@ public struct UpdateSheetView: View {
                     updateAvailableView(release: release)
                 case .downloading(let progress, let bytesWritten, let totalBytes):
                     downloadingView(progress: progress, written: bytesWritten, total: totalBytes)
+                case .installing(let status):
+                    installingView(status: status)
+                case .installed(let version, let appURL):
+                    installedView(version: version, appURL: appURL)
                 case .readyToInstall(let fileURL, let version):
                     readyToInstallView(fileURL: fileURL, version: version)
                 case .error(let message):
@@ -230,6 +234,51 @@ public struct UpdateSheetView: View {
         }
     }
 
+    private func installingView(status: String) -> some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .controlSize(.regular)
+
+            VStack(spacing: 4) {
+                Text(status)
+                    .font(.system(size: 14, weight: .bold))
+                Text("Mounting installer, replacing previous application bundle, and verifying security permissions…")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding(.horizontal, 24)
+    }
+
+    private func installedView(version: String, appURL: URL) -> some View {
+        VStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(Color.green.opacity(0.15))
+                    .frame(width: 56, height: 56)
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.system(size: 34))
+                    .foregroundStyle(.green)
+            }
+
+            VStack(spacing: 4) {
+                Text("FolderLab \(version) Installed! 🎉")
+                    .font(.system(size: 15, weight: .bold))
+                Text("Successfully updated in:\n\(appURL.path)")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            Text("Click 'Relaunch Now' to restart with the new version.")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(Color.accentColor)
+                .padding(.top, 2)
+        }
+        .padding(.horizontal, 20)
+    }
+
     private func readyToInstallView(fileURL: URL, version: String) -> some View {
         VStack(spacing: 12) {
             ZStack {
@@ -335,13 +384,35 @@ public struct UpdateSheetView: View {
             .buttonStyle(.borderedProminent)
             .keyboardShortcut(.defaultAction)
 
-        case .downloading:
+        case .downloading, .installing:
             EmptyView()
 
-        case .readyToInstall:
-            Button("Done") {
+        case .installed(_, let appURL):
+            Button("Later") {
                 updater.isUpdateSheetPresented = false
                 dismiss()
+            }
+            .buttonStyle(.bordered)
+
+            Button {
+                updater.relaunchApp(at: appURL)
+            } label: {
+                Label("Relaunch Now", systemImage: "arrow.clockwise.circle.fill")
+            }
+            .buttonStyle(.borderedProminent)
+            .keyboardShortcut(.defaultAction)
+
+        case .readyToInstall(let fileURL, let version):
+            Button("Cancel") {
+                updater.isUpdateSheetPresented = false
+                dismiss()
+            }
+            .buttonStyle(.bordered)
+
+            Button {
+                updater.performAutomaticInstall(fileURL: fileURL, version: version)
+            } label: {
+                Label("Install Now", systemImage: "arrow.down.app.fill")
             }
             .buttonStyle(.borderedProminent)
             .keyboardShortcut(.defaultAction)

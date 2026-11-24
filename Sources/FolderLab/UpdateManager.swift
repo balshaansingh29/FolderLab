@@ -63,6 +63,8 @@ public enum UpdateState: Equatable {
     case upToDate(version: String, lastChecked: Date)
     case updateAvailable(release: GitHubRelease)
     case downloading(progress: Double, bytesWritten: Int64, totalBytes: Int64)
+    case installing(status: String)
+    case installed(version: String, appURL: URL)
     case readyToInstall(fileURL: URL, version: String)
     case error(message: String)
 
@@ -76,6 +78,10 @@ public enum UpdateState: Equatable {
             return r1.tagName == r2.tagName
         case (.downloading(let p1, _, _), .downloading(let p2, _, _)):
             return abs(p1 - p2) < 0.001
+        case (.installing(let s1), .installing(let s2)):
+            return s1 == s2
+        case (.installed(let v1, let u1), .installed(let v2, let u2)):
+            return v1 == v2 && u1 == u2
         case (.readyToInstall(let u1, let v1), .readyToInstall(let u2, let v2)):
             return u1 == u2 && v1 == v2
         case (.error(let m1), .error(let m2)):
@@ -230,9 +236,8 @@ public final class UpdateManager: NSObject, ObservableObject {
 
                 do {
                     try FileManager.default.moveItem(at: tempURL, to: destinationURL)
-                    self.state = .readyToInstall(fileURL: destinationURL, version: release.tagName)
-                    // Automatically prompt or mount
-                    self.installDownloadedPackage(fileURL: destinationURL)
+                    // Automatically install directly once downloaded!
+                    self.performAutomaticInstall(fileURL: destinationURL, version: release.tagName)
                 } catch {
                     self.state = .error(message: "Failed to save downloaded file: \(error.localizedDescription)")
                 }
@@ -260,6 +265,165 @@ public final class UpdateManager: NSObject, ObservableObject {
         downloadObservation?.invalidate()
         downloadObservation = nil
         state = .idle
+    }
+
+    // MARK: - Automatic In-Place Installation
+
+    public func performAutomaticInstall(fileURL: URL, version: String) {
+        self.state = .installing(status: "Installing FolderLab \(version)…")
+
+        Task.detached(priority: .userInitiated) {
+            let fileManager = FileManager.default
+            let ext = fileURL.pathExtension.lowercased()
+
+            // 1. Determine destination URL
+            let targetURL: URL
+            let applicationsFolder = URL(fileURLWithPath: "/Applications/FolderLab.app")
+            let runningAppURL = Bundle.main.bundleURL
+
+            if runningAppURL.path.hasPrefix("/Applications") {
+                targetURL = applicationsFolder
+            } else if fileManager.isWritableFile(atPath: "/Applications") {
+                targetURL = applicationsFolder
+            } else if runningAppURL.pathExtension.lowercased() == "app" && fileManager.isWritableFile(atPath: runningAppURL.deletingLastPathComponent().path) {
+                targetURL = runningAppURL
+            } else {
+                targetURL = applicationsFolder
+            }
+
+            var extractedAppURL: URL? = nil
+            var mountPointToCleanup: URL? = nil
+            var tempDirToCleanup: URL? = nil
+
+            do {
+                if ext == "dmg" {
+                    // Mount DMG silently to temporary directory
+                    let mountPoint = URL(fileURLWithPath: NSTemporaryDirectory())
+                        .appendingPathComponent("FolderLabMount_\(UUID().uuidString)")
+                    try fileManager.createDirectory(at: mountPoint, withIntermediateDirectories: true)
+                    mountPointToCleanup = mountPoint
+
+                    let attachProc = Process()
+                    attachProc.executableURL = URL(fileURLWithPath: "/usr/bin/hdiutil")
+                    attachProc.arguments = ["attach", fileURL.path, "-nobrowse", "-mountpoint", mountPoint.path, "-quiet"]
+                    try attachProc.run()
+                    attachProc.waitUntilExit()
+
+                    if attachProc.terminationStatus != 0 {
+                        throw NSError(domain: "FolderLabUpdate", code: Int(attachProc.terminationStatus), userInfo: [NSLocalizedDescriptionKey: "Failed to mount DMG installer image."])
+                    }
+
+                    let potentialApp = mountPoint.appendingPathComponent("FolderLab.app")
+                    if fileManager.fileExists(atPath: potentialApp.path) {
+                        extractedAppURL = potentialApp
+                    } else {
+                        let contents = try fileManager.contentsOfDirectory(at: mountPoint, includingPropertiesForKeys: nil)
+                        extractedAppURL = contents.first { $0.pathExtension.lowercased() == "app" }
+                    }
+                } else {
+                    // Extract ZIP using ditto
+                    let tempDir = URL(fileURLWithPath: NSTemporaryDirectory())
+                        .appendingPathComponent("FolderLabExtract_\(UUID().uuidString)")
+                    try fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true)
+                    tempDirToCleanup = tempDir
+
+                    let unzipProc = Process()
+                    unzipProc.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
+                    unzipProc.arguments = ["-x", "-k", fileURL.path, tempDir.path]
+                    try unzipProc.run()
+                    unzipProc.waitUntilExit()
+
+                    let potentialApp = tempDir.appendingPathComponent("FolderLab.app")
+                    if fileManager.fileExists(atPath: potentialApp.path) {
+                        extractedAppURL = potentialApp
+                    } else {
+                        let contents = try fileManager.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
+                        extractedAppURL = contents.first { $0.pathExtension.lowercased() == "app" }
+                    }
+                }
+
+                guard let sourceApp = extractedAppURL, fileManager.fileExists(atPath: sourceApp.path) else {
+                    throw NSError(domain: "FolderLabUpdate", code: 404, userInfo: [NSLocalizedDescriptionKey: "Could not locate FolderLab.app inside downloaded archive."])
+                }
+
+                // If target app already exists, move it aside temporarily
+                let backupURL = URL(fileURLWithPath: NSTemporaryDirectory())
+                    .appendingPathComponent("FolderLab_Backup_\(UUID().uuidString).app")
+                if fileManager.fileExists(atPath: targetURL.path) {
+                    try? fileManager.removeItem(at: backupURL)
+                    try fileManager.moveItem(at: targetURL, to: backupURL)
+                }
+
+                // Copy new app to target location using ditto to preserve all metadata and signatures
+                let copyProc = Process()
+                copyProc.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
+                copyProc.arguments = [sourceApp.path, targetURL.path]
+                try copyProc.run()
+                copyProc.waitUntilExit()
+
+                if copyProc.terminationStatus != 0 {
+                    // Rollback backup if copy failed
+                    if fileManager.fileExists(atPath: backupURL.path) {
+                        try? fileManager.moveItem(at: backupURL, to: targetURL)
+                    }
+                    throw NSError(domain: "FolderLabUpdate", code: Int(copyProc.terminationStatus), userInfo: [NSLocalizedDescriptionKey: "Failed to copy updated FolderLab.app to \(targetURL.path)."])
+                }
+
+                // Strip quarantine attributes
+                let xattrProc = Process()
+                xattrProc.executableURL = URL(fileURLWithPath: "/usr/bin/xattr")
+                xattrProc.arguments = ["-cr", targetURL.path]
+                try? xattrProc.run()
+                xattrProc.waitUntilExit()
+
+                // Remove backup
+                try? fileManager.removeItem(at: backupURL)
+
+                // Cleanup mount point / temp
+                if let mountPoint = mountPointToCleanup {
+                    let detachProc = Process()
+                    detachProc.executableURL = URL(fileURLWithPath: "/usr/bin/hdiutil")
+                    detachProc.arguments = ["detach", mountPoint.path, "-quiet", "-force"]
+                    try? detachProc.run()
+                    detachProc.waitUntilExit()
+                    try? fileManager.removeItem(at: mountPoint)
+                }
+                if let tempDir = tempDirToCleanup {
+                    try? fileManager.removeItem(at: tempDir)
+                }
+
+                await MainActor.run {
+                    self.state = .installed(version: version, appURL: targetURL)
+                }
+            } catch {
+                // Cleanup on error
+                if let mountPoint = mountPointToCleanup {
+                    let detachProc = Process()
+                    detachProc.executableURL = URL(fileURLWithPath: "/usr/bin/hdiutil")
+                    detachProc.arguments = ["detach", mountPoint.path, "-quiet", "-force"]
+                    try? detachProc.run()
+                    detachProc.waitUntilExit()
+                    try? fileManager.removeItem(at: mountPoint)
+                }
+                if let tempDir = tempDirToCleanup {
+                    try? fileManager.removeItem(at: tempDir)
+                }
+
+                await MainActor.run {
+                    self.state = .error(message: "Automatic install failed: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
+    public func relaunchApp(at appURL: URL) {
+        let pid = ProcessInfo.processInfo.processIdentifier
+        let script = "while kill -0 " + String(pid) + " 2>/dev/null; do sleep 0.2; done; open -n \"" + appURL.path + "\""
+        let proc = Process()
+        proc.executableURL = URL(fileURLWithPath: "/bin/sh")
+        proc.arguments = ["-c", script]
+        try? proc.run()
+        NSApp.terminate(nil)
     }
 
     public func installDownloadedPackage(fileURL: URL) {

@@ -199,7 +199,10 @@ struct SettingsView: View {
         case .downloading:
             Image(systemName: "arrow.down.circle")
                 .foregroundStyle(.blue)
-        case .readyToInstall:
+        case .installing:
+            ProgressView()
+                .controlSize(.mini)
+        case .installed, .readyToInstall:
             Image(systemName: "checkmark.seal.fill")
                 .foregroundStyle(.green)
         case .error:
@@ -220,8 +223,12 @@ struct SettingsView: View {
             return "New version available: \(release.tagName)"
         case .downloading(let progress, _, _):
             return "Downloading update (\(Int(progress * 100))%)…"
+        case .installing(let status):
+            return status
+        case .installed(let ver, _):
+            return "FolderLab \(ver) installed! Click to relaunch."
         case .readyToInstall(_, let ver):
-            return "\(ver) is ready to install (DMG opened)"
+            return "\(ver) is ready to install"
         case .error(let msg):
             return msg
         }
