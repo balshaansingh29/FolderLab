@@ -73,8 +73,8 @@
 
 ### 📥 Direct Download (macOS App)
 Grab the latest pre-compiled build:
-- 💿 **[FolderLab-v0.1.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.1/FolderLab-v0.1.dmg)** *(Recommended: drag to `/Applications`)*
-- 📦 **[FolderLab-v0.1.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.1/FolderLab-v0.1.zip)** *(Standalone application archive)*
+- 💿 **[FolderLab-v0.2.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.2.dmg)** *(Recommended: drag to `/Applications`)*
+- 📦 **[FolderLab-v0.2.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.2.zip)** *(Standalone application archive)*
 
 ---
 
