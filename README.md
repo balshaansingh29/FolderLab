@@ -71,7 +71,13 @@
 
 ## 🚀 Getting Started
 
-### 📥 Direct Download (macOS App)
+### ⚡ Quick 1-Line Install (Recommended — Zero Popups)
+Run this in Terminal to automatically download, install to `/Applications`, and bypass macOS Gatekeeper quarantine without any security popups:
+```bash
+curl -fsSL https://raw.githubusercontent.com/balshaansingh29/FolderLab/main/install.sh | bash
+```
+
+### 📥 Manual Download (macOS App)
 Grab the latest pre-compiled build:
 - 💿 **[FolderLab-v0.2.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.2.dmg)** *(Recommended: drag to `/Applications`)*
 - 📦 **[FolderLab-v0.2.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.2.zip)** *(Standalone application archive)*
