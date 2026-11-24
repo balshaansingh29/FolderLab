@@ -1145,6 +1145,51 @@ struct PresetsInspectorTab: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
+            // One-Click Creative Tools ("Surprise Me" & "Reset Default")
+            InspectorSectionHeader(title: "Creative Tools", subtitle: "Instant smart variations & quick reset")
+
+            HStack(spacing: 12) {
+                Button {
+                    store.randomize()
+                } label: {
+                    HStack {
+                        Image(systemName: "sparkles")
+                        Text("Surprise Me")
+                    }
+                    .font(.system(size: 13, weight: .semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(
+                        LinearGradient(colors: [Color.blue, Color.purple], startPoint: .leading, endPoint: .trailing)
+                    )
+                    .foregroundStyle(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .shadow(color: .blue.opacity(0.3), radius: 6, y: 3)
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    store.resetToDefaults()
+                } label: {
+                    HStack {
+                        Image(systemName: "arrow.counterclockwise")
+                        Text("Reset Default")
+                    }
+                    .font(.system(size: 13, weight: .medium))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color(nsColor: .controlBackgroundColor))
+                    .foregroundStyle(.primary)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+
+            Divider().padding(.vertical, 4)
             // Recently Used Styles Shelf (v0.2)
             if !store.recentSpecs.isEmpty {
                 VStack(alignment: .leading, spacing: 10) {
@@ -1203,51 +1248,6 @@ struct PresetsInspectorTab: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
 
-            // Shareable Themes & Presets (.folderlab) (Feature 7)
-            InspectorSectionHeader(title: "Share & Community Themes", subtitle: "Export or import portable .folderlab preset files")
-
-            HStack(spacing: 10) {
-                Button {
-                    store.exportThemePreset()
-                } label: {
-                    HStack {
-                        Image(systemName: "square.and.arrow.up")
-                        Text("Export Preset…")
-                    }
-                    .font(.system(size: 12, weight: .semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
-                    )
-                }
-                .buttonStyle(.plain)
-
-                Button {
-                    store.importThemePreset()
-                } label: {
-                    HStack {
-                        Image(systemName: "square.and.arrow.down")
-                        Text("Import Preset…")
-                    }
-                    .font(.system(size: 12, weight: .semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
-                    )
-                }
-                .buttonStyle(.plain)
-            }
-
-            Divider().padding(.vertical, 4)
-
             // Folder Styles Grid (All 100% Free)
             InspectorSectionHeader(title: "Folder Themes", subtitle: "Handcrafted styles, vibrant gradients & luxury finishes")
 
@@ -1290,52 +1290,6 @@ struct PresetsInspectorTab: View {
                 .padding(10)
                 .background(Color(nsColor: .controlBackgroundColor).opacity(0.4))
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            }
-
-            Divider().padding(.vertical, 4)
-
-            // One-Click Actions
-            InspectorSectionHeader(title: "Creative Tools", subtitle: "Instant variations & quick reset")
-
-            HStack(spacing: 12) {
-                Button {
-                    store.randomize()
-                } label: {
-                    HStack {
-                        Image(systemName: "sparkles")
-                        Text("Surprise Me")
-                    }
-                    .font(.system(size: 13, weight: .semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(
-                        LinearGradient(colors: [Color.blue, Color.purple], startPoint: .leading, endPoint: .trailing)
-                    )
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    .shadow(color: .blue.opacity(0.3), radius: 6, y: 3)
-                }
-                .buttonStyle(.plain)
-
-                Button {
-                    store.resetToDefaults()
-                } label: {
-                    HStack {
-                        Image(systemName: "arrow.counterclockwise")
-                        Text("Reset Default")
-                    }
-                    .font(.system(size: 13, weight: .medium))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .foregroundStyle(.primary)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
-                    )
-                }
-                .buttonStyle(.plain)
             }
 
             Divider().padding(.vertical, 4)
@@ -2403,6 +2357,35 @@ struct ExportInspectorTab: View {
             ) {
                 store.exportICNS()
             }
+
+            Divider().padding(.vertical, 4)
+
+            // Section: Portable Theme Presets (.folderlab)
+            InspectorSectionHeader(title: "Shareable Theme Presets (.folderlab)", subtitle: "Export your design as a portable file or import community themes")
+
+            ExportActionCard(
+                title: "FolderLab Theme Preset (.folderlab)",
+                subtitle: "Export complete folder design including colors, textures, and glyphs into a shareable preset file",
+                buttonText: "Export Preset…",
+                systemImage: "square.and.arrow.up",
+                accentGradient: [Color.green, Color.teal]
+            ) {
+                store.exportThemePreset()
+            }
+
+            Button {
+                store.importThemePreset()
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "square.and.arrow.down")
+                    Text("Import .folderlab Preset File…")
+                }
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 6)
+            }
+            .buttonStyle(.plain)
         }
     }
 }
