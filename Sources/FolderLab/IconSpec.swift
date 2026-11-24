@@ -468,55 +468,64 @@ extension IconSpec {
         return s
     }
 
-    /// Generates an inspiring randomized icon with harmonious palette and aesthetic symbol.
-    /// Generates an inspiring randomized icon with harmonious palette, procedural surface textures, and aesthetic symbols.
-    static func random() -> IconSpec {
+    /// Generates an inspiring procedurally randomized icon with intelligent archetype styling, harmonious palettes, and optional nameplate text banners.
+    static func random(includeTextBar: Bool) -> (spec: IconSpec, summary: String) {
         func c(_ hex: String) -> Color { Color(hex: hex) ?? .blue }
 
-        // Curated 3-color harmonious gradient design palettes with matching glyph colors
-        let palettes: [(c1: String, c2: String, c3: String, glyph1: String, glyph2: String)] = [
-            ("#36D1DC", "#5B86E5", "#1E3C72", "#FFFFFF", "#E0F2FE"), // Hyper Blue
-            ("#FF8A5B", "#EA3B7A", "#6A11CB", "#FFFFFF", "#FFE4E6"), // Sunset Flame
-            ("#FF007F", "#7928CA", "#00F0FF", "#00F0FF", "#FFFFFF"), // Cyber Neon
-            ("#11998E", "#38EF7D", "#059669", "#FFFFFF", "#D1FAE5"), // Mint Emerald
-            ("#F7971E", "#FFD200", "#FF512F", "#FFFFFF", "#FEF3C7"), // Solar Amber
-            ("#3A3D45", "#141518", "#0B0C10", "#FFFFFF", "#94A3B8"), // Obsidian Titanium
-            ("#8E54E9", "#4776E6", "#141E30", "#FFFFFF", "#DDD6FE"), // Deep Nebula
-            ("#FC5C7D", "#6A82FB", "#A78BFA", "#FFFFFF", "#FBCFE8"), // Cotton Candy
-            ("#30CFD0", "#330867", "#1CB5E0", "#FFFFFF", "#CFFAFE"), // Nordic Ice
-            ("#ED213A", "#93291E", "#4B1212", "#FFFFFF", "#FECDD3"), // Crimson Ruby
-            ("#FF7E5F", "#FEB47B", "#7F00FF", "#FFFFFF", "#FED7AA"), // Vaporwave Dusk
-            ("#0D1117", "#161B22", "#00FF66", "#00FF66", "#FFFFFF"), // Hacker Matrix
-            ("#F5AF19", "#E65C00", "#FFE000", "#FFFFFF", "#FEF08A"), // Prestige Gold
-            ("#654EA3", "#EAAFC8", "#3B185F", "#FFFFFF", "#F3E8FF"), // Royal Amethyst
-            ("#6CD0FF", "#2F9DF4", "#0A84FF", "#FFFFFF", "#E0F2FE"), // Apple Finder Blue
-            ("#134E5E", "#71B280", "#0B3C49", "#FFFFFF", "#D1FAE5"), // Forest Moss
-            ("#0F2027", "#203A43", "#2C5364", "#FFFFFF", "#93C5FD"), // Midnight Oceanic
-            ("#485563", "#29323C", "#1E293B", "#FFFFFF", "#E2E8F0"), // Titanium Slate
-            ("#7F00FF", "#E100FF", "#3B0764", "#FFFFFF", "#F5D0FE"), // Electric Violet
-            ("#ED4264", "#FFEDBC", "#F43F5E", "#FFFFFF", "#FFE4E6"), // Peach Cream
-            ("#43E97B", "#38F9D7", "#10B981", "#FFFFFF", "#A7F3D0"), // Toxic Lime
-            ("#8A2387", "#E94057", "#F27121", "#FFFFFF", "#FED7AA"), // Bronze Copper
-            ("#2C3E50", "#3498DB", "#1A252F", "#FFFFFF", "#BAE6FD"), // Minimal Chalk
-            ("#18191C", "#23272A", "#7289DA", "#7289DA", "#FFFFFF")  // Stealth Discord
+        // Over 32 curated tri-color aesthetic design palettes
+        let palettes: [(name: String, c1: String, c2: String, c3: String, glyph1: String, glyph2: String)] = [
+            ("Apple Finder", "#6CD0FF", "#2F9DF4", "#0A84FF", "#FFFFFF", "#E0F2FE"),
+            ("Hyper Sapphire", "#2563EB", "#1D4ED8", "#1E3A8A", "#FFFFFF", "#93C5FD"),
+            ("Nordic Glacier", "#30CFD0", "#330867", "#1CB5E0", "#FFFFFF", "#CFFAFE"),
+            ("Cyber Synthwave", "#FF007F", "#7928CA", "#00F0FF", "#00F0FF", "#FFFFFF"),
+            ("Sunset Horizon", "#FF8A5B", "#EA3B7A", "#6A11CB", "#FFFFFF", "#FFE4E6"),
+            ("Solar Amber", "#F7971E", "#FFD200", "#FF512F", "#FFFFFF", "#FEF3C7"),
+            ("Mint Emerald", "#11998E", "#38EF7D", "#059669", "#FFFFFF", "#D1FAE5"),
+            ("Obsidian Titanium", "#3A3D45", "#141518", "#0B0C10", "#FFFFFF", "#94A3B8"),
+            ("Deep Nebula", "#8E54E9", "#4776E6", "#141E30", "#FFFFFF", "#DDD6FE"),
+            ("Cotton Candy", "#FC5C7D", "#6A82FB", "#A78BFA", "#FFFFFF", "#FBCFE8"),
+            ("Crimson Ruby", "#ED213A", "#93291E", "#4B1212", "#FFFFFF", "#FECDD3"),
+            ("Vaporwave Dusk", "#FF7E5F", "#FEB47B", "#7F00FF", "#FFFFFF", "#FED7AA"),
+            ("Hacker Matrix", "#0D1117", "#161B22", "#00FF66", "#00FF66", "#FFFFFF"),
+            ("Prestige Gold", "#F5AF19", "#E65C00", "#FFE000", "#FFFFFF", "#FEF08A"),
+            ("Royal Amethyst", "#654EA3", "#EAAFC8", "#3B185F", "#FFFFFF", "#F3E8FF"),
+            ("Forest Moss", "#134E5E", "#71B280", "#0B3C49", "#FFFFFF", "#D1FAE5"),
+            ("Midnight Oceanic", "#0F2027", "#203A43", "#2C5364", "#FFFFFF", "#93C5FD"),
+            ("Titanium Slate", "#485563", "#29323C", "#1E293B", "#FFFFFF", "#E2E8F0"),
+            ("Electric Violet", "#7F00FF", "#E100FF", "#3B0764", "#FFFFFF", "#F5D0FE"),
+            ("Peach Cream", "#ED4264", "#FFEDBC", "#F43F5E", "#FFFFFF", "#FFE4E6"),
+            ("Matcha Cream", "#10B981", "#059669", "#064E3B", "#FFFFFF", "#A7F3D0"),
+            ("Champagne Silk", "#FCD34D", "#F59E0B", "#D97706", "#FFFFFF", "#FEF3C7"),
+            ("Tokyo Neon", "#F43F5E", "#8B5CF6", "#06B6D4", "#FFFFFF", "#CFFAFE"),
+            ("Stealth Slate", "#18191C", "#23272A", "#7289DA", "#7289DA", "#FFFFFF"),
+            ("Emerald Glass", "#34D399", "#059669", "#065F46", "#FFFFFF", "#D1FAE5"),
+            ("Rose Quartz", "#FB7185", "#F43F5E", "#BE123C", "#FFFFFF", "#FFE4E6"),
+            ("Midnight Stealth", "#1E293B", "#0F172A", "#020617", "#FFFFFF", "#94A3B8"),
+            ("Solar Flare", "#F97316", "#EA580C", "#9A3412", "#FFFFFF", "#FED7AA"),
+            ("Glacier Chill", "#38BDF8", "#0284C7", "#0C4A6E", "#FFFFFF", "#E0F2FE"),
+            ("Toxic Lime", "#43E97B", "#38F9D7", "#10B981", "#FFFFFF", "#A7F3D0"),
+            ("Bronze Copper", "#8A2387", "#E94057", "#F27121", "#FFFFFF", "#FED7AA"),
+            ("Minimal Chalk", "#2C3E50", "#3498DB", "#1A252F", "#FFFFFF", "#BAE6FD")
         ]
 
-        let symbols = [
-            // Developer & Tech
+        let devSymbols = [
             "terminal.fill", "cpu.fill", "gearshape.2.fill", "macbook", "chevron.left.forwardslash.chevron.right",
-            "server.rack", "swift", "waveform.path.ecg", "network", "externaldrive.fill",
-            // Creative & Design
+            "server.rack", "swift", "waveform.path.ecg", "network", "externaldrive.fill", "folder.badge.gearshape.fill",
+            "lock.shield.fill", "key.fill", "archivebox.fill"
+        ]
+
+        let designSymbols = [
             "paintpalette.fill", "wand.and.stars", "sparkles", "cube.transparent.fill", "camera.fill",
-            "pencil.and.outline", "eyeglasses", "slider.horizontal.3", "circle.hexagongrid.fill",
-            // Energy & Nature
+            "pencil.and.outline", "circle.hexagongrid.fill", "slider.horizontal.3", "diamond.fill", "eye.fill"
+        ]
+
+        let mediaSymbols = [
+            "music.note", "headphones", "film.fill", "mic.fill", "speaker.wave.3.fill", "play.circle.fill"
+        ]
+
+        let natureSymbols = [
             "flame.fill", "bolt.fill", "drop.fill", "leaf.fill", "sun.max.fill", "moon.stars.fill",
-            // Power & Status
-            "star.fill", "crown.fill", "shield.checkerboard", "trophy.fill", "diamond.fill", "rosette",
-            // Media & Sound
-            "music.note", "headphones", "film.fill", "mic.fill", "bubble.left.and.bubble.right.fill",
-            // Exploration & Tools
-            "rocket.fill", "globe.americas.fill", "airplane", "paperplane.fill", "magnifyingglass",
-            "folder.badge.gearshape.fill", "chart.xyaxis.line", "lock.shield.fill", "key.fill", "heart.fill"
+            "globe.americas.fill", "rocket.fill", "airplane", "paperplane.fill", "star.fill", "crown.fill"
         ]
 
         let textMonograms = [
@@ -524,59 +533,297 @@ extension IconSpec {
             "🚀", "⚡️", "💎", "🔥", "🪐", "💡", "🎨", "👾", "🦊", "🎧", "☕️", "✨", "🛡️", "🔮", "🍀", "🍎", "🧬", "🕹️"
         ]
 
+        let devWords = ["DEV", "CODE", "SYSTEM", "TERMINAL", "BACKEND", "ENGINE", "API", "CLOUD"]
+        let designWords = ["STUDIO", "DESIGN", "ASSETS", "CAMERA", "CREATIVE", "PORTFOLIO", "PHOTOS"]
+        let securityWords = ["VAULT", "CONFIDENTIAL", "ARCHIVE", "TOP SECRET", "SECURE", "OFFICIAL", "RECORDS"]
+        let generalWords = ["PROJECTS", "LAB", "2026", "NOTES", "MUSIC", "MEDIA", "WORKSPACE", "CLIENT"]
+
         var s = IconSpec()
         s.base = .folder
         s.shape = .squircle
+        s.dropShadow = true
+        s.gloss = true
+        s.innerRim = true
 
-        // Pick palette
-        let pal = palettes.randomElement() ?? palettes[0]
-        s.color1 = c(pal.c1)
-        s.color2 = c(pal.c2)
-        s.color3 = c(pal.c3)
+        enum Archetype {
+            case nativeEngraved
+            case liquidGlass
+            case cyberNeon
+            case industrialStudio
+            case executiveLuxury
+            case modernMesh
+        }
 
-        // 3-Color Gradient (~38% probability)
-        let use3Stop = Double.random(in: 0...1) < 0.38
-        s.useThreeColorGradient = use3Stop
+        let archetypes: [Archetype] = [
+            .nativeEngraved, .nativeEngraved,
+            .liquidGlass,
+            .cyberNeon,
+            .industrialStudio,
+            .executiveLuxury,
+            .modernMesh, .modernMesh
+        ]
+        let chosenArchetype = archetypes.randomElement() ?? .nativeEngraved
 
-        // Dynamic Angles
-        s.gradientAngle = [0.0, 45.0, 90.0, 120.0, 135.0, 180.0, 225.0, 270.0].randomElement() ?? 90.0
+        var summaryText = ""
 
-        // Procedural Surface Textures (~58% probability)
-        let textureChance = Double.random(in: 0...1)
-        if textureChance < 0.58 {
-            let textures: [SurfaceTexture] = [.carbon, .brushed, .leather, .grid, .stripes]
-            s.texture = textures.randomElement() ?? .carbon
-            switch s.texture {
-            case .carbon:
-                s.textureOpacity = Double.random(in: 0.18...0.36)
-            case .brushed:
-                s.textureOpacity = Double.random(in: 0.22...0.42)
-            case .leather:
-                s.textureOpacity = Double.random(in: 0.18...0.34)
-            case .grid:
-                s.textureOpacity = Double.random(in: 0.18...0.32)
-            case .stripes:
-                s.textureOpacity = Double.random(in: 0.16...0.30)
-            case .none:
-                s.textureOpacity = 0.22
+        switch chosenArchetype {
+        case .nativeEngraved:
+            let nativePalettes = palettes.filter {
+                $0.name == "Apple Finder" || $0.name == "Titanium Slate" || $0.name == "Obsidian Titanium" || $0.name == "Forest Moss" || $0.name == "Crimson Ruby"
             }
-        } else {
-            s.texture = .none
-        }
+            let pal = nativePalettes.randomElement() ?? palettes[0]
+            s.color1 = c(pal.c1)
+            s.color2 = c(pal.c2)
+            s.color3 = c(pal.c3)
+            s.useThreeColorGradient = false
+            s.gradientAngle = 90.0
+            s.textDepthStyle = .engraved
+            s.glyphEngravedFolderTint = true
+            s.glyphKind = .symbol
+            s.symbolName = (devSymbols + designSymbols).randomElement() ?? "folder.badge.gearshape.fill"
+            s.texture = [.none, .none, .leather, .brushed].randomElement() ?? .none
+            s.textureOpacity = 0.20
 
-        // Liquid Glass Mode (~18% probability)
-        let isGlass = Double.random(in: 0...1) < 0.18
-        if isGlass {
+            if includeTextBar {
+                s.nameplateEnabled = true
+                s.nameplateStyle = [.folderEngraved, .textOnly, .retroTape].randomElement() ?? .folderEngraved
+                s.nameplateText = (securityWords + devWords).randomElement() ?? "PROJECTS"
+                s.nameplateMoveIconAbove = true
+                s.glyphScale = Double.random(in: 0.36...0.42)
+                s.nameplateScale = Double.random(in: 0.66...0.76)
+                s.nameplateYOffset = Double.random(in: 0.21...0.25)
+                if s.nameplateStyle == .folderEngraved {
+                    s.nameplateColor = Color.black.opacity(0.14)
+                    s.nameplateTextColor = Color.black.opacity(0.55)
+                } else if s.nameplateStyle == .textOnly {
+                    s.nameplateTextColor = .white
+                } else {
+                    s.nameplateColor = Color(hex: "#1A1A1A") ?? .black
+                    s.nameplateTextColor = .white
+                }
+            } else {
+                s.nameplateEnabled = false
+                s.glyphScale = Double.random(in: 0.44...0.52)
+            }
+            summaryText = "Generated '\(pal.name)' with Native macOS Debossing! 📁✨"
+
+        case .liquidGlass:
+            let glassPalettes = palettes.filter {
+                $0.name == "Hyper Sapphire" || $0.name == "Nordic Glacier" || $0.name == "Deep Nebula" || $0.name == "Cotton Candy" || $0.name == "Emerald Glass"
+            }
+            let pal = glassPalettes.randomElement() ?? palettes[1]
+            s.color1 = c(pal.c1)
+            s.color2 = c(pal.c2)
+            s.color3 = c(pal.c3)
             s.liquidGlass = true
-            s.glassOpacity = Double.random(in: 0.38...0.55)
-            s.specularRimWidth = 0.007
-        } else {
-            s.liquidGlass = false
+            s.glassOpacity = Double.random(in: 0.40...0.55)
+            s.specularRimWidth = 0.008
+            s.useThreeColorGradient = true
+            s.gradientAngle = [45.0, 90.0, 135.0].randomElement() ?? 135.0
+            s.glyphKind = .symbol
+            s.symbolName = (designSymbols + natureSymbols).randomElement() ?? "sparkles"
+            s.glyphColor = .white
+            s.glyphShadow = true
+
+            if includeTextBar {
+                s.nameplateEnabled = true
+                s.nameplateStyle = [.glassCapsule, .cleanTag, .textOnly].randomElement() ?? .glassCapsule
+                s.nameplateText = (designWords + generalWords).randomElement() ?? "STUDIO"
+                s.nameplateMoveIconAbove = true
+                s.glyphScale = Double.random(in: 0.36...0.42)
+                s.nameplateScale = Double.random(in: 0.65...0.75)
+                s.nameplateYOffset = Double.random(in: 0.20...0.24)
+                s.nameplateColor = s.color1.darker(0.25)
+                s.nameplateTextColor = .white
+            } else {
+                s.nameplateEnabled = false
+                s.glyphScale = Double.random(in: 0.45...0.54)
+            }
+            summaryText = "Generated '\(pal.name)' with Liquid Glass & Specular Sheen! 💎🧊"
+
+        case .cyberNeon:
+            let cyberPalettes = palettes.filter {
+                $0.name == "Cyber Synthwave" || $0.name == "Hacker Matrix" || $0.name == "Tokyo Neon" || $0.name == "Electric Violet"
+            }
+            let pal = cyberPalettes.randomElement() ?? palettes[3]
+            s.color1 = c(pal.c1)
+            s.color2 = c(pal.c2)
+            s.color3 = c(pal.c3)
+            s.useThreeColorGradient = true
+            s.gradientAngle = [90.0, 135.0, 225.0].randomElement() ?? 135.0
+            s.texture = [.carbon, .grid].randomElement() ?? .carbon
+            s.textureOpacity = Double.random(in: 0.22...0.35)
+            s.glyphKind = .symbol
+            s.symbolName = (devSymbols + ["bolt.fill", "flame.fill"]).randomElement() ?? "bolt.fill"
+            s.glyphGradient = true
+            s.glyphColor = c(pal.glyph1)
+            s.glyphColor2 = c(pal.glyph2)
+            s.glyphShadow = true
+
+            if includeTextBar {
+                s.nameplateEnabled = true
+                s.nameplateStyle = [.cyberRibbon, .retroTape, .cleanTag].randomElement() ?? .cyberRibbon
+                s.nameplateText = (devWords + ["CYBER", "MATRIX", "CORE"]).randomElement() ?? "CYBER"
+                s.nameplateMoveIconAbove = true
+                s.glyphScale = Double.random(in: 0.36...0.42)
+                s.nameplateScale = Double.random(in: 0.68...0.78)
+                s.nameplateYOffset = Double.random(in: 0.21...0.25)
+                s.nameplateColor = c(pal.glyph1)
+                s.nameplateTextColor = c(pal.glyph1)
+            } else {
+                s.nameplateEnabled = false
+                s.glyphScale = Double.random(in: 0.44...0.52)
+            }
+            summaryText = "Generated '\(pal.name)' with Cyber Neon Ribbon! ⚡🔮"
+
+        case .industrialStudio:
+            let studioPalettes = palettes.filter {
+                $0.name == "Titanium Slate" || $0.name == "Midnight Stealth" || $0.name == "Minimal Chalk" || $0.name == "Nordic Glacier"
+            }
+            let pal = studioPalettes.randomElement() ?? palettes[17]
+            s.color1 = c(pal.c1)
+            s.color2 = c(pal.c2)
+            s.color3 = c(pal.c3)
+            s.useThreeColorGradient = false
+            s.gradientAngle = 90.0
+            s.texture = [.brushed, .carbon, .grid].randomElement() ?? .brushed
+            s.textureOpacity = Double.random(in: 0.25...0.40)
+            s.textDepthStyle = [.embossed, .engraved, .flat].randomElement() ?? .embossed
+            s.glyphKind = .symbol
+            s.symbolName = (devSymbols + ["cube.transparent.fill", "wrench.and.screwdriver"]).randomElement() ?? "gearshape.2.fill"
+            s.glyphColor = .white
+            s.glyphShadow = true
+
+            if includeTextBar {
+                s.nameplateEnabled = true
+                s.nameplateStyle = [.retroTape, .brassPlate, .cleanTag].randomElement() ?? .retroTape
+                s.nameplateText = (devWords + generalWords).randomElement() ?? "HARDWARE"
+                s.nameplateMoveIconAbove = true
+                s.glyphScale = Double.random(in: 0.36...0.42)
+                s.nameplateScale = Double.random(in: 0.66...0.76)
+                s.nameplateYOffset = Double.random(in: 0.21...0.25)
+                if s.nameplateStyle == .brassPlate {
+                    s.nameplateColor = Color(hex: "#E5A93C") ?? .orange
+                    s.nameplateTextColor = Color(hex: "#3D2400") ?? .black
+                } else {
+                    s.nameplateColor = Color(hex: "#1A1A1A") ?? .black
+                    s.nameplateTextColor = .white
+                }
+            } else {
+                s.nameplateEnabled = false
+                s.glyphScale = Double.random(in: 0.44...0.52)
+            }
+            summaryText = "Generated '\(pal.name)' with Industrial Surface Texture! 🏷️🪨"
+
+        case .executiveLuxury:
+            let luxPalettes = palettes.filter {
+                $0.name == "Prestige Gold" || $0.name == "Crimson Ruby" || $0.name == "Champagne Silk" || $0.name == "Royal Amethyst"
+            }
+            let pal = luxPalettes.randomElement() ?? palettes[13]
+            s.color1 = c(pal.c1)
+            s.color2 = c(pal.c2)
+            s.color3 = c(pal.c3)
+            s.useThreeColorGradient = true
+            s.gradientAngle = [90.0, 120.0, 135.0].randomElement() ?? 120.0
+            s.texture = [.leather, .stripes, .none].randomElement() ?? .none
+            s.textureOpacity = 0.22
+            s.textDepthStyle = [.embossed, .engraved].randomElement() ?? .embossed
+            s.glyphKind = .symbol
+            s.symbolName = ["crown.fill", "star.fill", "trophy.fill", "rosette", "diamond.fill", "shield.checkerboard"].randomElement() ?? "crown.fill"
+            s.glyphColor = .white
+            s.glyphShadow = true
+
+            if includeTextBar {
+                s.nameplateEnabled = true
+                s.nameplateStyle = [.brassPlate, .retroTape, .cleanTag, .textOnly].randomElement() ?? .brassPlate
+                s.nameplateText = (securityWords + ["OFFICIAL", "PRESTIGE", "VIP"]).randomElement() ?? "OFFICIAL"
+                s.nameplateMoveIconAbove = true
+                s.glyphScale = Double.random(in: 0.36...0.42)
+                s.nameplateScale = Double.random(in: 0.65...0.76)
+                s.nameplateYOffset = Double.random(in: 0.21...0.25)
+                if s.nameplateStyle == .brassPlate {
+                    s.nameplateColor = Color(hex: "#E5A93C") ?? .orange
+                    s.nameplateTextColor = Color(hex: "#3D2400") ?? .black
+                } else {
+                    s.nameplateColor = Color(hex: "#1A1A1A") ?? .black
+                    s.nameplateTextColor = .white
+                }
+            } else {
+                s.nameplateEnabled = false
+                s.glyphScale = Double.random(in: 0.44...0.52)
+            }
+            summaryText = "Generated '\(pal.name)' with Executive Brass Plaque! 👑🏆"
+
+        case .modernMesh:
+            let pal = palettes.randomElement() ?? palettes[0]
+            s.color1 = c(pal.c1)
+            s.color2 = c(pal.c2)
+            s.color3 = c(pal.c3)
+            s.useThreeColorGradient = Double.random(in: 0...1) < 0.65
+            s.gradientAngle = [45.0, 90.0, 135.0, 180.0, 225.0].randomElement() ?? 135.0
+            s.texture = [.none, .none, .grid, .carbon].randomElement() ?? .none
+            s.textureOpacity = 0.20
+
+            if Double.random(in: 0...1) < 0.18 {
+                s.glyphKind = .text
+                s.text = textMonograms.randomElement() ?? "A"
+                s.textFontFamily = TextFontFamily.allCases.randomElement() ?? .rounded
+                s.textDepthStyle = TextDepthStyle.allCases.randomElement() ?? .embossed
+            } else {
+                s.glyphKind = .symbol
+                s.symbolName = (designSymbols + mediaSymbols + natureSymbols).randomElement() ?? "sparkles"
+                if Double.random(in: 0...1) < 0.35 {
+                    s.glyphGradient = true
+                    s.glyphColor = c(pal.glyph1)
+                    s.glyphColor2 = c(pal.glyph2)
+                } else {
+                    s.glyphGradient = false
+                    s.glyphColor = c(pal.glyph1)
+                }
+            }
+            s.glyphShadow = true
+
+            if includeTextBar {
+                s.nameplateEnabled = true
+                s.nameplateStyle = NameplateStyle.allCases.randomElement() ?? .cleanTag
+                s.nameplateText = (designWords + generalWords).randomElement() ?? "CREATIVE"
+                s.nameplateMoveIconAbove = true
+                s.glyphScale = Double.random(in: 0.36...0.42)
+                s.nameplateScale = Double.random(in: 0.65...0.78)
+                s.nameplateYOffset = Double.random(in: 0.20...0.25)
+                switch s.nameplateStyle {
+                case .textOnly:
+                    s.nameplateTextColor = .white
+                case .retroTape:
+                    s.nameplateColor = Color(hex: "#1A1A1A") ?? .black
+                    s.nameplateTextColor = .white
+                case .folderEngraved:
+                    s.nameplateColor = Color.black.opacity(0.14)
+                    s.nameplateTextColor = Color.black.opacity(0.55)
+                case .glassCapsule:
+                    s.nameplateColor = s.color1.darker(0.25)
+                    s.nameplateTextColor = .white
+                case .brassPlate:
+                    s.nameplateColor = Color(hex: "#E5A93C") ?? .orange
+                    s.nameplateTextColor = Color(hex: "#3D2400") ?? .black
+                case .cyberRibbon:
+                    s.nameplateColor = c(pal.glyph1)
+                    s.nameplateTextColor = c(pal.glyph1)
+                case .maskingTape:
+                    s.nameplateColor = Color(hex: "#F8F4E8") ?? .white
+                    s.nameplateTextColor = Color(hex: "#262626") ?? .black
+                case .cleanTag:
+                    s.nameplateColor = s.color1
+                    s.nameplateTextColor = .white
+                }
+            } else {
+                s.nameplateEnabled = false
+                s.glyphScale = Double.random(in: 0.44...0.52)
+            }
+            summaryText = "Generated '\(pal.name)' with Harmonious Palette! 🎨✨"
         }
 
-        // Corner Badges (~22% probability)
-        let badgeChance = Double.random(in: 0...1)
-        if badgeChance < 0.22 {
+        if Double.random(in: 0...1) < 0.18 {
             let badges: [CornerBadge] = [.lock, .star, .checkmark, .warning, .cloud, .heart, .tag, .bookmark, .pin]
             s.cornerBadge = badges.randomElement() ?? .star
             let badgeColors: [Color] = [.white, c("#FFD700"), c("#00F0FF"), c("#FF3B30"), c("#30D158")]
@@ -585,45 +832,14 @@ extension IconSpec {
             s.cornerBadge = .none
         }
 
-        // Glyph Kind: ~22% Monogram / Emoji, ~78% SF Symbol
-        let glyphKindChance = Double.random(in: 0...1)
-        if glyphKindChance < 0.22 {
-            s.glyphKind = .text
-            s.text = textMonograms.randomElement() ?? "A"
-            s.textFontFamily = TextFontFamily.allCases.randomElement() ?? .rounded
-            s.textDepthStyle = TextDepthStyle.allCases.randomElement() ?? .embossed
-            s.glyphScale = Double.random(in: 0.36...0.46)
-        } else {
-            s.glyphKind = .symbol
-            s.symbolName = symbols.randomElement() ?? "sparkles"
-            s.glyphScale = Double.random(in: 0.34...0.44)
-        }
-
-        // Glyph Gradient & Coloring
-        let glyphGradientChance = Double.random(in: 0...1)
-        if glyphGradientChance < 0.35 {
-            s.glyphGradient = true
-            s.glyphColor = c(pal.glyph1)
-            s.glyphColor2 = c(pal.glyph2)
-        } else {
-            s.glyphGradient = false
-            s.glyphColor = c(pal.glyph1)
-        }
-
-        // Occasional slight playful tilt (-6...6 deg) on symbols
-        if Double.random(in: 0...1) < 0.15 {
-            s.glyphRotation = Double(Int.random(in: -6...6))
-        } else {
-            s.glyphRotation = 0.0
-        }
-
-        s.glyphOpacity = Double.random(in: 0.90...1.0)
-        s.glyphShadow = true
-        s.gloss = true
-        s.innerRim = true
-        s.dropShadow = true
-        return s
+        return (s, summaryText)
     }
+
+    /// Overload for backwards compatibility
+    static func random() -> IconSpec {
+        random(includeTextBar: false).spec
+    }
+
 
     // MARK: - Official FolderLab App Icon Styles (Apple HIG & Icon Composer)
 

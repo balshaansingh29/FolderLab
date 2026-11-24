@@ -138,12 +138,15 @@ final class IconStore: ObservableObject {
         notify("Applied \(variant.displayName) App Icon 🧪")
     }
 
+    @Published var surpriseIncludeTextBar: Bool = true
+
     func randomize() {
         snapshotUndo()
+        let result = IconSpec.random(includeTextBar: surpriseIncludeTextBar)
         withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
-            spec = IconSpec.random()
+            spec = result.spec
         }
-        notify("Generated surprise design! ✨")
+        notify(result.summary)
     }
 
     func resetToDefaults() {
@@ -638,6 +641,31 @@ struct StudioCanvasView: View {
             }
             .buttonStyle(.plain)
             .help("Generate an inspiring randomized design")
+
+            // Quick Nameplate Text Bar toggle for Surprise Me
+            Button {
+                withAnimation(.spring(response: 0.25, dampingFraction: 0.75)) {
+                    store.surpriseIncludeTextBar.toggle()
+                }
+                store.notify(store.surpriseIncludeTextBar ? "Surprise Me: Text Bar enabled 🏷️" : "Surprise Me: Text Bar disabled 📁")
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: store.surpriseIncludeTextBar ? "tag.fill" : "tag")
+                        .font(.system(size: 10))
+                    Text("Text Bar")
+                        .font(.system(size: 10, weight: store.surpriseIncludeTextBar ? .bold : .regular))
+                }
+                .foregroundStyle(store.surpriseIncludeTextBar ? Color.accentColor : .secondary)
+                .padding(.horizontal, 6)
+                .frame(height: 26)
+                .background(store.surpriseIncludeTextBar ? Color.accentColor.opacity(0.14) : Color.clear, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .strokeBorder(store.surpriseIncludeTextBar ? Color.accentColor.opacity(0.4) : Color.white.opacity(0.12), lineWidth: 0.8)
+                )
+            }
+            .buttonStyle(.plain)
+            .help(store.surpriseIncludeTextBar ? "Surprise Me will include a Nameplate Text Bar (Click to toggle)" : "Surprise Me will not include a Nameplate Text Bar (Click to toggle)")
 
             // Undo Button (v0.2)
             Button {
@@ -1219,6 +1247,19 @@ struct PresetsInspectorTab: View {
                     }
                     .buttonStyle(.plain)
                 }
+
+                // Nameplate Text Bar Toggle for Surprise Me
+                Toggle(isOn: $store.surpriseIncludeTextBar) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "tag.fill")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color.accentColor)
+                        Text("Include Nameplate Text Bar in Surprise Me")
+                            .font(.system(size: 11, weight: .medium))
+                    }
+                }
+                .toggleStyle(.switch)
+                .padding(.top, 4)
             }
 
             // Recently Used Styles Shelf (v0.2)
