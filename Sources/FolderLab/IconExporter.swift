@@ -129,81 +129,19 @@ enum IconExporter {
         removexattr(url.path, xattrSpecKey, 0)
     }
 
-    // MARK: - Safe, Single-Pass Finder Icon Application
-
-    /// Reliably applies or clears a custom icon for a file or folder in a single pass.
-    /// Defensively clears any existing custom icon and removes stale Icon\r files before writing,
-    /// updates the modification timestamp, and instructs Finder to invalidate its thumbnail cache.
-    @discardableResult
-    public static func setCustomIcon(_ image: NSImage?, for url: URL) -> Bool {
-        let fm = FileManager.default
-        let iconPath = url.appendingPathComponent("Icon\r").path
-
-        // If an icon is already applied or if Icon\r exists, clear it first so macOS transitions
-        // the custom icon bit and does not reuse stale in-memory or on-disk thumbnail representations.
-        if fm.fileExists(atPath: iconPath) {
-            _ = NSWorkspace.shared.setIcon(nil, forFile: url.path, options: [])
-            try? fm.removeItem(atPath: iconPath)
-        }
-
-        let success: Bool
-        if let image = image {
-            success = NSWorkspace.shared.setIcon(image, forFile: url.path, options: [])
-        } else {
-            success = NSWorkspace.shared.setIcon(nil, forFile: url.path, options: [])
-            if fm.fileExists(atPath: iconPath) {
-                try? fm.removeItem(atPath: iconPath)
-            }
-        }
-
-        if success {
-            // Touch folder modification date so Finder's file system event monitor detects an update
-            try? fm.setAttributes([.modificationDate: Date()], ofItemAtPath: url.path)
-            forceFinderUpdate(for: url)
-        }
-
-        return success
-    }
-
-    /// Tells NSWorkspace and macOS Finder to invalidate cached folder icons and redraw immediately.
-    public static func forceFinderUpdate(for url: URL) {
-        NSWorkspace.shared.noteFileSystemChanged(url.path)
-        let parentPath = url.deletingLastPathComponent().path
-        if !parentPath.isEmpty {
-            NSWorkspace.shared.noteFileSystemChanged(parentPath)
-        }
-
-        // Send an asynchronous update event to Finder to refresh this item immediately without blocking the UI
-        DispatchQueue.global(qos: .userInitiated).async {
-            let escapedPath = url.path
-                .replacingOccurrences(of: "\\", with: "\\\\")
-                .replacingOccurrences(of: "\"", with: "\\\"")
-            let scriptText = """
-            tell application "Finder"
-                try
-                    update (POSIX file "\(escapedPath)" as alias)
-                end try
-            end tell
-            """
-            if let script = NSAppleScript(source: scriptText) {
-                var err: NSDictionary?
-                script.executeAndReturnError(&err)
-            }
-        }
-    }
-
     // MARK: Apply to files / folders
 
     static func apply(spec: IconSpec, to url: URL) -> (success: Bool, message: String) {
         guard let image = nsImage(spec, pixels: 1024) else {
             return (false, "Could not render folder icon.")
         }
-        let success = setCustomIcon(image, for: url)
+        let success = NSWorkspace.shared.setIcon(image, forFile: url.path, options: [])
         if success {
             _ = saveStoredSpec(spec, for: url)
             if spec.syncFinderTag, let tag = spec.selectedFinderTag {
                 _ = setFinderTag(tag.rawValue, for: url)
             }
+            NSWorkspace.shared.noteFileSystemChanged(url.path)
             return (true, "Customized folder '\(url.lastPathComponent)'! ✨")
         } else {
             return (false, "Failed to customize '\(url.lastPathComponent)'. Check permissions.")
@@ -218,11 +156,12 @@ enum IconExporter {
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = true
         guard panel.runModal() == .OK, !panel.urls.isEmpty else { return "Cancelled." }
+        guard let image = nsImage(spec, pixels: 1024) else { return "Could not render icon." }
 
         var ok = 0, failed = 0
         for url in panel.urls {
-            let (success, _) = apply(spec: spec, to: url)
-            if success {
+            if NSWorkspace.shared.setIcon(image, forFile: url.path, options: []) {
+                NSWorkspace.shared.noteFileSystemChanged(url.path)
                 ok += 1
             } else {
                 failed += 1
@@ -244,8 +183,8 @@ enum IconExporter {
 
         var ok = 0, failed = 0
         for url in panel.urls {
-            if setCustomIcon(nil, for: url) {
-                removeStoredSpec(for: url)
+            if NSWorkspace.shared.setIcon(nil, forFile: url.path, options: []) {
+                NSWorkspace.shared.noteFileSystemChanged(url.path)
                 ok += 1
             } else {
                 failed += 1
@@ -280,10 +219,15 @@ enum IconExporter {
             return "No subfolders found in '\(parentDir.lastPathComponent)'."
         }
 
+        guard let image = nsImage(spec, pixels: 1024) else { return "Could not render icon." }
+
         var ok = 0, failed = 0
         for folder in subfolders {
-            let (success, _) = apply(spec: spec, to: folder)
-            if success {
+            if NSWorkspace.shared.setIcon(image, forFile: folder.path, options: []) {
+                if spec.syncFinderTag, let tag = spec.selectedFinderTag {
+                    _ = setFinderTag(tag.rawValue, for: folder)
+                }
+                NSWorkspace.shared.noteFileSystemChanged(folder.path)
                 ok += 1
             } else {
                 failed += 1
@@ -319,8 +263,8 @@ enum IconExporter {
 
         var ok = 0, failed = 0
         for folder in subfolders {
-            if setCustomIcon(nil, for: folder) {
-                removeStoredSpec(for: folder)
+            if NSWorkspace.shared.setIcon(nil, forFile: folder.path, options: []) {
+                NSWorkspace.shared.noteFileSystemChanged(folder.path)
                 ok += 1
             } else {
                 failed += 1
