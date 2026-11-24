@@ -1063,42 +1063,47 @@ struct InspectorPanelView: View {
         VStack(spacing: 0) {
 
             // Top Tab Selector Bar
-            HStack(spacing: 6) {
+            HStack(spacing: 2) {
                 ForEach(InspectorTab.allCases) { tab in
                     Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
+                        withAnimation(.easeInOut(duration: 0.18)) {
                             activeTab = tab
                         }
                     } label: {
-                        HStack(spacing: 6) {
+                        HStack(spacing: 5) {
                             Image(systemName: tab.iconName)
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: 11, weight: activeTab == tab ? .bold : .medium))
                             Text(tab.rawValue)
-                                .font(.system(size: 12, weight: .medium))
+                                .font(.system(size: 12, weight: activeTab == tab ? .bold : .medium))
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
+                        .padding(.vertical, 7)
                         .background {
                             if activeTab == tab {
-                                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                    .fill(Color(nsColor: .controlAccentColor).opacity(0.22))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                            .strokeBorder(Color(nsColor: .controlAccentColor).opacity(0.4), lineWidth: 1)
-                                    )
+                                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                    .fill(Color(nsColor: .controlAccentColor))
+                                    .shadow(color: Color(nsColor: .controlAccentColor).opacity(0.35), radius: 3, y: 1)
                             } else {
-                                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                    .fill(Color(nsColor: .controlBackgroundColor).opacity(0.5))
+                                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                    .fill(Color.clear)
                             }
                         }
-                        .foregroundStyle(activeTab == tab ? Color(nsColor: .controlAccentColor) : Color.primary)
+                        .foregroundStyle(activeTab == tab ? Color.white : Color.secondary)
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
             }
+            .padding(4)
+            .background(Color(nsColor: .controlBackgroundColor).opacity(0.75))
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+            )
             .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-            .background(Color(nsColor: .windowBackgroundColor).opacity(0.6))
+            .padding(.vertical, 12)
+            .background(Color(nsColor: .windowBackgroundColor).opacity(0.65))
 
             Divider()
 
@@ -1127,6 +1132,7 @@ struct InspectorPanelView: View {
 
 struct PresetsInspectorTab: View {
     @ObservedObject var store: IconStore
+    @State private var selectedTheme: IconStyle? = nil
 
     private let gradientPalettes: [(String, String, String)] = [
         ("Hyper Blue", "#36D1DC", "#5B86E5"),
@@ -1144,59 +1150,70 @@ struct PresetsInspectorTab: View {
     ]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 22) {
-            // One-Click Creative Tools ("Surprise Me" & "Reset Default")
-            InspectorSectionHeader(title: "Creative Tools", subtitle: "Instant smart variations & quick reset")
+        VStack(alignment: .leading, spacing: 16) {
+            // Creative Tools ("Surprise Me" & "Reset Default")
+            InspectorCard {
+                InspectorSectionHeader(
+                    title: "Creative Tools",
+                    subtitle: "Instant smart variations & quick reset",
+                    icon: "sparkles",
+                    iconColor: .yellow
+                )
 
-            HStack(spacing: 12) {
-                Button {
-                    store.randomize()
-                } label: {
-                    HStack {
-                        Image(systemName: "sparkles")
-                        Text("Surprise Me")
+                HStack(spacing: 12) {
+                    Button {
+                        selectedTheme = nil
+                        store.randomize()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "sparkles")
+                            Text("Surprise Me")
+                        }
+                        .font(.system(size: 13, weight: .semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(
+                            LinearGradient(colors: [Color.blue, Color.purple], startPoint: .leading, endPoint: .trailing)
+                        )
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .shadow(color: .blue.opacity(0.3), radius: 6, y: 3)
                     }
-                    .font(.system(size: 13, weight: .semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(
-                        LinearGradient(colors: [Color.blue, Color.purple], startPoint: .leading, endPoint: .trailing)
-                    )
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    .shadow(color: .blue.opacity(0.3), radius: 6, y: 3)
-                }
-                .buttonStyle(.plain)
+                    .buttonStyle(.plain)
 
-                Button {
-                    store.resetToDefaults()
-                } label: {
-                    HStack {
-                        Image(systemName: "arrow.counterclockwise")
-                        Text("Reset Default")
+                    Button {
+                        selectedTheme = nil
+                        store.resetToDefaults()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "arrow.counterclockwise")
+                            Text("Reset Default")
+                        }
+                        .font(.system(size: 13, weight: .medium))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(Color(nsColor: .controlBackgroundColor))
+                        .foregroundStyle(.primary)
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
+                        )
                     }
-                    .font(.system(size: 13, weight: .medium))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .foregroundStyle(.primary)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
-                    )
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
 
-            Divider().padding(.vertical, 4)
             // Recently Used Styles Shelf (v0.2)
             if !store.recentSpecs.isEmpty {
-                VStack(alignment: .leading, spacing: 10) {
+                InspectorCard {
                     HStack {
-                        Label("Recently Applied Styles", systemImage: "clock.arrow.circlepath")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(.primary)
+                        InspectorSectionHeader(
+                            title: "Recently Applied",
+                            subtitle: "Quick restore previous folder styles",
+                            icon: "clock.arrow.circlepath",
+                            iconColor: .blue
+                        )
 
                         Spacer()
 
@@ -1206,7 +1223,7 @@ struct PresetsInspectorTab: View {
                                 UserDefaults.standard.removeObject(forKey: "folderlab_recents")
                             }
                         }
-                        .font(.system(size: 10))
+                        .font(.system(size: 11, weight: .medium))
                         .buttonStyle(.plain)
                         .foregroundStyle(.secondary)
                     }
@@ -1243,97 +1260,102 @@ struct PresetsInspectorTab: View {
                         }
                     }
                 }
-                .padding(14)
-                .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
 
-            // Folder Styles Grid (All 100% Free)
-            InspectorSectionHeader(title: "Folder Themes", subtitle: "Handcrafted styles, vibrant gradients & luxury finishes")
+            // Folder Themes Grid
+            InspectorCard {
+                InspectorSectionHeader(
+                    title: "Folder Themes",
+                    subtitle: "Handcrafted styles, vibrant gradients & luxury finishes",
+                    icon: "folder.fill",
+                    iconColor: .accentColor
+                )
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                ForEach(IconStyle.allCases) { style in
-                    PresetCardButton(style: style) {
-                        store.applyStyle(style)
-                    }
-                }
-            }
-
-            Divider().padding(.vertical, 4)
-
-            // Surface Textures Grid (v0.2)
-            InspectorSectionHeader(title: "Tactile Surface Textures", subtitle: "Visual finishes: carbon fiber, brushed metal, tactile grain & more")
-
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                ForEach(SurfaceTexture.allCases) { tex in
-                    TextureCardButton(
-                        texture: tex,
-                        isSelected: store.spec.texture == tex,
-                        folderColor1: store.spec.color1,
-                        folderColor2: store.spec.color2
-                    ) {
-                        store.snapshotUndo()
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                            store.spec.texture = tex
-                            if tex != .none && store.spec.textureOpacity < 0.10 {
-                                store.spec.textureOpacity = 0.22
-                            }
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                    ForEach(IconStyle.allCases) { style in
+                        PresetCardButton(style: style, isSelected: selectedTheme == style) {
+                            selectedTheme = style
+                            store.applyStyle(style)
                         }
                     }
                 }
             }
 
-            if store.spec.texture != .none {
-                VStack(alignment: .leading, spacing: 6) {
-                    ModernSlider(title: "Texture Contrast / Opacity", value: $store.spec.textureOpacity, range: 0.05...0.60, format: "%.0f%%", multiplier: 100)
-                }
-                .padding(10)
-                .background(Color(nsColor: .controlBackgroundColor).opacity(0.4))
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            }
+            // Tactile Surface Textures Grid
+            InspectorCard {
+                InspectorSectionHeader(
+                    title: "Tactile Surface Textures",
+                    subtitle: "Visual finishes: carbon fiber, brushed metal, tactile grain & more",
+                    icon: "square.grid.3x3.topleft.filled",
+                    iconColor: .purple
+                )
 
-            Divider().padding(.vertical, 4)
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                    ForEach(SurfaceTexture.allCases) { tex in
+                        TextureCardButton(
+                            texture: tex,
+                            isSelected: store.spec.texture == tex,
+                            folderColor1: store.spec.color1,
+                            folderColor2: store.spec.color2
+                        ) {
+                            store.snapshotUndo()
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                store.spec.texture = tex
+                                if tex != .none && store.spec.textureOpacity < 0.10 {
+                                    store.spec.textureOpacity = 0.22
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if store.spec.texture != .none {
+                    ModernSlider(
+                        title: "Texture Contrast / Opacity",
+                        value: $store.spec.textureOpacity,
+                        range: 0.05...0.60,
+                        format: "%.0f",
+                        multiplier: 100,
+                        unit: "%"
+                    )
+                    .padding(10)
+                    .background(Color(nsColor: .controlBackgroundColor).opacity(0.4))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                }
+            }
 
             // Designer Color Gradients
-            InspectorSectionHeader(title: "Designer Gradients", subtitle: "Click any swatch to apply to canvas")
+            InspectorCard {
+                InspectorSectionHeader(
+                    title: "Designer Gradients",
+                    subtitle: "Harmonious two-tone color transitions",
+                    icon: "paintpalette.fill",
+                    iconColor: .orange
+                )
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                ForEach(gradientPalettes, id: \.0) { item in
-                    Button {
-                        if let c1 = Color(hex: item.1), let c2 = Color(hex: item.2) {
-                            withAnimation(.easeInOut(duration: 0.25)) {
-                                store.spec.color1 = c1
-                                store.spec.color2 = c2
-                                store.spec.useGradient = true
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                    ForEach(gradientPalettes, id: \.0) { item in
+                        let isGradSelected = store.spec.useGradient &&
+                            !store.spec.useThreeColorGradient &&
+                            store.spec.color1.hexString.lowercased() == item.1.lowercased() &&
+                            store.spec.color2.hexString.lowercased() == item.2.lowercased()
+
+                        GradientCardButton(
+                            name: item.0,
+                            hex1: item.1,
+                            hex2: item.2,
+                            isSelected: isGradSelected
+                        ) {
+                            if let c1 = Color(hex: item.1), let c2 = Color(hex: item.2) {
+                                withAnimation(.easeInOut(duration: 0.25)) {
+                                    store.spec.color1 = c1
+                                    store.spec.color2 = c2
+                                    store.spec.useGradient = true
+                                    store.spec.useThreeColorGradient = false
+                                }
                             }
                         }
-                    } label: {
-                        HStack(spacing: 10) {
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .fill(LinearGradient(
-                                    colors: [Color(hex: item.1) ?? .blue, Color(hex: item.2) ?? .purple],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ))
-                                .frame(width: 28, height: 28)
-                                .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
-
-                            Text(item.0)
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(.primary)
-
-                            Spacer()
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-                        .background(Color(nsColor: .controlBackgroundColor).opacity(0.6))
-                        .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                                .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
-                        )
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
@@ -1342,6 +1364,7 @@ struct PresetsInspectorTab: View {
 
 struct PresetCardButton: View {
     let style: IconStyle
+    var isSelected: Bool = false
     let action: () -> Void
 
     private var gradientColors: [Color] {
@@ -1363,7 +1386,7 @@ struct PresetCardButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
+            HStack(spacing: 11) {
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(LinearGradient(colors: gradientColors, startPoint: .topLeading, endPoint: .bottomTrailing))
                     .frame(width: 32, height: 32)
@@ -1376,7 +1399,7 @@ struct PresetCardButton: View {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 4) {
                         Text(style.rawValue)
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.system(size: 13, weight: isSelected ? .bold : .semibold))
                             .foregroundStyle(.primary)
                     }
 
@@ -1386,14 +1409,33 @@ struct PresetCardButton: View {
                 }
 
                 Spacer()
+
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(Color.accentColor)
+                }
             }
             .padding(10)
-            .background(Color(nsColor: .controlBackgroundColor).opacity(0.7))
+            .background {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color.accentColor.opacity(0.12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .strokeBorder(Color.accentColor.opacity(0.6), lineWidth: 1.5)
+                        )
+                } else {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color(nsColor: .controlBackgroundColor).opacity(0.7))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.10), lineWidth: 1)
+                        )
+                }
+            }
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.10), lineWidth: 1)
-            )
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -1507,6 +1549,79 @@ struct TextureCardButton: View {
                         )
                 }
             }
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Gradient Card Button
+
+struct GradientCardButton: View {
+    let name: String
+    let hex1: String
+    let hex2: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 11) {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color(hex: hex1) ?? .blue, Color(hex: hex2) ?? .purple],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 32, height: 32)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.2), lineWidth: 1)
+                    )
+                    .shadow(color: .black.opacity(0.2), radius: 3, y: 1)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(name)
+                        .font(.system(size: 13, weight: isSelected ? .bold : .semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+
+                    Text("\(hex1) → \(hex2)")
+                        .font(.system(size: 9, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(Color.accentColor)
+                }
+            }
+            .padding(10)
+            .background {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color.accentColor.opacity(0.12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .strokeBorder(Color.accentColor.opacity(0.6), lineWidth: 1.5)
+                        )
+                } else {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color(nsColor: .controlBackgroundColor).opacity(0.7))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.10), lineWidth: 1)
+                        )
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -1521,11 +1636,15 @@ struct CanvasInspectorTab: View {
     private let presetAngles: [Double] = [0, 45, 90, 135, 180, 270]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: 16) {
             // Folder Color Fill
-            VStack(alignment: .leading, spacing: 14) {
-                InspectorSectionHeader(title: "Folder Colors",
-                                       subtitle: "Solid tone or high-resolution gradient")
+            InspectorCard {
+                InspectorSectionHeader(
+                    title: "Folder Colors",
+                    subtitle: "Solid tone or high-resolution gradient",
+                    icon: "paintpalette.fill",
+                    iconColor: .accentColor
+                )
 
                 Toggle("Enable Gradient", isOn: $store.spec.useGradient)
                     .toggleStyle(.switch)
@@ -1543,7 +1662,7 @@ struct CanvasInspectorTab: View {
 
                 ColorRowModern(title: store.spec.useGradient ? "Front Flap Color" : "Folder Color", color: $store.spec.color1)
 
-                // Native macOS Tag Colors (Feature 5)
+                // Native macOS Tag Colors
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Image(systemName: "tag.fill")
@@ -1592,15 +1711,6 @@ struct CanvasInspectorTab: View {
 
                     // Angle presets
                     VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Gradient Angle")
-                                .font(.system(size: 12, weight: .medium))
-                            Spacer()
-                            Text("\(Int(store.spec.gradientAngle))°")
-                                .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                                .foregroundStyle(.secondary)
-                        }
-
                         HStack(spacing: 6) {
                             ForEach(presetAngles, id: \.self) { angle in
                                 Button("\(Int(angle))°") {
@@ -1624,7 +1734,14 @@ struct CanvasInspectorTab: View {
                             }
                         }
 
-                        Slider(value: $store.spec.gradientAngle, in: 0...360)
+                        ModernSlider(
+                            title: "Gradient Angle",
+                            value: $store.spec.gradientAngle,
+                            range: 0...360,
+                            format: "%.0f",
+                            unit: "°",
+                            onReset: { store.spec.gradientAngle = 90 }
+                        )
                     }
 
                     // Swap colors button
@@ -1635,7 +1752,7 @@ struct CanvasInspectorTab: View {
                             store.spec.color2 = tmp
                         }
                     } label: {
-                        HStack {
+                        HStack(spacing: 6) {
                             Image(systemName: "arrow.left.arrow.right")
                             Text("Swap Start & End Colors")
                         }
@@ -1646,13 +1763,15 @@ struct CanvasInspectorTab: View {
                     .padding(.top, 2)
                 }
             }
-            .padding(14)
-            .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
 
             // Folder Finishes & Tactile Details
-            VStack(alignment: .leading, spacing: 14) {
-                InspectorSectionHeader(title: "Folder Details & Lighting", subtitle: "Flap highlight rim, liquid glass & drop shadow")
+            InspectorCard {
+                InspectorSectionHeader(
+                    title: "Folder Details & Lighting",
+                    subtitle: "Flap highlight rim, liquid glass & drop shadow",
+                    icon: "sparkles",
+                    iconColor: .cyan
+                )
 
                 HStack {
                     Toggle("Front Flap Highlight Rim", isOn: $store.spec.innerRim)
@@ -1665,55 +1784,6 @@ struct CanvasInspectorTab: View {
                         .toggleStyle(.switch)
                         .font(.system(size: 12, weight: .medium))
                 }
-
-                // Surface Texture & Patterns (v0.2)
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        Image(systemName: "square.grid.3x3.topleft.filled")
-                            .font(.system(size: 11))
-                            .foregroundStyle(Color.accentColor)
-                        Text("Surface Texture & Patterns (v0.2)")
-                            .font(.system(size: 12, weight: .semibold))
-                        Spacer()
-                        if store.spec.texture != .none {
-                            Button("Clear") {
-                                store.snapshotUndo()
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                                    store.spec.texture = .none
-                                }
-                            }
-                            .font(.system(size: 11, weight: .medium))
-                            .buttonStyle(.plain)
-                            .foregroundStyle(.secondary)
-                        }
-                    }
-
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-                        ForEach(SurfaceTexture.allCases) { tex in
-                            TextureCardButton(
-                                texture: tex,
-                                isSelected: store.spec.texture == tex,
-                                folderColor1: store.spec.color1,
-                                folderColor2: store.spec.color2
-                            ) {
-                                store.snapshotUndo()
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                                    store.spec.texture = tex
-                                    if tex != .none && store.spec.textureOpacity < 0.10 {
-                                        store.spec.textureOpacity = 0.22
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if store.spec.texture != .none {
-                        ModernSlider(title: "Texture Contrast / Opacity", value: $store.spec.textureOpacity, range: 0.05...0.60, format: "%.0f%%", multiplier: 100)
-                    }
-                }
-                .padding(10)
-                .background(Color(nsColor: .controlBackgroundColor).opacity(0.4))
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
                 // Liquid Glass Material (iOS 18+ / macOS Sequoia)
                 VStack(alignment: .leading, spacing: 10) {
@@ -1731,17 +1801,30 @@ struct CanvasInspectorTab: View {
 
                     if store.spec.liquidGlass {
                         VStack(spacing: 8) {
-                            ModernSlider(title: "Glass Translucency", value: $store.spec.glassOpacity, range: 0.15...0.85, format: "%.0f%%", multiplier: 100)
-                            ModernSlider(title: "Specular Rim Bevel", value: $store.spec.specularRimWidth, range: 0.003...0.015, format: "%.1f pt", multiplier: 500)
+                            ModernSlider(
+                                title: "Glass Translucency",
+                                value: $store.spec.glassOpacity,
+                                range: 0.15...0.85,
+                                format: "%.0f",
+                                multiplier: 100,
+                                unit: "%",
+                                onReset: { store.spec.glassOpacity = 0.45 }
+                            )
+                            ModernSlider(
+                                title: "Specular Rim Bevel",
+                                value: $store.spec.specularRimWidth,
+                                range: 0.003...0.015,
+                                format: "%.1f",
+                                multiplier: 500,
+                                unit: " pt",
+                                onReset: { store.spec.specularRimWidth = 0.008 }
+                            )
                         }
                         .padding(.leading, 8)
                     }
                 }
                 .padding(.vertical, 2)
             }
-            .padding(14)
-            .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
     }
 }
@@ -1754,20 +1837,32 @@ struct GlyphInspectorTab: View {
     @State private var selectedCategory: SymbolCategory = .all
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 22) {
-            InspectorSectionHeader(title: "Glyph Mode (Free)", subtitle: "Choose between SF Symbol iconography or custom typography")
+        VStack(alignment: .leading, spacing: 16) {
+            InspectorCard {
+                InspectorSectionHeader(
+                    title: "Glyph Mode",
+                    subtitle: "Choose between SF Symbol iconography, monograms, or custom stamps",
+                    icon: "star.fill",
+                    iconColor: .accentColor
+                )
 
-            Picker("Type", selection: $store.spec.glyphKind) {
-                ForEach(GlyphKind.allCases) { kind in
-                    Text(kind.rawValue).tag(kind)
+                Picker("Type", selection: $store.spec.glyphKind) {
+                    ForEach(GlyphKind.allCases) { kind in
+                        Text(kind.rawValue).tag(kind)
+                    }
                 }
+                .pickerStyle(.segmented)
             }
-            .pickerStyle(.segmented)
 
             if store.spec.glyphKind == .customImage {
                 // Custom Image Stamp (Feature 4)
-                VStack(alignment: .leading, spacing: 14) {
-                    InspectorSectionHeader(title: "Custom Image Stamp", subtitle: "Stamp any PNG, SVG, or graphic onto the folder flap")
+                InspectorCard {
+                    InspectorSectionHeader(
+                        title: "Custom Image Stamp",
+                        subtitle: "Stamp any PNG, SVG, or graphic onto the folder flap",
+                        icon: "photo.badge.plus",
+                        iconColor: .indigo
+                    )
 
                     if let data = store.spec.customImageData, let nsImg = NSImage(data: data) {
                         HStack(spacing: 12) {
@@ -1840,13 +1935,15 @@ struct GlyphInspectorTab: View {
                         )
                     }
                 }
-                .padding(14)
-                .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             } else if store.spec.glyphKind == .symbol {
                 // SF Symbol Browser
-                VStack(alignment: .leading, spacing: 14) {
-                    InspectorSectionHeader(title: "SF Symbol Browser (Free)", subtitle: "Search or browse 140+ curated icons")
+                InspectorCard {
+                    InspectorSectionHeader(
+                        title: "SF Symbol Browser",
+                        subtitle: "Search or browse 140+ curated icons",
+                        icon: "magnifyingglass",
+                        iconColor: .blue
+                    )
 
                     // Search field
                     HStack {
@@ -1988,13 +2085,15 @@ struct GlyphInspectorTab: View {
                     .background(Color(nsColor: .controlBackgroundColor).opacity(0.4))
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 }
-                .padding(14)
-                .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             } else {
                 // Text / Emoji Monogram Mode
-                VStack(alignment: .leading, spacing: 14) {
-                    InspectorSectionHeader(title: "Custom Monogram / Emoji (Free)", subtitle: "Type any letter, word or emoji character")
+                InspectorCard {
+                    InspectorSectionHeader(
+                        title: "Custom Monogram / Emoji",
+                        subtitle: "Type any letter, word or emoji character",
+                        icon: "character.textbox",
+                        iconColor: .orange
+                    )
 
                     TextField("e.g. A, PRO, 🚀, ⚡️", text: $store.spec.text)
                         .textFieldStyle(.roundedBorder)
@@ -2043,14 +2142,16 @@ struct GlyphInspectorTab: View {
                         }
                     }
                 }
-                .padding(14)
-                .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
 
             // Glyph Styling (Color, Scale, Shadow, Rotation)
-            VStack(alignment: .leading, spacing: 14) {
-                InspectorSectionHeader(title: "Glyph Styling & Position", subtitle: "Color, size, offset and soft shadow")
+            InspectorCard {
+                InspectorSectionHeader(
+                    title: "Glyph Styling & Position",
+                    subtitle: "Color, size, offset, rotation and soft shadow",
+                    icon: "slider.horizontal.3",
+                    iconColor: .green
+                )
 
                 if store.spec.glyphKind == .text || store.spec.symbolMode != .multicolor {
                     Toggle("Gradient Glyph Fill", isOn: $store.spec.glyphGradient)
@@ -2064,37 +2165,45 @@ struct GlyphInspectorTab: View {
                     }
                 }
 
-                ModernSlider(title: "Opacity", value: $store.spec.glyphOpacity, range: 0.1...1.0, format: "%.0f%%", multiplier: 100)
-                ModernSlider(title: "Scale / Size", value: $store.spec.glyphScale, range: 0.15...0.95, format: "%.0f%%", multiplier: 100)
-                ModernSlider(title: "Vertical Offset", value: $store.spec.glyphYOffset, range: -0.3...0.3, format: "%.2f")
+                ModernSlider(
+                    title: "Opacity",
+                    value: $store.spec.glyphOpacity,
+                    range: 0.1...1.0,
+                    format: "%.0f",
+                    multiplier: 100,
+                    unit: "%",
+                    onReset: { store.spec.glyphOpacity = 0.95 }
+                )
+                ModernSlider(
+                    title: "Scale / Size",
+                    value: $store.spec.glyphScale,
+                    range: 0.15...0.95,
+                    format: "%.0f",
+                    multiplier: 100,
+                    unit: "%",
+                    onReset: { store.spec.glyphScale = 0.52 }
+                )
+                ModernSlider(
+                    title: "Vertical Offset",
+                    value: $store.spec.glyphYOffset,
+                    range: -0.3...0.3,
+                    format: "%.2f",
+                    onReset: { store.spec.glyphYOffset = 0.05 }
+                )
 
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        Text("Rotation Angle")
-                            .font(.system(size: 12, weight: .medium))
-                        Spacer()
-                        Text("\(Int(store.spec.glyphRotation))°")
-                            .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                            .foregroundStyle(.secondary)
-                        if store.spec.glyphRotation != 0 {
-                            Button("Reset") {
-                                withAnimation { store.spec.glyphRotation = 0 }
-                            }
-                            .font(.system(size: 10))
-                            .buttonStyle(.plain)
-                            .foregroundStyle(Color.blue)
-                        }
-                    }
-                    Slider(value: $store.spec.glyphRotation, in: -180...180)
-                }
+                ModernSlider(
+                    title: "Rotation Angle",
+                    value: $store.spec.glyphRotation,
+                    range: -180...180,
+                    format: "%.0f",
+                    unit: "°",
+                    onReset: { store.spec.glyphRotation = 0 }
+                )
 
                 Toggle("Glyph Soft Shadow", isOn: $store.spec.glyphShadow)
                     .toggleStyle(.switch)
                     .font(.system(size: 12, weight: .medium))
             }
-            .padding(14)
-            .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
     }
 
@@ -2184,130 +2293,224 @@ struct ExportInspectorTab: View {
     @ObservedObject var store: IconStore
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 22) {
-            // Section 1: Live Folder Skinning
-            InspectorSectionHeader(title: "Folder Applier (Finder Live)", subtitle: "Apply your customized folder icon directly to folders on your Mac")
+        VStack(alignment: .leading, spacing: 16) {
+            // Live Folder Skinning
+            InspectorCard {
+                InspectorSectionHeader(
+                    title: "Folder Applier (Finder Live)",
+                    subtitle: "Apply your customized folder icon directly to folders on your Mac",
+                    icon: "folder.badge.gearshape.fill",
+                    iconColor: .accentColor
+                )
 
-            VStack(spacing: 12) {
-                Button {
-                    store.applyToItems()
-                } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "folder.badge.gearshape.fill")
-                            .font(.system(size: 18))
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Apply to Folder in Finder…")
-                                .font(.system(size: 14, weight: .bold))
-                            Text("Select any folder to skin it with this design instantly")
-                                .font(.system(size: 10))
-                                .opacity(0.85)
+                VStack(spacing: 12) {
+                    Button {
+                        store.applyToItems()
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "folder.badge.gearshape.fill")
+                                .font(.system(size: 18))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Apply to Folder in Finder…")
+                                    .font(.system(size: 14, weight: .bold))
+                                Text("Select any folder to skin it with this design instantly")
+                                    .font(.system(size: 10))
+                                    .opacity(0.85)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .semibold))
+                                .opacity(0.7)
                         }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 12, weight: .semibold))
-                            .opacity(0.7)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .background(Color.accentColor)
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .shadow(color: Color.accentColor.opacity(0.35), radius: 6, y: 2)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 14)
-                    .background(Color.accentColor)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    .shadow(color: Color.accentColor.opacity(0.35), radius: 6, y: 2)
-                }
-                .buttonStyle(.plain)
+                    .buttonStyle(.plain)
 
-                Button {
-                    store.resetItems()
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 12))
-                        Text("Restore Default macOS Blue Folder…")
-                            .font(.system(size: 12, weight: .medium))
-                        Spacer()
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .foregroundStyle(.secondary)
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
-                    )
-                }
-                .buttonStyle(.plain)
-
-                HStack(spacing: 6) {
-                    Image(systemName: "hand.draw.fill")
-                        .font(.system(size: 11))
-                        .foregroundStyle(Color.accentColor)
-                    Text("Or drag & drop any folder from Finder directly onto the stage!")
-                        .font(.system(size: 10, weight: .medium))
+                    Button {
+                        store.resetItems()
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.counterclockwise")
+                                .font(.system(size: 12))
+                            Text("Restore Default macOS Blue Folder…")
+                                .font(.system(size: 12, weight: .medium))
+                            Spacer()
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(Color(nsColor: .controlBackgroundColor))
                         .foregroundStyle(.secondary)
-                }
-                .padding(.top, 4)
-            }
-            .padding(14)
-            .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
 
-            Divider().padding(.vertical, 4)
+                    HStack(spacing: 6) {
+                        Image(systemName: "hand.draw.fill")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color.accentColor)
+                        Text("Or drag & drop any folder from Finder directly onto the stage!")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.top, 4)
+                }
+            }
 
             // Batch Styler Card (Feature 2)
-            InspectorSectionHeader(title: "Batch Styler (Bulk Folders)", subtitle: "Skin multiple selected folders or all subfolders in a parent directory at once")
+            InspectorCard {
+                InspectorSectionHeader(
+                    title: "Batch Styler (Bulk Folders)",
+                    subtitle: "Skin multiple selected folders or all subfolders in a parent directory at once",
+                    icon: "square.grid.3x3.fill",
+                    iconColor: .cyan
+                )
 
-            VStack(spacing: 10) {
-                Button {
-                    store.applyToItems()
-                } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "square.grid.3x3.fill")
-                            .font(.system(size: 14))
-                            .foregroundStyle(Color.cyan)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Skin Multiple Folders (Multi-Select)…")
-                                .font(.system(size: 12, weight: .semibold))
-                            Text("Select multiple folders in Finder to skin them simultaneously")
-                                .font(.system(size: 10))
-                                .foregroundStyle(.secondary)
+                VStack(spacing: 10) {
+                    Button {
+                        store.applyToItems()
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "square.grid.3x3.fill")
+                                .font(.system(size: 14))
+                                .foregroundStyle(Color.cyan)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Skin Multiple Folders (Multi-Select)…")
+                                    .font(.system(size: 12, weight: .semibold))
+                                Text("Select multiple folders in Finder to skin them simultaneously")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
                         }
-                        Spacer()
+                        .padding(10)
+                        .background(Color(nsColor: .controlBackgroundColor))
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+                        )
                     }
-                    .padding(10)
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                }
-                .buttonStyle(.plain)
+                    .buttonStyle(.plain)
 
-                Button {
-                    store.applyBatchSubfolders()
-                } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "folder.badge.plus")
-                            .font(.system(size: 14))
-                            .foregroundStyle(Color.orange)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Skin All Subfolders in Directory…")
-                                .font(.system(size: 12, weight: .semibold))
-                            Text("Select a folder (e.g. ~/Developer) and skin every project inside")
-                                .font(.system(size: 10))
-                                .foregroundStyle(.secondary)
+                    Button {
+                        store.applyBatchSubfolders()
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "folder.badge.plus")
+                                .font(.system(size: 14))
+                                .foregroundStyle(Color.orange)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Skin All Subfolders in Directory…")
+                                    .font(.system(size: 12, weight: .semibold))
+                                Text("Select a folder (e.g. ~/Developer) and skin every project inside")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
                         }
-                        Spacer()
+                        .padding(10)
+                        .background(Color(nsColor: .controlBackgroundColor))
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+                        )
                     }
-                    .padding(10)
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .buttonStyle(.plain)
+
+                    Button {
+                        store.resetBatchSubfolders()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "arrow.counterclockwise")
+                            Text("Batch Reset Subfolders to Default…")
+                        }
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
+            }
+
+            // Clipboard & Files
+            InspectorCard {
+                InspectorSectionHeader(
+                    title: "Save & Copy",
+                    subtitle: "Copy to clipboard for Finder Get Info or save files",
+                    icon: "arrow.down.doc.fill",
+                    iconColor: .blue
+                )
+
+                // Copy to Clipboard Card
+                ExportActionCard(
+                    title: "Copy to Clipboard",
+                    subtitle: "Directly paste (Cmd+V) onto any folder in Finder Get Info (Cmd+I)",
+                    buttonText: "Copy 1024px PNG",
+                    systemImage: "doc.on.doc.fill",
+                    accentGradient: [Color.blue, Color.cyan]
+                ) {
+                    store.copyToClipboard()
+                }
+
+                // Export PNG Card
+                ExportActionCard(
+                    title: "Master PNG (1024×1024)",
+                    subtitle: "Lossless crisp PNG with alpha transparency channel",
+                    buttonText: "Save PNG…",
+                    systemImage: "photo.fill",
+                    accentGradient: [Color.purple, Color.indigo]
+                ) {
+                    store.exportPNG()
+                }
+
+                // Export ICNS Card
+                ExportActionCard(
+                    title: "Apple .icns Package",
+                    subtitle: "Native macOS iconset containing 16px to 1024px @1x & @2x resolutions",
+                    buttonText: "Generate .icns…",
+                    systemImage: "app.badge.fill",
+                    accentGradient: [Color.orange, Color.pink]
+                ) {
+                    store.exportICNS()
+                }
+            }
+
+            // Portable Theme Presets (.folderlab)
+            InspectorCard {
+                InspectorSectionHeader(
+                    title: "Shareable Theme Presets (.folderlab)",
+                    subtitle: "Export your design as a portable file or import community themes",
+                    icon: "square.and.arrow.up.fill",
+                    iconColor: .purple
+                )
+
+                ExportActionCard(
+                    title: "FolderLab Theme Preset (.folderlab)",
+                    subtitle: "Export complete folder design including colors, textures, and glyphs into a shareable preset file",
+                    buttonText: "Export Preset…",
+                    systemImage: "square.and.arrow.up",
+                    accentGradient: [Color.green, Color.teal]
+                ) {
+                    store.exportThemePreset()
+                }
 
                 Button {
-                    store.resetBatchSubfolders()
+                    store.importThemePreset()
                 } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "arrow.counterclockwise")
-                        Text("Batch Reset Subfolders to Default…")
+                    HStack(spacing: 8) {
+                        Image(systemName: "square.and.arrow.down")
+                        Text("Import .folderlab Preset File…")
                     }
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(.secondary)
@@ -2316,80 +2519,9 @@ struct ExportInspectorTab: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(12)
-            .background(Color(nsColor: .controlBackgroundColor).opacity(0.45))
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-
-            Divider().padding(.vertical, 4)
-
-            // Section 2: Clipboard & Files
-            InspectorSectionHeader(title: "Save & Copy", subtitle: "Copy to clipboard for Finder Get Info or save files")
-
-            // Copy to Clipboard Card
-            ExportActionCard(
-                title: "Copy to Clipboard",
-                subtitle: "Directly paste (Cmd+V) onto any folder in Finder Get Info (Cmd+I)",
-                buttonText: "Copy 1024px PNG",
-                systemImage: "doc.on.doc.fill",
-                accentGradient: [Color.blue, Color.cyan]
-            ) {
-                store.copyToClipboard()
-            }
-
-            // Export PNG Card
-            ExportActionCard(
-                title: "Master PNG (1024×1024)",
-                subtitle: "Lossless crisp PNG with alpha transparency channel",
-                buttonText: "Save PNG…",
-                systemImage: "photo.fill",
-                accentGradient: [Color.purple, Color.indigo]
-            ) {
-                store.exportPNG()
-            }
-
-            // Export ICNS Card
-            ExportActionCard(
-                title: "Apple .icns Package",
-                subtitle: "Native macOS iconset containing 16px to 1024px @1x & @2x resolutions",
-                buttonText: "Generate .icns…",
-                systemImage: "app.badge.fill",
-                accentGradient: [Color.orange, Color.pink]
-            ) {
-                store.exportICNS()
-            }
-
-            Divider().padding(.vertical, 4)
-
-            // Section: Portable Theme Presets (.folderlab)
-            InspectorSectionHeader(title: "Shareable Theme Presets (.folderlab)", subtitle: "Export your design as a portable file or import community themes")
-
-            ExportActionCard(
-                title: "FolderLab Theme Preset (.folderlab)",
-                subtitle: "Export complete folder design including colors, textures, and glyphs into a shareable preset file",
-                buttonText: "Export Preset…",
-                systemImage: "square.and.arrow.up",
-                accentGradient: [Color.green, Color.teal]
-            ) {
-                store.exportThemePreset()
-            }
-
-            Button {
-                store.importThemePreset()
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "square.and.arrow.down")
-                    Text("Import .folderlab Preset File…")
-                }
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 6)
-            }
-            .buttonStyle(.plain)
         }
     }
 }
-
 
 struct ExportActionCard: View {
     let title: String
@@ -2410,6 +2542,7 @@ struct ExportActionCard: View {
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(.white)
                     }
+                    .shadow(color: .black.opacity(0.18), radius: 2, y: 1)
 
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
@@ -2442,25 +2575,62 @@ struct ExportActionCard: View {
         .padding(12)
         .background(Color(nsColor: .controlBackgroundColor).opacity(0.45))
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+        )
     }
 }
-
 
 // MARK: - Reusable UI Components
 
 struct InspectorSectionHeader: View {
     let title: String
     let subtitle: String
+    var icon: String? = nil
+    var iconColor: Color = .accentColor
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title)
-                .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(.primary)
-            Text(subtitle)
-                .font(.system(size: 11))
-                .foregroundStyle(.secondary)
+        HStack(spacing: 8) {
+            if let icon = icon {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(iconColor.opacity(0.16))
+                        .frame(width: 24, height: 24)
+                    Image(systemName: icon)
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(iconColor)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(.primary)
+                Text(subtitle)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+            }
         }
+    }
+}
+
+// MARK: - Standardized Inspector Card Container
+
+struct InspectorCard<Content: View>: View {
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            content()
+        }
+        .padding(14)
+        .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+        )
     }
 }
 
@@ -2470,16 +2640,29 @@ struct ModernSlider: View {
     let range: ClosedRange<Double>
     var format: String = "%.2f"
     var multiplier: Double = 1.0
+    var unit: String = ""
+    var onReset: (() -> Void)? = nil
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 5) {
             HStack {
                 Text(title)
                     .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.primary)
                 Spacer()
-                Text(String(format: format, value * multiplier))
+                Text(String(format: format, value * multiplier) + unit)
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
                     .foregroundStyle(.secondary)
+
+                if let onReset = onReset {
+                    Button("Reset") {
+                        withAnimation { onReset() }
+                    }
+                    .font(.system(size: 10, weight: .medium))
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Color.accentColor)
+                    .padding(.leading, 4)
+                }
             }
             Slider(value: $value, in: range)
         }
