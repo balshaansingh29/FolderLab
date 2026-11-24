@@ -843,23 +843,24 @@ extension IconSpec {
 
     // MARK: - Official FolderLab App Icon Styles (Apple HIG & Icon Composer)
 
-    /// Standard / Light appearance macOS App Icon
+    /// Standard / Light appearance macOS App Icon (Paintbrush Glass Folder)
     static var appIconLight: IconSpec {
         var s = IconSpec()
         s.base = .folder
         s.shape = .squircle
         s.macMargin = true
         s.useGradient = true
-        s.color1 = Color(hex: "#2563EB") ?? .blue // Electric Sapphire
-        s.color2 = Color(hex: "#7C3AED") ?? .purple // Royal Violet
+        s.color1 = Color(hex: "#7C3AED") ?? .purple // Royal Violet / Purple
+        s.color2 = Color(hex: "#3B82F6") ?? .blue   // Electric Blue
         s.gradientAngle = 135
         s.gloss = true
         s.innerRim = true
         s.dropShadow = true
         s.glyphKind = .symbol
-        s.symbolName = "folder.fill"
+        s.symbolName = "paintbrush.fill"
+        s.glyphRotation = -20.0
         s.glyphColor = .white
-        s.glyphScale = 0.50
+        s.glyphScale = 0.48
         s.glyphShadow = true
         return s
     }
@@ -878,9 +879,10 @@ extension IconSpec {
         s.innerRim = true
         s.dropShadow = true
         s.glyphKind = .symbol
-        s.symbolName = "folder.fill"
-        s.glyphColor = Color(hex: "#A78BFA") ?? .purple // Glowing Neon Violet
-        s.glyphScale = 0.50
+        s.symbolName = "paintbrush.fill"
+        s.glyphRotation = -20.0
+        s.glyphColor = Color(hex: "#A78BFA") ?? .purple
+        s.glyphScale = 0.48
         s.glyphShadow = true
         return s
     }
@@ -902,9 +904,10 @@ extension IconSpec {
         s.borderWidth = 0.005 // 1.5pt crisp specular rim
         s.dropShadow = true
         s.glyphKind = .symbol
-        s.symbolName = "folder.fill"
+        s.symbolName = "paintbrush.fill"
+        s.glyphRotation = -20.0
         s.glyphColor = .white
-        s.glyphScale = 0.50
+        s.glyphScale = 0.48
         s.glyphShadow = true
         return s
     }
@@ -927,7 +930,9 @@ extension IconSpec {
         s.borderWidth = 0.005
         s.dropShadow = true
         s.glyphKind = .symbol
-        s.symbolName = "folder.fill"
+        s.symbolName = "paintbrush.fill"
+        s.glyphRotation = -20.0
+        s.glyphScale = 0.48
         // Icon color in tinted: Radiant Cyan to Glowing Neon Violet gradient
         s.glyphGradient = true
         s.glyphColor = Color(hex: "#00F0FF") ?? .cyan

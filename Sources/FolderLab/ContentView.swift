@@ -770,8 +770,16 @@ struct StudioCanvasView: View {
         HStack(spacing: 8) {
             // App Branding: Fixed size & layoutPriority prevents text truncation in windowed mode
             HStack(spacing: 8) {
-                IconCanvas(spec: .appIconLight, size: 24)
-                    .shadow(color: .blue.opacity(0.35), radius: 3, y: 1)
+                if let appImg = AppIconManager.shared.loadIconComposerImage(for: .light) {
+                    Image(nsImage: appImg)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .shadow(color: .purple.opacity(0.35), radius: 3, y: 1)
+                } else {
+                    IconCanvas(spec: .appIconLight, size: 24)
+                        .shadow(color: .purple.opacity(0.35), radius: 3, y: 1)
+                }
 
                 Text("FolderLab")
                     .font(.system(size: 14, weight: .bold))

@@ -16,12 +16,12 @@ struct SettingsView: View {
                 if let img = iconManager.loadIconComposerImage(for: iconManager.activeResolvedVariant) {
                     Image(nsImage: img)
                         .resizable()
+                        .scaledToFit()
                         .frame(width: 42, height: 42)
-                        .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
-                        .shadow(color: .blue.opacity(0.35), radius: 5, y: 2)
+                        .shadow(color: .purple.opacity(0.35), radius: 5, y: 2)
                 } else {
                     IconCanvas(spec: activeSpec, size: 42)
-                        .shadow(color: .blue.opacity(0.35), radius: 5, y: 2)
+                        .shadow(color: .purple.opacity(0.35), radius: 5, y: 2)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {

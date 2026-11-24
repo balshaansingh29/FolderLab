@@ -13,8 +13,16 @@ public struct UpdateSheetView: View {
         VStack(spacing: 0) {
             // Header
             HStack(spacing: 12) {
-                IconCanvas(spec: .appIconLight, size: 36)
-                    .shadow(color: .blue.opacity(0.3), radius: 4, y: 1)
+                if let appImg = AppIconManager.shared.loadIconComposerImage(for: .light) {
+                    Image(nsImage: appImg)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 36, height: 36)
+                        .shadow(color: .purple.opacity(0.35), radius: 4, y: 1)
+                } else {
+                    IconCanvas(spec: .appIconLight, size: 36)
+                        .shadow(color: .purple.opacity(0.3), radius: 4, y: 1)
+                }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Software Update")
