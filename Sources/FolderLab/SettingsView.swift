@@ -6,6 +6,7 @@ import AppKit
 struct SettingsView: View {
     @ObservedObject private var iconManager = AppIconManager.shared
     @ObservedObject private var updateManager = UpdateManager.shared
+    @ObservedObject private var quickActionManager = QuickActionManager.shared
     @AppStorage("autoCheckForUpdates") private var autoCheckForUpdates: Bool = true
     @Environment(\.dismiss) private var dismiss
 
@@ -55,6 +56,77 @@ struct SettingsView: View {
 
             ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 18) {
+                    // Finder Quick Action Section
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Label("Finder Context Menu (\"Quick Action\")", systemImage: "cursorarrow.and.square.on.square.dashed")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundStyle(.primary)
+
+                            Spacer()
+
+                            if quickActionManager.isInstalled {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(.green)
+                                    Text("Installed & Active")
+                                        .font(.system(size: 11, weight: .semibold))
+                                        .foregroundStyle(.green)
+                                }
+                            } else {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "exclamationmark.circle")
+                                        .foregroundStyle(.orange)
+                                    Text("Not Installed")
+                                        .font(.system(size: 11, weight: .semibold))
+                                        .foregroundStyle(.orange)
+                                }
+                            }
+                        }
+
+                        Text("Adds \"Style with FolderLab…\" directly to Finder's right-click context menu under Quick Actions. Right-click any folder in Finder to open and style it immediately.")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                            .lineSpacing(2)
+
+                        HStack(spacing: 10) {
+                            if quickActionManager.isInstalled {
+                                Button("Reinstall / Refresh") {
+                                    _ = quickActionManager.install()
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+
+                                Button("Reveal in Finder") {
+                                    quickActionManager.revealInFinder()
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+
+                                Spacer()
+
+                                Button("Uninstall") {
+                                    _ = quickActionManager.uninstall()
+                                }
+                                .buttonStyle(.plain)
+                                .font(.system(size: 11))
+                                .foregroundStyle(.red.opacity(0.8))
+                            } else {
+                                Button("Install Finder Quick Action") {
+                                    _ = quickActionManager.install()
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .controlSize(.small)
+
+                                Spacer()
+                            }
+                        }
+                        .padding(.top, 2)
+                    }
+                    .padding(14)
+                    .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
                     // Software Updates Section
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
@@ -176,7 +248,7 @@ struct SettingsView: View {
             .padding(.vertical, 12)
             .background(Color(nsColor: .windowBackgroundColor))
         }
-        .frame(width: 520, height: 380)
+        .frame(width: 520, height: 440)
     }
 
     // MARK: - Status Helpers

@@ -3709,6 +3709,7 @@ struct TextInspectorTab: View {
 
 struct ExportInspectorTab: View {
     @ObservedObject var store: IconStore
+    @ObservedObject private var quickActionManager = QuickActionManager.shared
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -3911,6 +3912,40 @@ struct ExportInspectorTab: View {
                             .foregroundStyle(.secondary)
                     }
                     .padding(.top, 2)
+
+                    // Finder Quick Action Context Menu
+                    HStack(spacing: 8) {
+                        Image(systemName: "cursorarrow.and.square.on.square.dashed")
+                            .font(.system(size: 13))
+                            .foregroundStyle(Color.accentColor)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("Finder Context Menu (\"Quick Action\")")
+                                .font(.system(size: 11, weight: .semibold))
+                            Text(quickActionManager.isInstalled ? "Active: Right-click any folder in Finder → Quick Actions" : "1-click install for Finder right-click menu")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Button(quickActionManager.isInstalled ? "Active" : "Install…") {
+                            if !quickActionManager.isInstalled {
+                                _ = quickActionManager.install()
+                                store.notify("Installed 'Style with FolderLab…' in Finder Context Menu! 🖱️✨")
+                            } else {
+                                store.notify("Quick Action is active in Finder! Right-click any folder → Quick Actions 🖱️")
+                            }
+                        }
+                        .font(.system(size: 10, weight: .bold))
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                    }
+                    .padding(8)
+                    .background(Color(nsColor: .controlBackgroundColor).opacity(0.6))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+                    )
+                    .padding(.top, 4)
                 }
             }
 
