@@ -91,10 +91,7 @@ brew install --cask https://raw.githubusercontent.com/balshaansingh29/FolderLab/
 
 ### 📥 Manual Download (DMG / ZIP)
 Grab the latest pre-compiled build:
-- 💿 **[FolderLab-v0.2.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.2.dmg)** *(Includes drag-to-Applications & a double-click `Fix Quarantine` helper)*
-- 📦 **[FolderLab-v0.2.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.2.zip)** *(Standalone application archive)*
-Grab the latest pre-compiled build:
-- 💿 **[FolderLab-v0.2.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.2.dmg)** *(Recommended: drag to `/Applications`)*
+- 💿 **[FolderLab-v0.2.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.2.dmg)** *(Clean drag-and-drop installer for `/Applications`)*
 - 📦 **[FolderLab-v0.2.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.2/FolderLab-v0.2.zip)** *(Standalone application archive)*
 
 > [!TIP]
