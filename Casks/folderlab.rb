@@ -1,6 +1,6 @@
 cask "folderlab" do
   version "0.4"
-  sha256 "e1b154a45c48eddc0b52725af25b804729285201067a13e42c84765ed555edf1"
+  sha256 "181bf542b614d7a523555dec444d86adede68a364fa316fcb76f08d6d60a9446"
 
   url "https://github.com/balshaansingh29/FolderLab/releases/download/v#{version}/FolderLab-v#{version}.dmg"
   name "FolderLab"
