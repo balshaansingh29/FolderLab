@@ -36,6 +36,14 @@ enum FolderComparisonMode: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    var shortTitle: String {
+        switch self {
+        case .sideBySide: return "Split"
+        case .live: return "Live"
+        case .original: return "Original"
+        }
+    }
+
     var iconName: String {
         switch self {
         case .sideBySide: return "rectangle.split.2x1"
@@ -313,8 +321,16 @@ final class IconStore: ObservableObject {
                    let matched = FinderTagColor.allCases.first(where: { $0.rawValue.caseInsensitiveCompare(firstTag) == .orderedSame }) {
                     self.applyFinderTag(matched)
                 }
+                // Load original / custom folder artwork so it visibly loads into Studio
+                if let tiff = staged.originalIcon.tiffRepresentation,
+                   let rep = NSBitmapImageRep(data: tiff),
+                   let png = rep.representation(using: .png, properties: [:]) {
+                    self.spec.customImageData = png
+                    self.spec.customImageName = "\(staged.name) Icon"
+                    self.spec.glyphKind = .customImage
+                }
             }
-            notify("Loaded folder baseline for '\(staged.name)' into Studio! ✏️")
+            notify("Loaded folder artwork for '\(staged.name)' into Studio! ✏️🎨")
         }
     }
 
@@ -1043,22 +1059,23 @@ struct StudioCanvasView: View {
     // MARK: - Staging Bar & Comparison Views (v0.5)
 
     private func folderStagingBar(staged: StagedFolder) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             Image(nsImage: staged.originalIcon)
                 .resizable()
                 .scaledToFit()
-                .frame(width: 32, height: 32)
-                .shadow(color: .black.opacity(0.18), radius: 3, y: 1)
+                .frame(width: 28, height: 28)
+                .shadow(color: .black.opacity(0.18), radius: 2, y: 1)
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(staged.name)
                         .font(.system(size: 13, weight: .bold))
+                        .lineLimit(1)
 
                     if staged.isApplied {
                         HStack(spacing: 3) {
                             Image(systemName: "checkmark.circle.fill")
-                            Text("Applied to Finder")
+                            Text("Applied")
                         }
                         .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(.green)
@@ -1068,7 +1085,7 @@ struct StudioCanvasView: View {
                     } else {
                         HStack(spacing: 3) {
                             Image(systemName: "circle.circle.fill")
-                            Text("Staged Live")
+                            Text("Staged")
                         }
                         .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(.orange)
@@ -1080,7 +1097,7 @@ struct StudioCanvasView: View {
                     if staged.previousSpec != nil {
                         HStack(spacing: 3) {
                             Image(systemName: "sparkles")
-                            Text("Custom Design")
+                            Text("Custom")
                         }
                         .font(.system(size: 9, weight: .bold))
                         .foregroundStyle(Color.accentColor)
@@ -1096,62 +1113,64 @@ struct StudioCanvasView: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
+            .frame(minWidth: 80, alignment: .leading)
 
-            Spacer()
+            Spacer(minLength: 6)
 
-            // 1-Click Edit Previous Design button on Staging Bar
-            Button {
-                store.loadPreviousDesignForStagedFolder()
-            } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: "pencil.line")
-                        .font(.system(size: 10, weight: .bold))
-                    Text(staged.previousSpec != nil ? "Edit Previous" : "Edit Baseline")
-                        .font(.system(size: 11, weight: .semibold))
-                }
-                .padding(.horizontal, 9)
-                .padding(.vertical, 4)
-                .background(Color.accentColor.opacity(0.15))
-                .foregroundStyle(Color.accentColor)
-                .clipShape(Capsule())
-                .overlay(Capsule().strokeBorder(Color.accentColor.opacity(0.3), lineWidth: 0.8))
-            }
-            .buttonStyle(.plain)
-            .help("Load this folder's design into the studio so you can edit and tweak it")
-
-            Picker("View", selection: $store.comparisonMode) {
-                ForEach(FolderComparisonMode.allCases) { mode in
+            // Right Actions Group (protected from squishing & overlapping)
+            HStack(spacing: 8) {
+                Button {
+                    store.loadPreviousDesignForStagedFolder()
+                } label: {
                     HStack(spacing: 4) {
-                        Image(systemName: mode.iconName)
-                        Text(mode.rawValue)
+                        Image(systemName: "pencil")
+                            .font(.system(size: 10, weight: .bold))
+                        Text(staged.previousSpec != nil ? "Edit Design" : "Edit")
+                            .font(.system(size: 11, weight: .semibold))
                     }
-                    .tag(mode)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.accentColor.opacity(0.15))
+                    .foregroundStyle(Color.accentColor)
+                    .clipShape(Capsule())
+                    .overlay(Capsule().strokeBorder(Color.accentColor.opacity(0.3), lineWidth: 0.8))
                 }
-            }
-            .pickerStyle(.segmented)
-            .frame(width: 270)
+                .buttonStyle(.plain)
+                .help("Load this folder's design or icon into Studio so you can edit and tweak it")
 
-            Button {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    store.clearStagedFolder()
+                Picker("View", selection: $store.comparisonMode) {
+                    ForEach(FolderComparisonMode.allCases) { mode in
+                        Text(mode.shortTitle)
+                            .tag(mode)
+                            .help(mode.rawValue)
+                    }
                 }
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 16))
-                    .foregroundStyle(.secondary)
+                .pickerStyle(.segmented)
+                .frame(width: 155)
+
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        store.clearStagedFolder()
+                    }
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("Dismiss staged folder")
             }
-            .buttonStyle(.plain)
-            .help("Dismiss staged folder")
+            .fixedSize(horizontal: true, vertical: false)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .frame(minWidth: 440, maxWidth: 580)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.14), lineWidth: 1)
+                .strokeBorder(Color.white.opacity(0.18), lineWidth: 1)
         )
-        .shadow(color: .black.opacity(0.08), radius: 6, y: 2)
-        .frame(maxWidth: 580)
+        .shadow(color: .black.opacity(0.15), radius: 10, y: 4)
     }
 
     private func sideBySideComparisonView(staged: StagedFolder) -> some View {

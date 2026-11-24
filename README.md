@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/folderlab-icon.png" width="128" height="128" alt="FolderLab App Icon" />
+  <img src="https://raw.githubusercontent.com/balshaansingh29/FolderLab/main/docs/folderlab-icon.png?v=3" width="128" height="128" alt="FolderLab App Icon" />
 </p>
 
 <h1 align="center">FolderLab</h1>
