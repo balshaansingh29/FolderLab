@@ -43,14 +43,26 @@ struct IconCanvas: View {
 
     // MARK: Fills
 
-    private func gradient(_ a: Color, _ b: Color) -> AnyShapeStyle {
+    private func gradient(_ a: Color, _ b: Color, _ c: Color? = nil) -> AnyShapeStyle {
         guard spec.useGradient else { return AnyShapeStyle(a) }
         let rad = spec.gradientAngle * .pi / 180
         let dx = cos(rad), dy = sin(rad)
+        let start = UnitPoint(x: 0.5 - dx / 2, y: 0.5 - dy / 2)
+        let end = UnitPoint(x: 0.5 + dx / 2, y: 0.5 + dy / 2)
+
+        if spec.useThreeColorGradient, let third = c {
+            return AnyShapeStyle(LinearGradient(
+                colors: [a, third, b],
+                startPoint: start,
+                endPoint: end
+            ))
+        }
+
         return AnyShapeStyle(LinearGradient(
             colors: [a, b],
-            startPoint: UnitPoint(x: 0.5 - dx / 2, y: 0.5 - dy / 2),
-            endPoint: UnitPoint(x: 0.5 + dx / 2, y: 0.5 + dy / 2)))
+            startPoint: start,
+            endPoint: end
+        ))
     }
 
     private var glyphFill: AnyShapeStyle {
@@ -103,10 +115,10 @@ struct IconCanvas: View {
                     .offset(y: size * 0.005)
             }
 
-            // Main base fill (with Liquid Glass support)
+            // Main base fill (with Liquid Glass and 3-stop support)
             if spec.liquidGlass {
                 tileShape
-                    .fill(gradient(spec.color1.opacity(spec.glassOpacity), spec.color2.opacity(min(1.0, spec.glassOpacity + 0.15))))
+                    .fill(gradient(spec.color1.opacity(spec.glassOpacity), spec.color2.opacity(min(1.0, spec.glassOpacity + 0.15)), spec.color3.opacity(spec.glassOpacity)))
                     .frame(width: tileSide, height: tileSide)
 
                 tileShape
@@ -118,8 +130,15 @@ struct IconCanvas: View {
                     .frame(width: tileSide, height: tileSide)
             } else {
                 tileShape
-                    .fill(gradient(spec.color1, spec.color2))
+                    .fill(gradient(spec.color1, spec.color2, spec.color3))
                     .frame(width: tileSide, height: tileSide)
+            }
+
+            // Surface Texture Overlay
+            if spec.texture != .none {
+                FolderTextureOverlay(texture: spec.texture, opacity: spec.textureOpacity)
+                    .frame(width: tileSide, height: tileSide)
+                    .clipShape(tileShape)
             }
 
             // Specular gloss highlight (curved top sheen)
@@ -178,10 +197,10 @@ struct IconCanvas: View {
             // 1. Back folder tab
             if spec.liquidGlass {
                 FolderBackShape()
-                    .fill(gradient(spec.color1.opacity(spec.glassOpacity * 0.75), spec.color2.opacity(spec.glassOpacity * 0.90)))
+                    .fill(gradient(spec.color1.opacity(spec.glassOpacity * 0.75), spec.color2.opacity(spec.glassOpacity * 0.90), spec.color3.opacity(spec.glassOpacity * 0.8)))
             } else {
                 FolderBackShape()
-                    .fill(gradient(spec.color1.darker(0.25), spec.color2.darker(0.35)))
+                    .fill(gradient(spec.color1.darker(0.25), spec.color2.darker(0.35), spec.color3.darker(0.30)))
             }
 
             // 2. Interior crease shadow between back tab and front flap
@@ -194,7 +213,7 @@ struct IconCanvas: View {
             // 3. Front flap
             if spec.liquidGlass {
                 RoundedRectangle(cornerRadius: rad, style: .continuous)
-                    .fill(gradient(spec.color1.opacity(spec.glassOpacity), spec.color2.opacity(min(1.0, spec.glassOpacity + 0.15))))
+                    .fill(gradient(spec.color1.opacity(spec.glassOpacity), spec.color2.opacity(min(1.0, spec.glassOpacity + 0.15)), spec.color3.opacity(spec.glassOpacity)))
                     .frame(width: folderW, height: frontH)
                     .frame(width: folderW, height: folderH, alignment: .bottom)
 
@@ -211,8 +230,16 @@ struct IconCanvas: View {
                     .frame(width: folderW, height: folderH, alignment: .bottom)
             } else {
                 RoundedRectangle(cornerRadius: rad, style: .continuous)
-                    .fill(gradient(spec.color1, spec.color2))
+                    .fill(gradient(spec.color1, spec.color2, spec.color3))
                     .frame(width: folderW, height: frontH)
+                    .frame(width: folderW, height: folderH, alignment: .bottom)
+            }
+
+            // 3b. Front Flap Procedural Surface Texture (v0.2)
+            if spec.texture != .none {
+                FolderTextureOverlay(texture: spec.texture, opacity: spec.textureOpacity)
+                    .frame(width: folderW, height: frontH)
+                    .clipShape(RoundedRectangle(cornerRadius: rad, style: .continuous))
                     .frame(width: folderW, height: folderH, alignment: .bottom)
             }
 
@@ -240,6 +267,34 @@ struct IconCanvas: View {
                     )
                     .frame(width: folderW, height: frontH)
                     .frame(width: folderW, height: folderH, alignment: .bottom)
+            }
+
+            // 5. Corner Mini-Badge (v0.2)
+            if spec.cornerBadge != .none, let badgeSymbol = spec.cornerBadge.symbolName {
+                let badgeSize = folderH * 0.22
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.black.opacity(0.75), Color.black.opacity(0.92)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .overlay(
+                            Circle().strokeBorder(Color.white.opacity(0.35), lineWidth: max(0.8, badgeSize * 0.08))
+                        )
+                        .shadow(color: .black.opacity(0.45), radius: badgeSize * 0.18, y: badgeSize * 0.08)
+
+                    Image(systemName: badgeSymbol)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: badgeSize * 0.52, height: badgeSize * 0.52)
+                        .foregroundStyle(spec.cornerBadgeColor)
+                        .shadow(color: .white.opacity(0.2), radius: 0.5, y: 0.5)
+                }
+                .frame(width: badgeSize, height: badgeSize)
+                .offset(x: folderW * 0.36, y: -folderH * 0.06)
             }
         }
         .frame(width: folderW, height: folderH)
@@ -288,16 +343,42 @@ struct IconCanvas: View {
                     img.symbolRenderingMode(.hierarchical).foregroundStyle(glyphFill)
                 case .multicolor:
                     img.symbolRenderingMode(.multicolor)
+                case .palette:
+                    img.symbolRenderingMode(.palette).foregroundStyle(glyphFill, spec.glyphColor2)
                 }
             }
             .frame(width: ref * spec.glyphScale, height: ref * spec.glyphScale)
         case .text:
-            Text(spec.text)
-                .font(.system(size: ref * spec.glyphScale, weight: .bold, design: .rounded))
+            let fontDesign: Font.Design = {
+                switch spec.textFontFamily {
+                case .rounded: return .rounded
+                case .monospaced: return .monospaced
+                case .serif: return .serif
+                case .standard: return .default
+                }
+            }()
+
+            let baseText = Text(spec.text)
+                .font(.system(size: ref * spec.glyphScale, weight: .bold, design: fontDesign))
                 .foregroundStyle(glyphFill)
                 .lineLimit(1)
-                .minimumScaleFactor(0.2)
+                .minimumScaleFactor(0.15)
                 .frame(width: ref * 0.9, height: ref * 0.9)
+
+            Group {
+                switch spec.textDepthStyle {
+                case .flat:
+                    baseText
+                case .embossed:
+                    baseText
+                        .shadow(color: .white.opacity(0.7), radius: 0.8, x: 0, y: 1.2)
+                        .shadow(color: .black.opacity(0.45), radius: ref * 0.015, x: 0, y: ref * 0.010)
+                case .engraved:
+                    baseText
+                        .shadow(color: .black.opacity(0.85), radius: 0.8, x: 0, y: -1.0)
+                        .shadow(color: .white.opacity(0.55), radius: 0.5, x: 0, y: 1.0)
+                }
+            }
         case .customImage:
             if let data = spec.customImageData, let nsImg = NSImage(data: data) {
                 if spec.customImageTinted {
@@ -321,5 +402,69 @@ struct IconCanvas: View {
                     .frame(width: ref * spec.glyphScale, height: ref * spec.glyphScale)
             }
         }
+    }
+}
+
+// MARK: - Procedural Surface Texture Overlay
+
+struct FolderTextureOverlay: View {
+    let texture: SurfaceTexture
+    let opacity: Double
+
+    var body: some View {
+        Canvas { context, sz in
+            switch texture {
+            case .none:
+                break
+            case .carbon:
+                let step: CGFloat = 8
+                for x in stride(from: -sz.height, to: sz.width + sz.height, by: step) {
+                    var p1 = Path()
+                    p1.move(to: CGPoint(x: x, y: 0))
+                    p1.addLine(to: CGPoint(x: x + sz.height, y: sz.height))
+                    context.stroke(p1, with: .color(.black.opacity(0.40)), lineWidth: 1.5)
+
+                    var p2 = Path()
+                    p2.move(to: CGPoint(x: x + sz.height, y: 0))
+                    p2.addLine(to: CGPoint(x: x, y: sz.height))
+                    context.stroke(p2, with: .color(.white.opacity(0.18)), lineWidth: 1.0)
+                }
+            case .brushed:
+                let step: CGFloat = 3
+                for y in stride(from: 0, to: sz.height, by: step) {
+                    var p = Path()
+                    p.move(to: CGPoint(x: 0, y: y))
+                    p.addLine(to: CGPoint(x: sz.width, y: y))
+                    let alpha = (Int(y) % 2 == 0) ? 0.30 : 0.10
+                    context.stroke(p, with: .color(.white.opacity(alpha)), lineWidth: 1.0)
+                }
+            case .leather:
+                let step: CGFloat = 6
+                for x in stride(from: 2, to: sz.width, by: step) {
+                    for y in stride(from: 2, to: sz.height, by: step) {
+                        let offset = (Int(x / step) % 2 == 0) ? step / 2 : 0
+                        let dot = CGRect(x: x, y: y + offset, width: 2, height: 2)
+                        context.fill(Path(ellipseIn: dot), with: .color(.black.opacity(0.35)))
+                    }
+                }
+            case .grid:
+                let step: CGFloat = 12
+                for x in stride(from: step/2, to: sz.width, by: step) {
+                    for y in stride(from: step/2, to: sz.height, by: step) {
+                        let dot = CGRect(x: x - 1, y: y - 1, width: 2.2, height: 2.2)
+                        context.fill(Path(ellipseIn: dot), with: .color(.white.opacity(0.40)))
+                    }
+                }
+            case .stripes:
+                let step: CGFloat = 10
+                for x in stride(from: -sz.height, to: sz.width + sz.height, by: step) {
+                    var p = Path()
+                    p.move(to: CGPoint(x: x, y: 0))
+                    p.addLine(to: CGPoint(x: x + sz.height, y: sz.height))
+                    context.stroke(p, with: .color(.black.opacity(0.30)), lineWidth: 2.0)
+                }
+            }
+        }
+        .opacity(opacity)
     }
 }

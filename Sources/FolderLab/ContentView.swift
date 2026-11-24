@@ -13,9 +13,110 @@ final class IconStore: ObservableObject {
     @Published var canvasBackdrop: CanvasBackdrop = .studio
     @Published var canvasScale: CGFloat = 1.0
 
+    // MARK: - Undo & Redo (v0.2)
+    private var undoStack: [IconSpec] = []
+    private var redoStack: [IconSpec] = []
+    @Published var canUndo: Bool = false
+    @Published var canRedo: Bool = false
+
+    func snapshotUndo() {
+        undoStack.append(spec)
+        if undoStack.count > 30 { undoStack.removeFirst() }
+        redoStack.removeAll()
+        updateUndoRedo()
+    }
+
+    func undo() {
+        guard let prev = undoStack.popLast() else { return }
+        redoStack.append(spec)
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+            spec = prev
+        }
+        updateUndoRedo()
+        notify("Undo")
+    }
+
+    func redo() {
+        guard let next = redoStack.popLast() else { return }
+        undoStack.append(spec)
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+            spec = next
+        }
+        updateUndoRedo()
+        notify("Redo")
+    }
+
+    private func updateUndoRedo() {
+        canUndo = !undoStack.isEmpty
+        canRedo = !redoStack.isEmpty
+    }
+
+    // MARK: - Recents History Shelf (v0.2)
+    @Published var recentSpecs: [IconSpec] = []
+
+    func addToRecents(_ specToAdd: IconSpec) {
+        recentSpecs.removeAll { $0 == specToAdd }
+        recentSpecs.insert(specToAdd, at: 0)
+        if recentSpecs.count > 10 {
+            recentSpecs.removeLast()
+        }
+        saveRecents()
+    }
+
+    func loadRecents() {
+        if let data = UserDefaults.standard.data(forKey: "folderlab_recents"),
+           let presets = try? JSONDecoder().decode([FolderLabPreset].self, from: data) {
+            self.recentSpecs = presets.map { IconSpec.fromPreset($0) }
+        }
+    }
+
+    private func saveRecents() {
+        let presets = recentSpecs.map { $0.toPreset(name: "Recent") }
+        if let data = try? JSONEncoder().encode(presets) {
+            UserDefaults.standard.set(data, forKey: "folderlab_recents")
+        }
+    }
+
+    // MARK: - Smart Folder Suggestions (v0.2)
+    @Published var activeSuggestion: FolderSuggestion? = nil
+
+    func checkSmartSuggestion(for url: URL) {
+        if let suggestion = SmartFolderSuggester.suggest(for: url) {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+                self.activeSuggestion = suggestion
+            }
+        }
+    }
+
+    func applySuggestion(_ suggestion: FolderSuggestion) {
+        snapshotUndo()
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+            spec.color1 = suggestion.color1
+            spec.color2 = suggestion.color2
+            if let c3 = suggestion.color3 {
+                spec.useThreeColorGradient = true
+                spec.color3 = c3
+            } else {
+                spec.useThreeColorGradient = false
+            }
+            spec.texture = suggestion.texture
+            spec.cornerBadge = suggestion.badge
+            spec.glyphKind = .symbol
+            spec.symbolName = suggestion.symbolName
+            activeSuggestion = nil
+        }
+        addToRecents(spec)
+        notify("Applied smart '\(suggestion.title)' style! 🪄")
+    }
+
+    init() {
+        loadRecents()
+    }
+
     private var toastWorkItem: DispatchWorkItem?
 
     func applyStyle(_ style: IconStyle) {
+        snapshotUndo()
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
             spec = IconSpec.styled(style, keepingGlyphFrom: spec)
         }
@@ -38,6 +139,7 @@ final class IconStore: ObservableObject {
     }
 
     func randomize() {
+        snapshotUndo()
         withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
             spec = IconSpec.random()
         }
@@ -45,6 +147,7 @@ final class IconStore: ObservableObject {
     }
 
     func resetToDefaults() {
+        snapshotUndo()
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
             spec = IconSpec()
         }
@@ -52,18 +155,21 @@ final class IconStore: ObservableObject {
     }
 
     func copyToClipboard() {
+        addToRecents(spec)
         let msg = IconExporter.copyToClipboard(spec)
         let isErr = msg.contains("Failed")
         notify(msg, isError: isErr)
     }
 
     func exportPNG() {
+        addToRecents(spec)
         let msg = IconExporter.savePNG(spec)
         let isErr = msg.contains("failed") || msg.contains("Could not")
         notify(msg, isError: isErr)
     }
 
     func exportICNS() {
+        addToRecents(spec)
         let msg = IconExporter.saveICNS(spec)
         let isErr = msg.contains("failed") || msg.contains("Could not")
         notify(msg, isError: isErr)
@@ -82,6 +188,8 @@ final class IconStore: ObservableObject {
     }
 
     func apply(to url: URL) {
+        addToRecents(spec)
+        checkSmartSuggestion(for: url)
         let (ok, msg) = IconExporter.apply(spec: spec, to: url)
         notify(msg, isError: !ok)
     }
@@ -128,6 +236,7 @@ final class IconStore: ObservableObject {
     }
 
     func applyFinderTag(_ tag: FinderTagColor) {
+        snapshotUndo()
         spec.selectedFinderTag = tag
         spec.syncFinderTag = true
         spec.color1 = tag.primaryColor
@@ -137,6 +246,7 @@ final class IconStore: ObservableObject {
     }
 
     func loadCustomImage(from url: URL) {
+        snapshotUndo()
         guard let data = try? Data(contentsOf: url), let _ = NSImage(data: data) else {
             notify("Could not load image file.", isError: true)
             return
@@ -334,6 +444,55 @@ struct StudioCanvasView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 14)
 
+                // Smart Folder Suggestion Banner (v0.2)
+                if let suggestion = store.activeSuggestion {
+                    HStack(spacing: 12) {
+                        Image(systemName: "wand.and.stars")
+                            .foregroundStyle(.yellow)
+                            .font(.system(size: 14, weight: .bold))
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 6) {
+                                Text("Smart Suggestion:")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(.secondary)
+                                Text(suggestion.title)
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(.primary)
+                            }
+                            Text(suggestion.reason)
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        Button("Apply Style") {
+                            store.applySuggestion(suggestion)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.small)
+
+                        Button {
+                            withAnimation { store.activeSuggestion = nil }
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 14))
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .strokeBorder(Color.yellow.opacity(0.35), lineWidth: 1)
+                    )
+                    .padding(.horizontal, 16)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
+
                 Spacer(minLength: 10)
 
                 // Main Stage Icon Display with interactive 3D tilt
@@ -435,6 +594,44 @@ struct StudioCanvasView: View {
             }
             .buttonStyle(.plain)
             .help("Generate an inspiring randomized design")
+
+            // Undo Button (v0.2)
+            Button {
+                store.undo()
+            } label: {
+                Image(systemName: "arrow.uturn.backward")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(store.canUndo ? Color.primary : Color.secondary.opacity(0.35))
+                    .frame(width: 26, height: 26)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.15), lineWidth: 0.8)
+                    )
+            }
+            .buttonStyle(.plain)
+            .disabled(!store.canUndo)
+            .keyboardShortcut("z", modifiers: .command)
+            .help("Undo (⌘Z)")
+
+            // Redo Button (v0.2)
+            Button {
+                store.redo()
+            } label: {
+                Image(systemName: "arrow.uturn.forward")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(store.canRedo ? Color.primary : Color.secondary.opacity(0.35))
+                    .frame(width: 26, height: 26)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.15), lineWidth: 0.8)
+                    )
+            }
+            .buttonStyle(.plain)
+            .disabled(!store.canRedo)
+            .keyboardShortcut("z", modifiers: [.command, .shift])
+            .help("Redo (⇧⌘Z)")
 
             // Quick Copy PNG Button
             Button {
@@ -919,6 +1116,64 @@ struct PresetsInspectorTab: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
+            // Recently Used Styles Shelf (v0.2)
+            if !store.recentSpecs.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Label("Recently Applied Styles", systemImage: "clock.arrow.circlepath")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(.primary)
+
+                        Spacer()
+
+                        Button("Clear") {
+                            withAnimation {
+                                store.recentSpecs.removeAll()
+                                UserDefaults.standard.removeObject(forKey: "folderlab_recents")
+                            }
+                        }
+                        .font(.system(size: 10))
+                        .buttonStyle(.plain)
+                        .foregroundStyle(.secondary)
+                    }
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(Array(store.recentSpecs.prefix(8).enumerated()), id: \.offset) { idx, recent in
+                                Button {
+                                    store.snapshotUndo()
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                        store.spec = recent
+                                    }
+                                    store.notify("Loaded recent style #\(idx + 1)")
+                                } label: {
+                                    VStack(spacing: 3) {
+                                        IconCanvas(spec: recent, size: 36)
+                                            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                                            .shadow(color: .black.opacity(0.18), radius: 2, y: 1)
+                                        Text("#\(idx + 1)")
+                                            .font(.system(size: 9, design: .monospaced))
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .padding(4)
+                                    .background(Color(nsColor: .controlBackgroundColor).opacity(0.6))
+                                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                            .strokeBorder(Color.white.opacity(0.1), lineWidth: 0.8)
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                                .help("Restore this recent folder style")
+                            }
+                        }
+                    }
+                }
+                .padding(14)
+                .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+
             // Shareable Themes & Presets (.folderlab) (Feature 7)
             InspectorSectionHeader(title: "Share & Community Themes", subtitle: "Export or import portable .folderlab preset files")
 
@@ -1163,6 +1418,16 @@ struct CanvasInspectorTab: View {
                     .toggleStyle(.switch)
                     .font(.system(size: 12, weight: .medium))
 
+                if store.spec.useGradient {
+                    Toggle("3-Color Multi-Stop Gradient (v0.2)", isOn: $store.spec.useThreeColorGradient)
+                        .toggleStyle(.switch)
+                        .font(.system(size: 11, weight: .medium))
+
+                    if store.spec.useThreeColorGradient {
+                        ColorRowModern(title: "Mid Gradient Color", color: $store.spec.color3)
+                    }
+                }
+
                 ColorRowModern(title: store.spec.useGradient ? "Front Flap Color" : "Folder Color", color: $store.spec.color1)
 
                 // Native macOS Tag Colors (Feature 5)
@@ -1287,6 +1552,31 @@ struct CanvasInspectorTab: View {
                         .toggleStyle(.switch)
                         .font(.system(size: 12, weight: .medium))
                 }
+
+                // Surface Texture & Patterns (v0.2)
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Image(systemName: "square.grid.3x3.topleft.filled")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color.accentColor)
+                        Text("Surface Texture & Patterns (v0.2)")
+                            .font(.system(size: 12, weight: .semibold))
+                    }
+
+                    Picker("Texture", selection: $store.spec.texture) {
+                        ForEach(SurfaceTexture.allCases) { tex in
+                            Text(tex.rawValue).tag(tex)
+                        }
+                    }
+                    .pickerStyle(.menu)
+
+                    if store.spec.texture != .none {
+                        ModernSlider(title: "Texture Contrast / Opacity", value: $store.spec.textureOpacity, range: 0.05...0.60, format: "%.0f%%", multiplier: 100)
+                    }
+                }
+                .padding(10)
+                .background(Color(nsColor: .controlBackgroundColor).opacity(0.4))
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
                 // Liquid Glass Material (iOS 18+ / macOS Sequoia)
                 VStack(alignment: .leading, spacing: 10) {
@@ -1534,6 +1824,32 @@ struct GlyphInspectorTab: View {
                         }
                         .pickerStyle(.segmented)
                     }
+
+                    // Corner Status Mini-Badge (v0.2)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "bookmark.fill")
+                                .font(.system(size: 11))
+                                .foregroundStyle(Color.accentColor)
+                            Text("Corner Status Badge (v0.2)")
+                                .font(.system(size: 11, weight: .semibold))
+                            Spacer()
+                            if store.spec.cornerBadge != .none {
+                                ColorPicker("", selection: $store.spec.cornerBadgeColor, supportsOpacity: false)
+                                    .labelsHidden()
+                            }
+                        }
+
+                        Picker("Badge", selection: $store.spec.cornerBadge) {
+                            ForEach(CornerBadge.allCases) { b in
+                                Text(b.rawValue).tag(b)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
+                    .padding(10)
+                    .background(Color(nsColor: .controlBackgroundColor).opacity(0.4))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 }
                 .padding(14)
                 .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
@@ -1546,6 +1862,34 @@ struct GlyphInspectorTab: View {
                     TextField("e.g. A, PRO, 🚀, ⚡️", text: $store.spec.text)
                         .textFieldStyle(.roundedBorder)
                         .font(.system(size: 16, weight: .bold))
+
+                    // Typography Font Family (v0.2)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Typography Style (v0.2)")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.secondary)
+
+                        Picker("Font", selection: $store.spec.textFontFamily) {
+                            ForEach(TextFontFamily.allCases) { f in
+                                Text(f.rawValue).tag(f)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+
+                    // Stamping Depth Effect (v0.2)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Stamping Depth (v0.2)")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.secondary)
+
+                        Picker("Depth", selection: $store.spec.textDepthStyle) {
+                            ForEach(TextDepthStyle.allCases) { d in
+                                Text(d.rawValue).tag(d)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
 
                     // Quick suggestions
                     HStack(spacing: 8) {

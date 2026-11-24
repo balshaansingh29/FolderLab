@@ -21,6 +21,22 @@ struct IconSpec: Equatable {
     var glassOpacity = 0.45
     var specularRimWidth = 0.007
 
+    // 3-Stop Gradients (v0.2)
+    var useThreeColorGradient = false
+    var color3 = Color(hex: "#1E40AF") ?? .blue
+
+    // Surface Textures & Patterns (v0.2)
+    var texture: SurfaceTexture = .none
+    var textureOpacity = 0.22
+
+    // Text & Monogram Stamping (v0.2)
+    var textFontFamily: TextFontFamily = .rounded
+    var textDepthStyle: TextDepthStyle = .flat
+
+    // SF Symbol Badging (v0.2)
+    var cornerBadge: CornerBadge = .none
+    var cornerBadgeColor = Color.white
+
     // Folder Glyph / Stamp
     var glyphKind: GlyphKind = .symbol
     var symbolName = "folder.fill"
@@ -104,10 +120,65 @@ enum FinderTagColor: String, CaseIterable, Identifiable, Codable {
     var secondaryColor: Color { Color(hex: colors.1) ?? .blue }
 }
 
+public enum TextFontFamily: String, CaseIterable, Identifiable, Codable {
+    case rounded = "SF Rounded"
+    case monospaced = "SF Mono"
+    case serif = "New York Serif"
+    case standard = "SF Pro"
+    public var id: String { rawValue }
+}
+
+public enum TextDepthStyle: String, CaseIterable, Identifiable, Codable {
+    case flat = "Flat Clean"
+    case embossed = "Embossed 3D"
+    case engraved = "Engraved Inset"
+    public var id: String { rawValue }
+}
+
+public enum CornerBadge: String, CaseIterable, Identifiable, Codable {
+    case none = "None"
+    case lock = "Lock"
+    case star = "Star"
+    case checkmark = "Checkmark"
+    case warning = "Warning"
+    case cloud = "Cloud"
+    case heart = "Heart"
+    case tag = "Tag"
+    case bookmark = "Bookmark"
+    case pin = "Pin"
+
+    public var id: String { rawValue }
+
+    public var symbolName: String? {
+        switch self {
+        case .none: return nil
+        case .lock: return "lock.fill"
+        case .star: return "star.fill"
+        case .checkmark: return "checkmark.seal.fill"
+        case .warning: return "exclamationmark.triangle.fill"
+        case .cloud: return "icloud.fill"
+        case .heart: return "heart.fill"
+        case .tag: return "tag.fill"
+        case .bookmark: return "bookmark.fill"
+        case .pin: return "pin.fill"
+        }
+    }
+}
+
+public enum SurfaceTexture: String, CaseIterable, Identifiable, Codable {
+    case none = "Smooth / Pure"
+    case carbon = "Carbon Fiber"
+    case brushed = "Brushed Metal"
+    case leather = "Tactile Grain"
+    case grid = "Dot Matrix Grid"
+    case stripes = "Diagonal Ribs"
+    public var id: String { rawValue }
+}
+
 // MARK: - Shareable Theme Preset (.folderlab)
 
 struct FolderLabPreset: Codable {
-    var version: Int = 1
+    var version: Int = 2
     var name: String
     var color1Hex: String
     var color2Hex: String
@@ -137,12 +208,22 @@ struct FolderLabPreset: Codable {
     var borderColorHex: String
     var borderWidth: Double
     var dropShadow: Bool
+    // v0.2 Extensions
+    var useThreeColorGradient: Bool? = false
+    var color3Hex: String? = "#1E40AF"
+    var texture: String? = "Smooth / Pure"
+    var textureOpacity: Double? = 0.22
+    var textFontFamily: String? = "SF Rounded"
+    var textDepthStyle: String? = "Flat Clean"
+    var cornerBadge: String? = "None"
+    var cornerBadgeColorHex: String? = "#FFFFFF"
 }
 
 enum SymbolMode: String, CaseIterable, Identifiable {
     case monochrome = "Monochrome"
     case hierarchical = "Hierarchical"
     case multicolor = "Multicolor"
+    case palette = "Palette"
     var id: String { rawValue }
 }
 
@@ -528,7 +609,15 @@ extension IconSpec {
             borderOn: borderOn,
             borderColorHex: borderColor.hexString,
             borderWidth: borderWidth,
-            dropShadow: dropShadow
+            dropShadow: dropShadow,
+            useThreeColorGradient: useThreeColorGradient,
+            color3Hex: color3.hexString,
+            texture: texture.rawValue,
+            textureOpacity: textureOpacity,
+            textFontFamily: textFontFamily.rawValue,
+            textDepthStyle: textDepthStyle.rawValue,
+            cornerBadge: cornerBadge.rawValue,
+            cornerBadgeColorHex: cornerBadgeColor.hexString
         )
     }
 
@@ -562,6 +651,14 @@ extension IconSpec {
         s.borderColor = Color(hex: preset.borderColorHex) ?? s.borderColor
         s.borderWidth = preset.borderWidth
         s.dropShadow = preset.dropShadow
+        s.useThreeColorGradient = preset.useThreeColorGradient ?? false
+        if let c3 = preset.color3Hex { s.color3 = Color(hex: c3) ?? s.color3 }
+        if let tex = preset.texture { s.texture = SurfaceTexture(rawValue: tex) ?? .none }
+        if let op = preset.textureOpacity { s.textureOpacity = op }
+        if let tf = preset.textFontFamily { s.textFontFamily = TextFontFamily(rawValue: tf) ?? .rounded }
+        if let td = preset.textDepthStyle { s.textDepthStyle = TextDepthStyle(rawValue: td) ?? .flat }
+        if let cb = preset.cornerBadge { s.cornerBadge = CornerBadge(rawValue: cb) ?? .none }
+        if let cbc = preset.cornerBadgeColorHex { s.cornerBadgeColor = Color(hex: cbc) ?? .white }
         return s
     }
 }
