@@ -806,24 +806,24 @@ struct StudioCanvasView: View {
                     Image(nsImage: appImg)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 24, height: 24)
+                        .frame(width: 26, height: 26)
                         .shadow(color: .purple.opacity(0.35), radius: 3, y: 1)
                 } else {
-                    IconCanvas(spec: .appIconLight, size: 24)
+                    IconCanvas(spec: .appIconLight, size: 26)
                         .shadow(color: .purple.opacity(0.35), radius: 3, y: 1)
                 }
 
-                HStack(spacing: 5) {
+                HStack(spacing: 6) {
                     Text("FolderLab")
-                        .font(.system(size: 14, weight: .heavy, design: .rounded))
+                        .font(.system(size: 14.5, weight: .heavy, design: .rounded))
                         .foregroundStyle(.primary)
 
                     Text("STUDIO")
-                        .font(.system(size: 8, weight: .heavy, design: .rounded))
+                        .font(.system(size: 9.5, weight: .heavy, design: .rounded))
                         .foregroundStyle(Color.accentColor)
-                        .padding(.horizontal, 4.5)
-                        .padding(.vertical, 1.5)
-                        .background(Color.accentColor.opacity(0.14))
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(Color.accentColor.opacity(0.15))
                         .clipShape(Capsule())
                 }
                 .lineLimit(1)
@@ -842,13 +842,13 @@ struct StudioCanvasView: View {
                         }
                     } label: {
                         Image(systemName: mode.iconName)
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(store.canvasBackdrop == mode ? Color.primary : Color.secondary)
-                            .frame(width: 25, height: 24)
+                            .frame(width: 27, height: 26)
                             .background {
                                 if store.canvasBackdrop == mode {
-                                    RoundedRectangle(cornerRadius: 5, style: .continuous)
-                                        .fill(Color.white.opacity(0.18))
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .fill(Color.white.opacity(0.20))
                                 }
                             }
                     }
@@ -857,10 +857,10 @@ struct StudioCanvasView: View {
                 }
             }
             .padding(2)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.12), lineWidth: 0.8)
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.14), lineWidth: 0.8)
             )
 
             // Surprise me generator with animated spin feedback
@@ -870,19 +870,20 @@ struct StudioCanvasView: View {
                 }
                 store.randomize()
             } label: {
-                HStack(spacing: 4) {
+                HStack(spacing: 5) {
                     Image(systemName: "sparkles")
+                        .font(.system(size: 11.5, weight: .semibold))
                         .rotationEffect(.degrees(surpriseRotation))
                     Text("Surprise")
+                        .font(.system(size: 12, weight: .semibold))
                 }
-                .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.primary)
-                .padding(.horizontal, 8)
-                .frame(height: 26)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .padding(.horizontal, 9)
+                .frame(height: 28)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.15), lineWidth: 0.8)
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.16), lineWidth: 0.8)
                 )
             }
             .buttonStyle(.plain)
@@ -895,19 +896,19 @@ struct StudioCanvasView: View {
                 }
                 store.notify(store.surpriseIncludeTextBar ? "Surprise Me: Text Bar enabled 🏷️" : "Surprise Me: Text Bar disabled 📁")
             } label: {
-                HStack(spacing: 4) {
+                HStack(spacing: 5) {
                     Image(systemName: store.surpriseIncludeTextBar ? "tag.fill" : "tag")
-                        .font(.system(size: 10))
+                        .font(.system(size: 10.5))
                     Text("Text Bar")
-                        .font(.system(size: 10, weight: store.surpriseIncludeTextBar ? .bold : .regular))
+                        .font(.system(size: 11, weight: store.surpriseIncludeTextBar ? .bold : .medium))
                 }
                 .foregroundStyle(store.surpriseIncludeTextBar ? Color.accentColor : .secondary)
-                .padding(.horizontal, 6)
-                .frame(height: 26)
-                .background(store.surpriseIncludeTextBar ? Color.accentColor.opacity(0.14) : Color.clear, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .padding(.horizontal, 8)
+                .frame(height: 28)
+                .background(store.surpriseIncludeTextBar ? Color.accentColor.opacity(0.14) : Color.clear, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .strokeBorder(store.surpriseIncludeTextBar ? Color.accentColor.opacity(0.4) : Color.white.opacity(0.12), lineWidth: 0.8)
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .strokeBorder(store.surpriseIncludeTextBar ? Color.accentColor.opacity(0.4) : Color.white.opacity(0.14), lineWidth: 0.8)
                 )
             }
             .buttonStyle(.plain)
@@ -918,12 +919,12 @@ struct StudioCanvasView: View {
                 store.undo()
             } label: {
                 Image(systemName: "arrow.uturn.backward")
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 11.5, weight: .medium))
                     .foregroundStyle(store.canUndo ? Color.primary : Color.secondary.opacity(0.35))
-                    .frame(width: 26, height: 26)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .frame(width: 28, height: 28)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
                             .strokeBorder(Color.white.opacity(0.15), lineWidth: 0.8)
                     )
             }
@@ -937,12 +938,12 @@ struct StudioCanvasView: View {
                 store.redo()
             } label: {
                 Image(systemName: "arrow.uturn.forward")
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 11.5, weight: .medium))
                     .foregroundStyle(store.canRedo ? Color.primary : Color.secondary.opacity(0.35))
-                    .frame(width: 26, height: 26)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .frame(width: 28, height: 28)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
                             .strokeBorder(Color.white.opacity(0.15), lineWidth: 0.8)
                     )
             }
@@ -956,12 +957,12 @@ struct StudioCanvasView: View {
                 store.copyToClipboard()
             } label: {
                 Image(systemName: "doc.on.doc.fill")
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 11.5, weight: .medium))
                     .foregroundStyle(.primary)
-                    .frame(width: 26, height: 26)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .frame(width: 28, height: 28)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
                             .strokeBorder(Color.white.opacity(0.15), lineWidth: 0.8)
                     )
             }
@@ -977,14 +978,14 @@ struct StudioCanvasView: View {
                         Image(systemName: "arrow.down.circle.fill")
                             .foregroundStyle(.blue)
                         Text("Update \(release.tagName)")
-                            .font(.system(size: 11, weight: .bold))
+                            .font(.system(size: 11.5, weight: .bold))
                             .foregroundStyle(.primary)
                     }
-                    .padding(.horizontal, 8)
-                    .frame(height: 26)
-                    .background(Color.blue.opacity(0.18), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .padding(.horizontal, 9)
+                    .frame(height: 28)
+                    .background(Color.blue.opacity(0.18), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
                             .strokeBorder(Color.blue.opacity(0.35), lineWidth: 0.8)
                     )
                 }
@@ -997,12 +998,12 @@ struct StudioCanvasView: View {
                 showOnboardingSheet = true
             } label: {
                 Image(systemName: "questionmark.circle.fill")
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(Color.accentColor)
-                    .frame(width: 26, height: 26)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .frame(width: 28, height: 28)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
                             .strokeBorder(Color.accentColor.opacity(0.3), lineWidth: 0.8)
                     )
             }
@@ -1015,9 +1016,9 @@ struct StudioCanvasView: View {
             } label: {
                 ZStack(alignment: .topTrailing) {
                     Image(systemName: "gearshape.fill")
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.primary)
-                        .frame(width: 26, height: 26)
+                        .frame(width: 28, height: 28)
 
                     if case .updateAvailable = updateManager.state {
                         Circle()
@@ -1026,9 +1027,9 @@ struct StudioCanvasView: View {
                             .offset(x: -2, y: 2)
                     }
                 }
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
                         .strokeBorder(Color.white.opacity(0.15), lineWidth: 0.8)
                 )
             }
@@ -1134,13 +1135,13 @@ struct StudioCanvasView: View {
 
             // 4. Guidance Hint
             if let staged = store.stagedFolder {
-                VStack(spacing: 4) {
-                    HStack(spacing: 5) {
+                VStack(spacing: 5) {
+                    HStack(spacing: 6) {
                         Image(systemName: "info.circle.fill")
-                            .font(.system(size: 11))
+                            .font(.system(size: 12))
                             .foregroundStyle(Color.accentColor)
                         Text("Staged '\(staged.name)' • Live edits update the AFTER preview! Click Apply to write to Finder.")
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(.secondary)
                     }
 
@@ -1151,16 +1152,16 @@ struct StudioCanvasView: View {
                             store.desktopAlertMessage = "For folders located on your Desktop, open '\(staged.name)' once in Finder after applying to immediately display your custom icon (due to macOS Desktop caching)."
                             store.showDesktopAlert = true
                         } label: {
-                            HStack(spacing: 5) {
+                            HStack(spacing: 6) {
                                 Image(systemName: "exclamationmark.triangle.fill")
-                                    .font(.system(size: 11))
+                                    .font(.system(size: 11.5))
                                     .foregroundStyle(.orange)
                                 Text("Desktop folder: Open the folder once in Finder after applying to show change.")
-                                    .font(.system(size: 11, weight: .semibold))
+                                    .font(.system(size: 11.5, weight: .semibold))
                                     .foregroundStyle(.orange)
                                 Image(systemName: "info.circle")
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(.orange.opacity(0.8))
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.orange.opacity(0.85))
                             }
                         }
                         .buttonStyle(.plain)
@@ -1168,7 +1169,7 @@ struct StudioCanvasView: View {
                 }
             } else {
                 Text(isDropTargeted ? "Drop it like it's hot! ✨ Staging folder..." : "📁 Drop any folder here from Finder to preview, skin & transform in real-time")
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(isDropTargeted ? Color.accentColor : Color.secondary)
             }
         }
@@ -1177,17 +1178,17 @@ struct StudioCanvasView: View {
     // MARK: - Staging Bar & Comparison Views (v0.5)
 
     private func folderStagingBar(staged: StagedFolder) -> some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 12) {
             Image(nsImage: staged.originalIcon)
                 .resizable()
                 .scaledToFit()
-                .frame(width: 28, height: 28)
+                .frame(width: 30, height: 30)
                 .shadow(color: .black.opacity(0.18), radius: 2, y: 1)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
                     Text(staged.name)
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.system(size: 13.5, weight: .bold))
                         .lineLimit(1)
 
                     if staged.isApplied {
@@ -1195,21 +1196,21 @@ struct StudioCanvasView: View {
                             Image(systemName: "checkmark.circle.fill")
                             Text("Applied")
                         }
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: 10.5, weight: .bold))
                         .foregroundStyle(.green)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Capsule().fill(Color.green.opacity(0.15)))
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 2.5)
+                        .background(Capsule().fill(Color.green.opacity(0.16)))
                     } else {
                         HStack(spacing: 3) {
                             Image(systemName: "circle.circle.fill")
                             Text("Staged")
                         }
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: 10.5, weight: .bold))
                         .foregroundStyle(.orange)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Capsule().fill(Color.orange.opacity(0.15)))
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 2.5)
+                        .background(Capsule().fill(Color.orange.opacity(0.16)))
                     }
 
                     if staged.previousSpec != nil {
@@ -1217,16 +1218,16 @@ struct StudioCanvasView: View {
                             Image(systemName: "sparkles")
                             Text("Custom")
                         }
-                        .font(.system(size: 9, weight: .bold))
+                        .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(Color.accentColor)
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 1.5)
-                        .background(Capsule().fill(Color.accentColor.opacity(0.15)))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Capsule().fill(Color.accentColor.opacity(0.16)))
                     }
                 }
 
                 Text(staged.path)
-                    .font(.system(size: 10, design: .monospaced))
+                    .font(.system(size: 11, design: .monospaced))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -1242,16 +1243,16 @@ struct StudioCanvasView: View {
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "pencil")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.system(size: 11, weight: .bold))
                         Text(staged.previousSpec != nil ? "Edit Design" : "Edit")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 11.5, weight: .semibold))
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 5)
                     .background(Color.accentColor.opacity(0.15))
                     .foregroundStyle(Color.accentColor)
                     .clipShape(Capsule())
-                    .overlay(Capsule().strokeBorder(Color.accentColor.opacity(0.3), lineWidth: 0.8))
+                    .overlay(Capsule().strokeBorder(Color.accentColor.opacity(0.35), lineWidth: 0.8))
                 }
                 .buttonStyle(.plain)
                 .help("Load this folder's design or icon into Studio so you can edit and tweak it")
@@ -1264,7 +1265,7 @@ struct StudioCanvasView: View {
                     }
                 }
                 .pickerStyle(.segmented)
-                .frame(width: 155)
+                .frame(width: 160)
 
                 Button {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
@@ -1272,7 +1273,7 @@ struct StudioCanvasView: View {
                     }
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 14))
+                        .font(.system(size: 15))
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
@@ -1280,8 +1281,8 @@ struct StudioCanvasView: View {
             }
             .fixedSize(horizontal: true, vertical: false)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 7)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
         .frame(minWidth: 440, maxWidth: 580)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(
@@ -1298,19 +1299,19 @@ struct StudioCanvasView: View {
                 HStack {
                     HStack(spacing: 4) {
                         Image(systemName: "clock.arrow.circlepath")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.system(size: 11, weight: .bold))
                         Text("BEFORE")
-                            .font(.system(size: 11, weight: .heavy))
+                            .font(.system(size: 11.5, weight: .heavy))
                     }
                     .foregroundStyle(.secondary)
 
                     Spacer()
 
                     Text(staged.previousSpec != nil ? "Saved Design" : "Original")
-                        .font(.system(size: 9, weight: .bold))
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Capsule().fill(Color.secondary.opacity(0.15)))
+                        .font(.system(size: 10, weight: .bold))
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 2.5)
+                        .background(Capsule().fill(Color.secondary.opacity(0.18)))
                         .foregroundStyle(.secondary)
                 }
                 .padding(.horizontal, 12)
@@ -1336,18 +1337,18 @@ struct StudioCanvasView: View {
                 } label: {
                     HStack(spacing: 5) {
                         Image(systemName: "pencil.and.outline")
-                            .font(.system(size: 11, weight: .bold))
+                            .font(.system(size: 11.5, weight: .bold))
                         Text(staged.previousSpec != nil ? "Edit Previous Design" : "Edit Baseline")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 11.5, weight: .semibold))
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 6)
+                    .padding(.vertical, 7)
                     .background(Color.accentColor.opacity(0.12))
                     .foregroundStyle(Color.accentColor)
                     .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .strokeBorder(Color.accentColor.opacity(0.25), lineWidth: 0.8)
+                            .strokeBorder(Color.accentColor.opacity(0.28), lineWidth: 0.8)
                     )
                 }
                 .buttonStyle(.plain)
@@ -1355,8 +1356,8 @@ struct StudioCanvasView: View {
                 .padding(.horizontal, 10)
                 .padding(.bottom, 10)
             }
-            .frame(width: 225, height: 255)
-            .background(Color(nsColor: .controlBackgroundColor).opacity(0.55), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .frame(width: 230, height: 260)
+            .background(Color(nsColor: .controlBackgroundColor).opacity(0.65), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
@@ -1370,11 +1371,11 @@ struct StudioCanvasView: View {
                     .foregroundStyle(Color.accentColor)
                     .shadow(color: Color.accentColor.opacity(0.35), radius: 4, y: 2)
                 Text("TRANSFORM")
-                    .font(.system(size: 8, weight: .heavy))
+                    .font(.system(size: 9, weight: .heavy))
                     .foregroundStyle(Color.accentColor)
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 2)
-                    .background(Capsule().fill(Color.accentColor.opacity(0.12)))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2.5)
+                    .background(Capsule().fill(Color.accentColor.opacity(0.14)))
             }
 
             // AFTER (Live Design) Card
@@ -1382,23 +1383,23 @@ struct StudioCanvasView: View {
                 HStack {
                     HStack(spacing: 4) {
                         Image(systemName: "sparkles")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.system(size: 11, weight: .bold))
                         Text("AFTER")
-                            .font(.system(size: 11, weight: .heavy))
+                            .font(.system(size: 11.5, weight: .heavy))
                     }
                     .foregroundStyle(Color.accentColor)
 
                     Spacer()
 
-                    HStack(spacing: 3) {
+                    HStack(spacing: 4) {
                         Circle().fill(Color.green).frame(width: 5, height: 5)
                         Text("Live Studio")
-                            .font(.system(size: 9, weight: .bold))
+                            .font(.system(size: 10, weight: .bold))
                             .foregroundStyle(.green)
                     }
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Capsule().fill(Color.green.opacity(0.15)))
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 2.5)
+                    .background(Capsule().fill(Color.green.opacity(0.16)))
                 }
                 .padding(.horizontal, 12)
                 .padding(.top, 10)
@@ -1410,25 +1411,25 @@ struct StudioCanvasView: View {
                 .frame(width: 200, height: 160)
 
                 // Live Indicator pill
-                HStack(spacing: 4) {
+                HStack(spacing: 5) {
                     Image(systemName: "slider.horizontal.3")
-                        .font(.system(size: 10))
+                        .font(.system(size: 11))
                     Text("Updates live from inspector")
-                        .font(.system(size: 10, weight: .medium))
+                        .font(.system(size: 11, weight: .medium))
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 6)
-                .background(Color(nsColor: .controlBackgroundColor).opacity(0.4))
+                .padding(.vertical, 7)
+                .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
                 .foregroundStyle(.secondary)
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 .padding(.horizontal, 10)
                 .padding(.bottom, 10)
             }
-            .frame(width: 225, height: 255)
-            .background(Color(nsColor: .controlBackgroundColor).opacity(0.55), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .frame(width: 230, height: 260)
+            .background(Color(nsColor: .controlBackgroundColor).opacity(0.65), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .strokeBorder(Color.accentColor.opacity(0.4), lineWidth: 1.5)
+                    .strokeBorder(Color.accentColor.opacity(0.45), lineWidth: 1.5)
             )
             .shadow(color: Color.accentColor.opacity(0.1), radius: 10, y: 3)
         }
@@ -1486,12 +1487,13 @@ struct StudioCanvasView: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "folder.badge.gearshape")
+                        .font(.system(size: 13, weight: .semibold))
                     Text("Apply to Folder…")
+                        .font(.system(size: 13, weight: .semibold))
                 }
-                .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.white)
                 .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.vertical, 9)
                 .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .shadow(color: Color.accentColor.opacity(0.3), radius: 5, y: 2)
             }
@@ -1501,18 +1503,19 @@ struct StudioCanvasView: View {
             Button {
                 store.stageFolderFromOpenPanel()
             } label: {
-                HStack(spacing: 5) {
+                HStack(spacing: 6) {
                     Image(systemName: "rectangle.split.2x1")
+                        .font(.system(size: 12, weight: .medium))
                     Text("Stage Folder…")
+                        .font(.system(size: 12.5, weight: .semibold))
                 }
-                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.primary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 9)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
+                        .strokeBorder(Color.white.opacity(0.14), lineWidth: 1)
                 )
             }
             .buttonStyle(.plain)
@@ -1521,18 +1524,19 @@ struct StudioCanvasView: View {
             Button {
                 store.resetItems()
             } label: {
-                HStack(spacing: 5) {
+                HStack(spacing: 6) {
                     Image(systemName: "arrow.counterclockwise")
+                        .font(.system(size: 12, weight: .medium))
                     Text("Reset Folder")
+                        .font(.system(size: 12.5, weight: .medium))
                 }
-                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 9)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
+                        .strokeBorder(Color.white.opacity(0.14), lineWidth: 1)
                 )
             }
             .buttonStyle(.plain)
@@ -1547,12 +1551,13 @@ struct StudioCanvasView: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: staged.isApplied ? "checkmark.circle.fill" : "folder.badge.gearshape")
+                        .font(.system(size: 13, weight: .bold))
                     Text(staged.isApplied ? "Re-Apply to '\(staged.name)'" : "Apply to '\(staged.name)'")
+                        .font(.system(size: 13, weight: .bold))
                 }
-                .font(.system(size: 13, weight: .bold))
                 .foregroundStyle(.white)
                 .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.vertical, 9)
                 .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .shadow(color: Color.accentColor.opacity(0.35), radius: 6, y: 2)
             }
@@ -1564,16 +1569,17 @@ struct StudioCanvasView: View {
             } label: {
                 HStack(spacing: 5) {
                     Image(systemName: "pencil.line")
+                        .font(.system(size: 12, weight: .semibold))
                     Text("Edit Previous")
+                        .font(.system(size: 12.5, weight: .semibold))
                 }
-                .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(Color.accentColor)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 13)
+                .padding(.vertical, 9)
                 .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .strokeBorder(Color.accentColor.opacity(0.25), lineWidth: 0.8)
+                        .strokeBorder(Color.accentColor.opacity(0.28), lineWidth: 0.8)
                 )
             }
             .buttonStyle(.plain)
@@ -1584,12 +1590,13 @@ struct StudioCanvasView: View {
             } label: {
                 HStack(spacing: 5) {
                     Image(systemName: "arrow.counterclockwise")
+                        .font(.system(size: 12, weight: .medium))
                     Text("Restore Original")
+                        .font(.system(size: 12.5, weight: .medium))
                 }
-                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.primary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 13)
+                .padding(.vertical, 9)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
@@ -1606,12 +1613,13 @@ struct StudioCanvasView: View {
             } label: {
                 HStack(spacing: 4) {
                     Image(systemName: "xmark")
+                        .font(.system(size: 11, weight: .medium))
                     Text("Unstage")
+                        .font(.system(size: 12.5, weight: .medium))
                 }
-                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 9)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
@@ -1844,12 +1852,12 @@ struct InspectorPanelView: View {
                     } label: {
                         HStack(spacing: 5) {
                             Image(systemName: tab.iconName)
-                                .font(.system(size: 11, weight: activeTab == tab ? .bold : .medium))
-                            Text(tab.rawValue)
                                 .font(.system(size: 12, weight: activeTab == tab ? .bold : .medium))
+                            Text(tab.rawValue)
+                                .font(.system(size: 12.5, weight: activeTab == tab ? .bold : .semibold))
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 7)
+                        .padding(.vertical, 8)
                         .background {
                             if activeTab == tab {
                                 RoundedRectangle(cornerRadius: 7, style: .continuous)
@@ -1924,9 +1932,7 @@ struct PeekInsideInspectorCard: View {
 
             if store.spec.peekInsideEnabled {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("POCKET CONTENT STYLE")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                    InspectorSubhead("Pocket Content Style")
                         .padding(.top, 2)
 
                     // Styles Selection Grid
@@ -1944,14 +1950,14 @@ struct PeekInsideInspectorCard: View {
                                         .frame(width: 20)
 
                                     Text(type.rawValue)
-                                        .font(.system(size: 11, weight: store.spec.peekContentType == type ? .bold : .medium))
+                                        .font(.system(size: 12, weight: store.spec.peekContentType == type ? .bold : .medium))
                                         .lineLimit(1)
 
                                     Spacer(minLength: 0)
 
                                     if store.spec.peekContentType == type {
                                         Image(systemName: "checkmark")
-                                            .font(.system(size: 10, weight: .bold))
+                                            .font(.system(size: 11, weight: .bold))
                                             .foregroundStyle(.white)
                                     }
                                 }
@@ -1980,22 +1986,22 @@ struct PeekInsideInspectorCard: View {
                     // Description & Auto-Detect Live Status
                     HStack(spacing: 6) {
                         Image(systemName: store.spec.peekContentType == .autoDetect ? "wand.and.stars" : "info.circle")
-                            .font(.system(size: 11))
+                            .font(.system(size: 12))
                             .foregroundStyle(store.spec.peekContentType == .autoDetect ? Color.purple : Color.secondary)
 
                         if store.spec.peekContentType == .autoDetect {
                             if let staged = store.stagedFolder, let detected = store.spec.peekDetectedType {
                                 Text("Auto-detected for '\(staged.name)': \(detected.rawValue)")
-                                    .font(.system(size: 10.5, weight: .semibold))
+                                    .font(.system(size: 11.5, weight: .semibold))
                                     .foregroundStyle(Color.accentColor)
                             } else {
                                 Text("Drop any folder onto canvas to auto-peek its matching contents")
-                                    .font(.system(size: 10.5))
+                                    .font(.system(size: 11.5))
                                     .foregroundStyle(.secondary)
                             }
                         } else {
                             Text(store.spec.peekContentType.subtitle)
-                                .font(.system(size: 10.5))
+                                .font(.system(size: 11.5))
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -2016,46 +2022,46 @@ struct WallpaperSuggestionCardButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 9) {
+            HStack(spacing: 10) {
                 // Live mini preview
-                IconCanvas(spec: suggestion.previewSpec, size: 36)
-                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                IconCanvas(spec: suggestion.previewSpec, size: 38)
+                    .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
                     .shadow(color: .black.opacity(0.18), radius: 2, y: 1)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 4) {
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 5) {
                         Image(systemName: suggestion.iconName)
-                            .font(.system(size: 9))
+                            .font(.system(size: 10.5))
                             .foregroundStyle(Color.accentColor)
                         Text(suggestion.name)
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 12, weight: .semibold))
                             .lineLimit(1)
                     }
 
                     Text(suggestion.subtitle)
-                        .font(.system(size: 9))
+                        .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
 
                     // Swatch dots
-                    HStack(spacing: 3) {
+                    HStack(spacing: 4) {
                         ForEach(Array(suggestion.gradientColors.enumerated()), id: \.offset) { _, c in
                             Circle()
                                 .fill(c)
-                                .frame(width: 7, height: 7)
+                                .frame(width: 8, height: 8)
                         }
                     }
                     .padding(.top, 1)
                 }
                 Spacer(minLength: 0)
             }
-            .padding(8)
-            .background(Color(nsColor: .controlBackgroundColor).opacity(isSelected ? 0.95 : 0.45))
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .padding(9)
+            .background(Color(nsColor: .controlBackgroundColor).opacity(isSelected ? 0.95 : 0.65))
+            .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
                     .strokeBorder(
-                        isSelected ? Color.accentColor : Color.white.opacity(0.08),
+                        isSelected ? Color.accentColor : Color.white.opacity(0.10),
                         lineWidth: isSelected ? 1.5 : 0.8
                     )
             )
@@ -2102,7 +2108,7 @@ struct WallpaperMatcherInspectorCard: View {
                         Image(nsImage: thumb)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(width: 84, height: 56)
+                            .frame(width: 88, height: 58)
                             .clipped()
                     } else {
                         RoundedRectangle(cornerRadius: 8)
@@ -2113,7 +2119,7 @@ struct WallpaperMatcherInspectorCard: View {
                                     endPoint: .bottomTrailing
                                 )
                             )
-                            .frame(width: 84, height: 56)
+                            .frame(width: 88, height: 58)
                     }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
@@ -2127,16 +2133,16 @@ struct WallpaperMatcherInspectorCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text(extractor.wallpaperName)
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 12.5, weight: .semibold))
                             .lineLimit(1)
                             .truncationMode(.middle)
 
                         // Light/Dark indicator pill
                         HStack(spacing: 3) {
                             Image(systemName: extractor.isDarkWallpaper ? "moon.fill" : "sun.max.fill")
-                                .font(.system(size: 8))
+                                .font(.system(size: 9.5))
                             Text(extractor.isDarkWallpaper ? "Dark" : "Light")
-                                .font(.system(size: 9, weight: .semibold))
+                                .font(.system(size: 10, weight: .bold))
                         }
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
@@ -2146,7 +2152,7 @@ struct WallpaperMatcherInspectorCard: View {
                     }
 
                     Text("Sampled \(extractor.themeSuggestions.count) theme suggestions")
-                        .font(.system(size: 10))
+                        .font(.system(size: 11.5, weight: .medium))
                         .foregroundStyle(.secondary)
 
                     // 1-Click Match Primary Button
@@ -2157,8 +2163,8 @@ struct WallpaperMatcherInspectorCard: View {
                             Image(systemName: "sparkles")
                             Text("1-Click Match Wallpaper")
                         }
-                        .font(.system(size: 11, weight: .semibold))
-                        .padding(.horizontal, 10)
+                        .font(.system(size: 11.5, weight: .semibold))
+                        .padding(.horizontal, 11)
                         .padding(.vertical, 5)
                         .background(
                             LinearGradient(
@@ -2175,19 +2181,17 @@ struct WallpaperMatcherInspectorCard: View {
                 }
             }
             .padding(10)
-            .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
+            .background(Color(nsColor: .controlBackgroundColor).opacity(0.6))
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 
             // Palette Swatches Row
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
-                    Text("Extracted Palette:")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                    InspectorSubhead("Extracted Palette")
                     Spacer()
                     Text("Click swatch to apply")
-                        .font(.system(size: 9))
-                        .foregroundStyle(.secondary.opacity(0.8))
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.secondary)
                 }
 
                 HStack(spacing: 8) {
@@ -2201,10 +2205,10 @@ struct WallpaperMatcherInspectorCard: View {
                         } label: {
                             Circle()
                                 .fill(color)
-                                .frame(width: 22, height: 22)
+                                .frame(width: 24, height: 24)
                                 .overlay(
                                     Circle()
-                                        .strokeBorder(Color.white.opacity(0.3), lineWidth: 1.2)
+                                        .strokeBorder(Color.white.opacity(0.35), lineWidth: 1.2)
                                 )
                                 .shadow(color: .black.opacity(0.12), radius: 2, y: 1)
                         }
@@ -2221,11 +2225,10 @@ struct WallpaperMatcherInspectorCard: View {
             // Theme Suggestions Grid
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("Theme Suggestions")
-                        .font(.system(size: 11, weight: .semibold))
+                    InspectorSubhead("Theme Suggestions")
                     Spacer()
                     Text("\(extractor.themeSuggestions.count) Styles")
-                        .font(.system(size: 10, weight: .medium))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(.secondary)
                 }
 
@@ -2253,21 +2256,21 @@ struct WallpaperColorsStrip: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Image(systemName: "desktopcomputer")
-                    .font(.system(size: 11))
+                    .font(.system(size: 12))
                     .foregroundStyle(Color.cyan)
                 Text("Desktop Wallpaper Palette")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                 Spacer()
                 Button {
                     extractor.applyPrimaryTheme(to: store)
                 } label: {
-                    HStack(spacing: 3) {
+                    HStack(spacing: 4) {
                         Image(systemName: "sparkles")
                         Text("Match")
                     }
-                    .font(.system(size: 10, weight: .medium))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
+                    .font(.system(size: 11, weight: .semibold))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
                     .background(Color.accentColor.opacity(0.15))
                     .foregroundStyle(Color.accentColor)
                     .clipShape(Capsule())
@@ -2286,9 +2289,9 @@ struct WallpaperColorsStrip: View {
                     } label: {
                         Circle()
                             .fill(color)
-                            .frame(width: 22, height: 22)
+                            .frame(width: 24, height: 24)
                             .overlay(
-                                Circle().strokeBorder(Color.white.opacity(0.25), lineWidth: 1)
+                                Circle().strokeBorder(Color.white.opacity(0.3), lineWidth: 1)
                             )
                             .shadow(color: color.opacity(0.35), radius: 2, y: 1)
                     }
@@ -2298,8 +2301,8 @@ struct WallpaperColorsStrip: View {
             }
         }
         .padding(10)
-        .background(Color(nsColor: .controlBackgroundColor).opacity(0.4))
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(Color(nsColor: .controlBackgroundColor).opacity(0.55))
+        .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
     }
 }
 
@@ -2403,10 +2406,10 @@ struct PresetsInspectorTab: View {
                 Toggle(isOn: $store.surpriseIncludeTextBar) {
                     HStack(spacing: 6) {
                         Image(systemName: "tag.fill")
-                            .font(.system(size: 11))
+                            .font(.system(size: 11.5))
                             .foregroundStyle(Color.accentColor)
                         Text("Include Nameplate Text Bar in Surprise Me")
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.system(size: 12, weight: .medium))
                     }
                 }
                 .toggleStyle(.switch)
@@ -2435,7 +2438,7 @@ struct PresetsInspectorTab: View {
                                 UserDefaults.standard.removeObject(forKey: "folderlab_recents")
                             }
                         }
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: 11.5, weight: .semibold))
                         .buttonStyle(.plain)
                         .foregroundStyle(.secondary)
                     }
@@ -2450,20 +2453,20 @@ struct PresetsInspectorTab: View {
                                     }
                                     store.notify("Loaded recent style #\(idx + 1)")
                                 } label: {
-                                    VStack(spacing: 3) {
-                                        IconCanvas(spec: recent, size: 36)
-                                            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                                    VStack(spacing: 4) {
+                                        IconCanvas(spec: recent, size: 38)
+                                            .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
                                             .shadow(color: .black.opacity(0.18), radius: 2, y: 1)
                                         Text("#\(idx + 1)")
-                                            .font(.system(size: 9, design: .monospaced))
+                                            .font(.system(size: 10.5, weight: .bold, design: .monospaced))
                                             .foregroundStyle(.secondary)
                                     }
-                                    .padding(4)
-                                    .background(Color(nsColor: .controlBackgroundColor).opacity(0.6))
+                                    .padding(5)
+                                    .background(Color(nsColor: .controlBackgroundColor).opacity(0.7))
                                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                            .strokeBorder(Color.white.opacity(0.1), lineWidth: 0.8)
+                                            .strokeBorder(Color.white.opacity(0.12), lineWidth: 0.8)
                                     )
                                 }
                                 .buttonStyle(.plain)
@@ -2601,13 +2604,13 @@ struct PresetCardButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 11) {
+            HStack(spacing: 12) {
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(LinearGradient(colors: gradientColors, startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .frame(width: 32, height: 32)
+                    .frame(width: 34, height: 34)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.2), lineWidth: 1)
+                            .strokeBorder(Color.white.opacity(0.22), lineWidth: 1)
                     )
                     .shadow(color: .black.opacity(0.2), radius: 3, y: 1)
 
@@ -2619,26 +2622,28 @@ struct PresetCardButton: View {
                     }
 
                     Text(styleDescription)
-                        .font(.system(size: 10))
+                        .font(.system(size: 11))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
 
                 Spacer()
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(Color.accentColor)
                 }
             }
-            .padding(10)
+            .padding(.horizontal, 11)
+            .padding(.vertical, 10)
             .background {
                 if isSelected {
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color.accentColor.opacity(0.12))
+                        .fill(Color.accentColor.opacity(0.14))
                         .overlay(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .strokeBorder(Color.accentColor.opacity(0.6), lineWidth: 1.5)
+                                .strokeBorder(Color.accentColor.opacity(0.65), lineWidth: 1.5)
                         )
                 } else {
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -2695,7 +2700,7 @@ struct TextureCardButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 11) {
+            HStack(spacing: 12) {
                 // Live preview swatch showing folder color + texture!
                 ZStack {
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
@@ -2719,7 +2724,7 @@ struct TextureCardButton: View {
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
                 }
-                .frame(width: 32, height: 32)
+                .frame(width: 34, height: 34)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
                         .strokeBorder(Color.white.opacity(0.22), lineWidth: 1)
@@ -2733,7 +2738,7 @@ struct TextureCardButton: View {
                         .lineLimit(1)
 
                     Text(textureDescription)
-                        .font(.system(size: 10))
+                        .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
@@ -2742,18 +2747,19 @@ struct TextureCardButton: View {
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(Color.accentColor)
                 }
             }
-            .padding(10)
+            .padding(.horizontal, 11)
+            .padding(.vertical, 10)
             .background {
                 if isSelected {
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color.accentColor.opacity(0.12))
+                        .fill(Color.accentColor.opacity(0.14))
                         .overlay(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .strokeBorder(Color.accentColor.opacity(0.6), lineWidth: 1.5)
+                                .strokeBorder(Color.accentColor.opacity(0.65), lineWidth: 1.5)
                         )
                 } else {
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -2782,7 +2788,7 @@ struct GradientCardButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 11) {
+            HStack(spacing: 12) {
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(
                         LinearGradient(
@@ -2791,10 +2797,10 @@ struct GradientCardButton: View {
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 32, height: 32)
+                    .frame(width: 34, height: 34)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.2), lineWidth: 1)
+                            .strokeBorder(Color.white.opacity(0.22), lineWidth: 1)
                     )
                     .shadow(color: .black.opacity(0.2), radius: 3, y: 1)
 
@@ -2805,7 +2811,7 @@ struct GradientCardButton: View {
                         .lineLimit(1)
 
                     Text("\(hex1) → \(hex2)")
-                        .font(.system(size: 9, design: .monospaced))
+                        .font(.system(size: 10.5, weight: .semibold, design: .monospaced))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
@@ -2814,18 +2820,19 @@ struct GradientCardButton: View {
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(Color.accentColor)
                 }
             }
-            .padding(10)
+            .padding(.horizontal, 11)
+            .padding(.vertical, 10)
             .background {
                 if isSelected {
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color.accentColor.opacity(0.12))
+                        .fill(Color.accentColor.opacity(0.14))
                         .overlay(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .strokeBorder(Color.accentColor.opacity(0.6), lineWidth: 1.5)
+                                .strokeBorder(Color.accentColor.opacity(0.65), lineWidth: 1.5)
                         )
                 } else {
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -2863,12 +2870,12 @@ struct CanvasInspectorTab: View {
 
                 Toggle("Enable Gradient", isOn: $store.spec.useGradient)
                     .toggleStyle(.switch)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 12.5, weight: .semibold))
 
                 if store.spec.useGradient {
                     Toggle("3-Color Multi-Stop Gradient (v0.2)", isOn: $store.spec.useThreeColorGradient)
                         .toggleStyle(.switch)
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
 
                     if store.spec.useThreeColorGradient {
                         ColorRowModern(title: "Mid Gradient Color", color: $store.spec.color3)
@@ -2884,13 +2891,14 @@ struct CanvasInspectorTab: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Image(systemName: "tag.fill")
-                            .font(.system(size: 11))
+                            .font(.system(size: 12))
                             .foregroundStyle(Color.accentColor)
                         Text("Apple Finder Tag Colors")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 12.5, weight: .semibold))
                         Spacer()
                         Toggle("Write Tag to Finder", isOn: $store.spec.syncFinderTag)
                             .toggleStyle(.switch)
+                            .font(.system(size: 11.5, weight: .medium))
                             .controlSize(.mini)
                     }
 
@@ -2909,7 +2917,7 @@ struct CanvasInspectorTab: View {
                                             endPoint: .bottom
                                         )
                                     )
-                                    .frame(width: 22, height: 22)
+                                    .frame(width: 24, height: 24)
                                     .overlay(
                                         Circle().strokeBorder(store.spec.selectedFinderTag == tag ? Color.white : Color.clear, lineWidth: 2)
                                     )
@@ -2921,8 +2929,8 @@ struct CanvasInspectorTab: View {
                     }
                 }
                 .padding(10)
-                .background(Color(nsColor: .controlBackgroundColor).opacity(0.4))
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .background(Color(nsColor: .controlBackgroundColor).opacity(0.55))
+                .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
 
                 if store.spec.useGradient {
                     ColorRowModern(title: "Bottom Gradient Color", color: $store.spec.color2)
@@ -2936,9 +2944,9 @@ struct CanvasInspectorTab: View {
                                         store.spec.gradientAngle = angle
                                     }
                                 }
-                                .font(.system(size: 11, weight: store.spec.gradientAngle == angle ? .bold : .regular))
+                                .font(.system(size: 11.5, weight: store.spec.gradientAngle == angle ? .bold : .medium))
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 5)
+                                .padding(.vertical, 6)
                                 .background {
                                     if store.spec.gradientAngle == angle {
                                         RoundedRectangle(cornerRadius: 6, style: .continuous)
@@ -2972,9 +2980,10 @@ struct CanvasInspectorTab: View {
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: "arrow.left.arrow.right")
+                                .font(.system(size: 11.5, weight: .semibold))
                             Text("Swap Start & End Colors")
+                                .font(.system(size: 12, weight: .medium))
                         }
-                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
@@ -2994,13 +3003,13 @@ struct CanvasInspectorTab: View {
                 HStack {
                     Toggle("Front Flap Highlight Rim", isOn: $store.spec.innerRim)
                         .toggleStyle(.switch)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 12.5, weight: .medium))
                 }
 
                 HStack {
                     Toggle("Finder Drop Shadow", isOn: $store.spec.dropShadow)
                         .toggleStyle(.switch)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 12.5, weight: .medium))
                 }
 
                 // Liquid Glass Material (iOS 18+ / macOS Sequoia)
@@ -3015,7 +3024,7 @@ struct CanvasInspectorTab: View {
                         }
                     ))
                     .toggleStyle(.switch)
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 12.5, weight: .semibold))
 
                     if store.spec.liquidGlass {
                         VStack(spacing: 8) {
@@ -3101,10 +3110,10 @@ struct GlyphInspectorTab: View {
 
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(store.spec.customImageName ?? "Custom Image")
-                                    .font(.system(size: 12, weight: .bold))
+                                    .font(.system(size: 12.5, weight: .bold))
                                     .lineLimit(1)
                                 Text("\(Int(nsImg.size.width)) × \(Int(nsImg.size.height)) px")
-                                    .font(.system(size: 10, design: .monospaced))
+                                    .font(.system(size: 11, design: .monospaced))
                                     .foregroundStyle(.secondary)
                             }
 
@@ -3122,7 +3131,7 @@ struct GlyphInspectorTab: View {
 
                         Toggle("Tint to Theme Foreground Color", isOn: $store.spec.customImageTinted)
                             .toggleStyle(.switch)
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.system(size: 12.5, weight: .medium))
                     } else {
                         VStack(spacing: 8) {
                             Image(systemName: "photo.badge.plus")
@@ -3130,7 +3139,7 @@ struct GlyphInspectorTab: View {
                                 .foregroundStyle(Color.accentColor)
 
                             Text("Drop PNG, JPG, SVG, or ICNS here")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.system(size: 12.5, weight: .semibold))
 
                             Button("Choose Image File…") {
                                 let panel = NSOpenPanel()
@@ -3148,7 +3157,7 @@ struct GlyphInspectorTab: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 20)
-                        .background(Color(nsColor: .controlBackgroundColor).opacity(0.4))
+                        .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
                         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -3169,9 +3178,11 @@ struct GlyphInspectorTab: View {
                     // Search field
                     HStack {
                         Image(systemName: "magnifyingglass")
+                            .font(.system(size: 12))
                             .foregroundStyle(.secondary)
                         TextField("Search 140+ symbols...", text: $symbolSearchQuery)
                             .textFieldStyle(.plain)
+                            .font(.system(size: 12.5))
                         if !symbolSearchQuery.isEmpty {
                             Button {
                                 symbolSearchQuery = ""
@@ -3182,12 +3193,12 @@ struct GlyphInspectorTab: View {
                             .buttonStyle(.plain)
                         }
                     }
-                    .padding(8)
+                    .padding(9)
                     .background(Color(nsColor: .controlBackgroundColor))
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.1), lineWidth: 1)
+                            .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
                     )
 
                     // Category Filter Pills
@@ -3199,9 +3210,9 @@ struct GlyphInspectorTab: View {
                                         selectedCategory = cat
                                     }
                                 }
-                                .font(.system(size: 11, weight: selectedCategory == cat ? .semibold : .regular))
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
+                                .font(.system(size: 11.5, weight: selectedCategory == cat ? .bold : .medium))
+                                .padding(.horizontal, 11)
+                                .padding(.vertical, 6)
                                 .background {
                                     if selectedCategory == cat {
                                         Capsule().fill(Color(nsColor: .controlAccentColor).opacity(0.25))
@@ -3225,7 +3236,7 @@ struct GlyphInspectorTab: View {
                                 }
                             } label: {
                                 Image(systemName: sym)
-                                    .font(.system(size: 15))
+                                    .font(.system(size: 15.5))
                                     .frame(width: 36, height: 36)
                                     .background {
                                         if store.spec.symbolName == sym {
@@ -3246,13 +3257,12 @@ struct GlyphInspectorTab: View {
 
                     // Direct Symbol Name Input
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Custom SF Symbol Name")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(.secondary)
+                        InspectorSubhead("Custom SF Symbol Name")
 
                         HStack {
                             TextField("e.g. sparkles or terminal.fill", text: $store.spec.symbolName)
                                 .textFieldStyle(.roundedBorder)
+                                .font(.system(size: 12.5))
 
                             if NSImage(systemSymbolName: store.spec.symbolName, accessibilityDescription: nil) != nil {
                                 Image(systemName: "checkmark.circle.fill")
@@ -3268,9 +3278,7 @@ struct GlyphInspectorTab: View {
 
                     // Symbol Rendering Mode
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Symbol Rendering Mode")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(.secondary)
+                        InspectorSubhead("Symbol Rendering Mode")
 
                         Picker("Rendering", selection: $store.spec.symbolMode) {
                             ForEach(SymbolMode.allCases) { mode in
@@ -3284,10 +3292,10 @@ struct GlyphInspectorTab: View {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Image(systemName: "bookmark.fill")
-                                .font(.system(size: 11))
+                                .font(.system(size: 12))
                                 .foregroundStyle(Color.accentColor)
                             Text("Corner Status Badge (v0.2)")
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: 12, weight: .semibold))
                             Spacer()
                             if store.spec.cornerBadge != .none {
                                 ColorPicker("", selection: $store.spec.cornerBadgeColor, supportsOpacity: false)
@@ -3303,8 +3311,8 @@ struct GlyphInspectorTab: View {
                         .pickerStyle(.menu)
                     }
                     .padding(10)
-                    .background(Color(nsColor: .controlBackgroundColor).opacity(0.4))
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .background(Color(nsColor: .controlBackgroundColor).opacity(0.55))
+                    .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
                 }
             } else {
                 // Text / Emoji Monogram Mode
@@ -3424,19 +3432,17 @@ struct GlyphInspectorTab: View {
                 // Stamping & Engraving Depth Effect
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
-                        Text("Stamping & Engraving Depth")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(.secondary)
+                        InspectorSubhead("Stamping & Engraving Depth")
                         Spacer()
                         if store.spec.textDepthStyle == .engraved {
                             HStack(spacing: 4) {
                                 Image(systemName: "applelogo")
-                                    .font(.system(size: 9))
+                                    .font(.system(size: 10.5))
                                 Text("macOS Deboss")
-                                    .font(.system(size: 9, weight: .bold))
+                                    .font(.system(size: 10.5, weight: .bold))
                             }
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 2.5)
                             .background(Capsule().fill(Color.accentColor.opacity(0.2)))
                             .foregroundStyle(Color.accentColor)
                         }
@@ -3461,12 +3467,12 @@ struct GlyphInspectorTab: View {
                             }
                         }
                     )) {
-                        HStack(spacing: 5) {
+                        HStack(spacing: 6) {
                             Image(systemName: "applelogo")
-                                .font(.system(size: 11, weight: .bold))
+                                .font(.system(size: 12, weight: .bold))
                                 .foregroundStyle(Color.accentColor)
                             Text("1-Tap Native Engraved Icon")
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: 12.5, weight: .semibold))
                         }
                     }
                     .toggleStyle(.switch)
@@ -3482,7 +3488,7 @@ struct GlyphInspectorTab: View {
                     if store.spec.textDepthStyle == .engraved && store.spec.base == .folder {
                         Toggle("Match Folder Material (Native Deboss)", isOn: $store.spec.glyphEngravedFolderTint)
                             .toggleStyle(.switch)
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.system(size: 11.5, weight: .medium))
                             .help("Darkens and debosses symbol directly into folder plastic, matching native macOS folders.")
                     }
                 }
@@ -3583,11 +3589,11 @@ struct NameplateCardButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 11) {
+            HStack(spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
                         .fill(Color(nsColor: .controlBackgroundColor))
-                        .frame(width: 32, height: 32)
+                        .frame(width: 34, height: 34)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
                                 .strokeBorder(Color.white.opacity(0.18), lineWidth: 1)
@@ -3601,12 +3607,12 @@ struct NameplateCardButton: View {
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(style.rawValue)
-                        .font(.system(size: 12, weight: isSelected ? .bold : .semibold))
+                        .font(.system(size: 12.5, weight: isSelected ? .bold : .semibold))
                         .foregroundStyle(.primary)
                         .lineLimit(1)
 
                     Text(styleSubtitle)
-                        .font(.system(size: 10))
+                        .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
@@ -3615,18 +3621,19 @@ struct NameplateCardButton: View {
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(Color.accentColor)
                 }
             }
-            .padding(10)
+            .padding(.horizontal, 11)
+            .padding(.vertical, 10)
             .background {
                 if isSelected {
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color.accentColor.opacity(0.12))
+                        .fill(Color.accentColor.opacity(0.14))
                         .overlay(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .strokeBorder(Color.accentColor.opacity(0.6), lineWidth: 1.5)
+                                .strokeBorder(Color.accentColor.opacity(0.65), lineWidth: 1.5)
                         )
                 } else {
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -3665,14 +3672,14 @@ struct UnicodeStyleCardButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 10) {
+            HStack(spacing: 11) {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(style.rawValue)
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 11.5, weight: .semibold))
                         .foregroundStyle(.secondary)
 
                     Text(sampleText)
-                        .font(.system(size: 13, weight: isSelected ? .bold : .medium))
+                        .font(.system(size: 13.5, weight: isSelected ? .bold : .medium))
                         .foregroundStyle(.primary)
                         .lineLimit(1)
                 }
@@ -3681,30 +3688,30 @@ struct UnicodeStyleCardButton: View {
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(Color.accentColor)
                 }
             }
-            .padding(.horizontal, 11)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
             .background {
                 if isSelected {
-                    RoundedRectangle(cornerRadius: 9, style: .continuous)
-                        .fill(Color.accentColor.opacity(0.12))
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color.accentColor.opacity(0.14))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                                .strokeBorder(Color.accentColor.opacity(0.6), lineWidth: 1.5)
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .strokeBorder(Color.accentColor.opacity(0.65), lineWidth: 1.5)
                         )
                 } else {
-                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
                         .fill(Color(nsColor: .controlBackgroundColor).opacity(0.7))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
                                 .strokeBorder(Color.white.opacity(0.10), lineWidth: 1)
                         )
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -3775,28 +3782,27 @@ struct TextInspectorTab: View {
                     )) {
                         HStack(spacing: 6) {
                             Image(systemName: "applelogo")
-                                .font(.system(size: 11, weight: .bold))
+                                .font(.system(size: 12, weight: .bold))
                                 .foregroundStyle(Color.accentColor)
                             Text("1-Tap Native Engraved Look")
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: 12.5, weight: .semibold))
                             Spacer()
                             Text("Icon + Nameplate")
-                                .font(.system(size: 10))
+                                .font(.system(size: 11, weight: .semibold))
                                 .foregroundStyle(.secondary)
                         }
                     }
                     .toggleStyle(.switch)
                     .help("1-Tap toggle to carve both the icon logo and namebar directly into the folder flap, matching native macOS folders")
+
                     // Label Text Field
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Label Banner Text")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(.secondary)
+                        InspectorSubhead("Label Banner Text")
 
                         HStack {
                             TextField("e.g. PROJECTS or ARCHIVE", text: $store.spec.nameplateText)
                                 .textFieldStyle(.roundedBorder)
-                                .font(.system(size: 13, weight: .bold))
+                                .font(.system(size: 13.5, weight: .bold))
 
                             if !store.spec.nameplateText.isEmpty {
                                 Button {
@@ -3819,9 +3825,9 @@ struct TextInspectorTab: View {
                                         store.spec.nameplateText = word
                                     }
                                 }
-                                .font(.system(size: 10, weight: store.spec.nameplateText == word ? .bold : .medium, design: .monospaced))
-                                .padding(.horizontal, 9)
-                                .padding(.vertical, 4)
+                                .font(.system(size: 11, weight: store.spec.nameplateText == word ? .bold : .semibold, design: .monospaced))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
                                 .background {
                                     if store.spec.nameplateText == word {
                                         Capsule().fill(Color(nsColor: .controlAccentColor).opacity(0.25))
@@ -3837,9 +3843,7 @@ struct TextInspectorTab: View {
 
                     // Nameplate Style Picker Grid
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Banner Appearance Style")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(.secondary)
+                        InspectorSubhead("Banner Appearance Style")
 
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                             ForEach(NameplateStyle.allCases) { style in
@@ -3918,9 +3922,7 @@ struct TextInspectorTab: View {
 
                 // Input Textfield
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Original Folder Name")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                    InspectorSubhead("Original Folder Name")
 
                     HStack {
                         TextField("Folder name e.g. Documents", text: $renamerInput)
@@ -3931,7 +3933,7 @@ struct TextInspectorTab: View {
                             Button("Use Active") {
                                 renamerInput = target.lastPathComponent
                             }
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 11.5, weight: .semibold))
                             .buttonStyle(.bordered)
                             .controlSize(.small)
                             .help("Load the name of the folder currently active in FolderLab")
@@ -3941,13 +3943,11 @@ struct TextInspectorTab: View {
 
                 // Styled Unicode Output Preview Box
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Styled Unicode Result Preview")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                    InspectorSubhead("Styled Unicode Result Preview")
 
                     VStack(alignment: .leading, spacing: 8) {
                         Text(transformedName)
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.system(size: 19, weight: .bold))
                             .foregroundStyle(.primary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .lineLimit(1)
@@ -3964,7 +3964,7 @@ struct TextInspectorTab: View {
                                     Image(systemName: "doc.on.doc.fill")
                                     Text("Copy Name")
                                 }
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: 12, weight: .semibold))
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)
@@ -3978,26 +3978,24 @@ struct TextInspectorTab: View {
                                     Image(systemName: "tag.fill")
                                     Text("Set on Nameplate")
                                 }
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: 12, weight: .semibold))
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)
                         }
                     }
                     .padding(12)
-                    .background(Color(nsColor: .textBackgroundColor).opacity(0.45))
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .background(Color(nsColor: .textBackgroundColor).opacity(0.55))
+                    .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .strokeBorder(Color.accentColor.opacity(0.35), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: 9, style: .continuous)
+                            .strokeBorder(Color.accentColor.opacity(0.4), lineWidth: 1)
                     )
                 }
 
                 // Unicode Styles Grid
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Choose Typography Style")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                    InspectorSubhead("Choose Typography Style")
 
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                         ForEach(UnicodeStyle.allCases) { style in
@@ -4100,30 +4098,30 @@ struct ExportInspectorTab: View {
                                 Image(nsImage: staged.originalIcon)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: 30, height: 30)
+                                    .frame(width: 32, height: 32)
                                     .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
 
                                 VStack(alignment: .leading, spacing: 2) {
-                                    HStack(spacing: 5) {
+                                    HStack(spacing: 6) {
                                         Text(staged.name)
-                                            .font(.system(size: 12, weight: .bold))
+                                            .font(.system(size: 13, weight: .bold))
                                         Text(staged.isApplied ? "• Applied" : "• Staged Live")
-                                            .font(.system(size: 10, weight: .semibold))
+                                            .font(.system(size: 11, weight: .bold))
                                             .foregroundStyle(staged.isApplied ? .green : .orange)
                                     }
                                     Text(staged.path)
-                                        .font(.system(size: 9, design: .monospaced))
+                                        .font(.system(size: 10.5, weight: .medium, design: .monospaced))
                                         .foregroundStyle(.secondary)
                                         .lineLimit(1)
                                 }
                                 Spacer()
                             }
-                            .padding(8)
+                            .padding(9)
                             .background(Color(nsColor: .controlBackgroundColor))
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                    .strokeBorder(Color.accentColor.opacity(0.35), lineWidth: 1)
+                                    .strokeBorder(Color.accentColor.opacity(0.4), lineWidth: 1)
                             )
 
                             HStack(spacing: 8) {
@@ -4134,7 +4132,7 @@ struct ExportInspectorTab: View {
                                         Image(systemName: staged.isApplied ? "checkmark.circle.fill" : "folder.badge.gearshape")
                     Text(staged.isApplied ? "Re-Apply to '\(staged.name)'" : "Apply to '\(staged.name)'")
                                     }
-                                    .font(.system(size: 12, weight: .bold))
+                                    .font(.system(size: 12.5, weight: .bold))
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 8)
                                     .background(Color.accentColor)
@@ -4150,7 +4148,7 @@ struct ExportInspectorTab: View {
                                         Image(systemName: "arrow.counterclockwise")
                                         Text("Revert")
                                     }
-                                    .font(.system(size: 11, weight: .medium))
+                                    .font(.system(size: 11.5, weight: .semibold))
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 8)
                                     .background(Color(nsColor: .controlBackgroundColor))
@@ -4169,14 +4167,14 @@ struct ExportInspectorTab: View {
                                 } label: {
                                     HStack(spacing: 5) {
                                         Image(systemName: "exclamationmark.triangle.fill")
-                                            .font(.system(size: 10))
+                                            .font(.system(size: 11))
                                             .foregroundStyle(.orange)
                                         Text("Desktop folder: Open the folder once after applying to show change.")
-                                            .font(.system(size: 10, weight: .medium))
+                                            .font(.system(size: 11, weight: .semibold))
                                             .foregroundStyle(.orange)
                                         Image(systemName: "info.circle")
-                                            .font(.system(size: 9))
-                                            .foregroundStyle(.orange.opacity(0.8))
+                                            .font(.system(size: 10))
+                                            .foregroundStyle(.orange.opacity(0.85))
                                     }
                                 }
                                 .buttonStyle(.plain)
@@ -4195,10 +4193,10 @@ struct ExportInspectorTab: View {
                                 .font(.system(size: 13))
                                 .foregroundStyle(Color.accentColor)
                             Text("Stage Folder for Live Comparison…")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.system(size: 12.5, weight: .semibold))
                             Spacer()
                             Text("Before vs After")
-                                .font(.system(size: 10))
+                                .font(.system(size: 11, weight: .semibold))
                                 .foregroundStyle(.secondary)
                         }
                         .padding(.horizontal, 14)
@@ -4222,10 +4220,10 @@ struct ExportInspectorTab: View {
                                 .font(.system(size: 18))
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("Apply to Folder in Finder…")
-                                    .font(.system(size: 14, weight: .bold))
+                                    .font(.system(size: 14.5, weight: .bold))
                                 Text("Select any folder to skin it with this design instantly")
-                                    .font(.system(size: 10))
-                                    .opacity(0.85)
+                                    .font(.system(size: 11.5, weight: .medium))
+                                    .opacity(0.9)
                             }
                             Spacer()
                             Image(systemName: "chevron.right")
@@ -4248,7 +4246,7 @@ struct ExportInspectorTab: View {
                             Image(systemName: "arrow.counterclockwise")
                                 .font(.system(size: 12))
                             Text("Restore Default macOS Blue Folder…")
-                                .font(.system(size: 12, weight: .medium))
+                                .font(.system(size: 12.5, weight: .medium))
                             Spacer()
                         }
                         .padding(.horizontal, 14)
@@ -4265,20 +4263,20 @@ struct ExportInspectorTab: View {
 
                     HStack(spacing: 6) {
                         Image(systemName: "hand.draw.fill")
-                            .font(.system(size: 11))
+                            .font(.system(size: 12))
                             .foregroundStyle(Color.accentColor)
                         Text("Or drag & drop any folder from Finder directly onto the stage!")
-                            .font(.system(size: 10, weight: .medium))
+                            .font(.system(size: 11.5, weight: .medium))
                             .foregroundStyle(.secondary)
                     }
                     .padding(.top, 4)
 
-                    HStack(spacing: 5) {
+                    HStack(spacing: 6) {
                         Image(systemName: "info.circle")
-                            .font(.system(size: 10))
+                            .font(.system(size: 11))
                             .foregroundStyle(.secondary)
                         Text("For Desktop folders: Open the folder once after applying to show change.")
-                            .font(.system(size: 10))
+                            .font(.system(size: 11))
                             .foregroundStyle(.secondary)
                     }
                     .padding(.top, 2)
@@ -4300,23 +4298,23 @@ struct ExportInspectorTab: View {
                     } label: {
                         HStack(spacing: 10) {
                             Image(systemName: "square.grid.3x3.fill")
-                                .font(.system(size: 14))
+                                .font(.system(size: 15))
                                 .foregroundStyle(Color.cyan)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("Skin Multiple Folders (Multi-Select)…")
-                                    .font(.system(size: 12, weight: .semibold))
+                                    .font(.system(size: 12.5, weight: .semibold))
                                 Text("Select multiple folders in Finder to skin them simultaneously")
-                                    .font(.system(size: 10))
+                                    .font(.system(size: 11))
                                     .foregroundStyle(.secondary)
                             }
                             Spacer()
                         }
-                        .padding(10)
+                        .padding(11)
                         .background(Color(nsColor: .controlBackgroundColor))
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+                                .strokeBorder(Color.white.opacity(0.10), lineWidth: 1)
                         )
                     }
                     .buttonStyle(.plain)
@@ -4326,23 +4324,23 @@ struct ExportInspectorTab: View {
                     } label: {
                         HStack(spacing: 10) {
                             Image(systemName: "folder.badge.plus")
-                                .font(.system(size: 14))
+                                .font(.system(size: 15))
                                 .foregroundStyle(Color.orange)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("Skin All Subfolders in Directory…")
-                                    .font(.system(size: 12, weight: .semibold))
+                                    .font(.system(size: 12.5, weight: .semibold))
                                 Text("Select a folder (e.g. ~/Developer) and skin every project inside")
-                                    .font(.system(size: 10))
+                                    .font(.system(size: 11))
                                     .foregroundStyle(.secondary)
                             }
                             Spacer()
                         }
-                        .padding(10)
+                        .padding(11)
                         .background(Color(nsColor: .controlBackgroundColor))
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+                                .strokeBorder(Color.white.opacity(0.10), lineWidth: 1)
                         )
                     }
                     .buttonStyle(.plain)
@@ -4354,10 +4352,10 @@ struct ExportInspectorTab: View {
                             Image(systemName: "arrow.counterclockwise")
                             Text("Batch Reset Subfolders to Default…")
                         }
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: 11.5, weight: .medium))
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 6)
+                        .padding(.vertical, 7)
                     }
                     .buttonStyle(.plain)
                 }
@@ -4456,10 +4454,10 @@ struct ExportActionCard: View {
             HStack(spacing: 12) {
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(LinearGradient(colors: accentGradient, startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .frame(width: 32, height: 32)
+                    .frame(width: 34, height: 34)
                     .overlay {
                         Image(systemName: systemImage)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 14.5, weight: .semibold))
                             .foregroundStyle(.white)
                     }
                     .shadow(color: .black.opacity(0.18), radius: 2, y: 1)
@@ -4467,22 +4465,23 @@ struct ExportActionCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         Text(title)
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.system(size: 13.5, weight: .semibold))
                             .foregroundStyle(.primary)
                     }
                     Text(subtitle)
-                        .font(.system(size: 10))
+                        .font(.system(size: 11.5))
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
             }
 
             Button(action: action) {
                 Text(buttonText)
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 12.5, weight: .semibold))
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 7)
+                    .padding(.vertical, 8)
                     .background(Color(nsColor: .controlBackgroundColor))
                     .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                     .overlay(
@@ -4493,11 +4492,11 @@ struct ExportActionCard: View {
             .buttonStyle(.plain)
         }
         .padding(12)
-        .background(Color(nsColor: .controlBackgroundColor).opacity(0.45))
+        .background(Color(nsColor: .controlBackgroundColor).opacity(0.6))
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+                .strokeBorder(Color.white.opacity(0.10), lineWidth: 1)
         )
     }
 }
@@ -4511,27 +4510,46 @@ struct InspectorSectionHeader: View {
     var iconColor: Color = .accentColor
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 10) {
             if let icon = icon {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .fill(iconColor.opacity(0.16))
-                        .frame(width: 24, height: 24)
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .fill(iconColor.opacity(0.18))
+                        .frame(width: 28, height: 28)
                     Image(systemName: icon)
-                        .font(.system(size: 11, weight: .bold))
+                        .font(.system(size: 13, weight: .bold))
                         .foregroundStyle(iconColor)
                 }
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.system(size: 13.5, weight: .bold))
                     .foregroundStyle(.primary)
                 Text(subtitle)
-                    .font(.system(size: 11))
+                    .font(.system(size: 11.5))
                     .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
+    }
+}
+
+// MARK: - Reusable Inspector Subsection Eyebrow
+
+struct InspectorSubhead: View {
+    let title: String
+
+    init(_ title: String) {
+        self.title = title
+    }
+
+    var body: some View {
+        Text(title.uppercased())
+            .font(.system(size: 10.5, weight: .bold, design: .rounded))
+            .foregroundStyle(.secondary)
+            .tracking(0.5)
     }
 }
 
@@ -4545,11 +4563,11 @@ struct InspectorCard<Content: View>: View {
             content()
         }
         .padding(14)
-        .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
+        .background(Color(nsColor: .controlBackgroundColor).opacity(0.65))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+                .strokeBorder(Color.white.opacity(0.10), lineWidth: 1)
         )
     }
 }
@@ -4564,24 +4582,24 @@ struct ModernSlider: View {
     var onReset: (() -> Void)? = nil
 
     var body: some View {
-        VStack(spacing: 5) {
+        VStack(spacing: 6) {
             HStack {
                 Text(title)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 12.5, weight: .medium))
                     .foregroundStyle(.primary)
                 Spacer()
                 Text(String(format: format, value * multiplier) + unit)
-                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .font(.system(size: 11.5, weight: .semibold, design: .monospaced))
                     .foregroundStyle(.secondary)
 
                 if let onReset = onReset {
                     Button("Reset") {
                         withAnimation { onReset() }
                     }
-                    .font(.system(size: 10, weight: .medium))
+                    .font(.system(size: 11, weight: .semibold))
                     .buttonStyle(.plain)
                     .foregroundStyle(Color.accentColor)
-                    .padding(.leading, 4)
+                    .padding(.leading, 6)
                 }
             }
             Slider(value: $value, in: range)
@@ -4597,15 +4615,16 @@ struct ColorRowModern: View {
     var body: some View {
         HStack(spacing: 10) {
             Text(title)
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 12.5, weight: .medium))
+                .foregroundStyle(.primary)
 
             Spacer()
 
             // Hex Input Field
             TextField("#RRGGBB", text: $hex)
                 .textFieldStyle(.roundedBorder)
-                .font(.system(size: 11, design: .monospaced))
-                .frame(width: 82)
+                .font(.system(size: 11.5, weight: .medium, design: .monospaced))
+                .frame(width: 86)
                 .onSubmit {
                     if let c = Color(hex: hex) {
                         color = c
@@ -4623,13 +4642,13 @@ struct ColorRowModern: View {
                 Eyedropper.pick { color = $0 }
             } label: {
                 Image(systemName: "eyedropper")
-                    .font(.system(size: 12))
-                    .frame(width: 26, height: 26)
+                    .font(.system(size: 12, weight: .semibold))
+                    .frame(width: 28, height: 28)
                     .background(Color(nsColor: .controlBackgroundColor))
                     .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .strokeBorder(Color.white.opacity(0.12), lineWidth: 1)
+                            .strokeBorder(Color.white.opacity(0.14), lineWidth: 1)
                     )
             }
             .buttonStyle(.plain)

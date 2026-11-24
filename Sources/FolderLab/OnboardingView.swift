@@ -185,14 +185,14 @@ struct OnboardingView: View {
                     .frame(width: 240, height: 240)
 
                     // Feature Badge Pill
-                    HStack(spacing: 5) {
+                    HStack(spacing: 6) {
                         Image(systemName: "sparkles")
-                            .font(.system(size: 9, weight: .bold))
+                            .font(.system(size: 10, weight: .bold))
                         Text(pages[currentPage].badge)
-                            .font(.system(size: 10, weight: .heavy, design: .rounded))
+                            .font(.system(size: 10.5, weight: .heavy, design: .rounded))
                     }
-                    .padding(.horizontal, 11)
-                    .padding(.vertical, 4.5)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 5)
                     .background(Color(nsColor: .controlBackgroundColor).opacity(0.85))
                     .foregroundStyle(pages[currentPage].accentGradient.first ?? .primary)
                     .clipShape(Capsule())
@@ -214,7 +214,7 @@ struct OnboardingView: View {
                             .foregroundStyle(.primary)
 
                         Text(pages[currentPage].tagLine)
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.system(size: 13.5, weight: .semibold))
                             .foregroundStyle(
                                 LinearGradient(
                                     colors: pages[currentPage].accentGradient,
@@ -225,9 +225,9 @@ struct OnboardingView: View {
                     }
 
                     Text(pages[currentPage].description)
-                        .font(.system(size: 12.5))
+                        .font(.system(size: 13))
                         .foregroundStyle(.secondary)
-                        .lineSpacing(3)
+                        .lineSpacing(3.5)
                         .fixedSize(horizontal: false, vertical: true)
 
                     // Highlights List
@@ -237,14 +237,14 @@ struct OnboardingView: View {
                                 ZStack {
                                     Circle()
                                         .fill(pages[currentPage].accentGradient.first?.opacity(0.15) ?? Color.accentColor.opacity(0.15))
-                                        .frame(width: 20, height: 20)
+                                        .frame(width: 22, height: 22)
                                     Image(systemName: item.icon)
-                                        .font(.system(size: 10, weight: .bold))
+                                        .font(.system(size: 11, weight: .bold))
                                         .foregroundStyle(pages[currentPage].accentGradient.first ?? .accentColor)
                                 }
 
                                 Text(item.text)
-                                    .font(.system(size: 11.5, weight: .medium))
+                                    .font(.system(size: 12, weight: .medium))
                                     .foregroundStyle(.primary.opacity(0.9))
                             }
                         }

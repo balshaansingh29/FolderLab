@@ -93,8 +93,8 @@ struct SettingsView: View {
 
                                 if let date = updateManager.lastCheckDate {
                                     Text("Last checked: \(date.formatted(date: .abbreviated, time: .shortened))")
-                                        .font(.system(size: 10))
-                                        .foregroundStyle(.tertiary)
+                                        .font(.system(size: 11))
+                                        .foregroundStyle(.secondary)
                                 }
                             }
 
@@ -112,30 +112,34 @@ struct SettingsView: View {
                             }
                         }
                         .padding(10)
-                        .background(Color(nsColor: .textBackgroundColor).opacity(0.4))
+                        .background(Color(nsColor: .textBackgroundColor).opacity(0.5))
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
                         Toggle(isOn: $autoCheckForUpdates) {
                             Text("Automatically check for updates on startup")
-                                .font(.system(size: 11))
+                                .font(.system(size: 12))
                                 .foregroundStyle(.secondary)
                         }
                         .toggleStyle(.checkbox)
                     }
                     .padding(14)
-                    .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
+                    .background(Color(nsColor: .controlBackgroundColor).opacity(0.65))
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.10), lineWidth: 1)
+                    )
 
                     // About & Community Section
                     VStack(alignment: .leading, spacing: 10) {
                         Text("About & Community")
-                            .font(.system(size: 13, weight: .bold))
+                            .font(.system(size: 13.5, weight: .bold))
                             .foregroundStyle(.primary)
 
                         Text("FolderLab is an open-source macOS studio released under the MIT License. Crafted with SwiftUI & AppKit for high performance.")
-                            .font(.system(size: 11))
+                            .font(.system(size: 12))
                             .foregroundStyle(.secondary)
-                            .lineSpacing(2)
+                            .lineSpacing(3)
 
                         HStack(spacing: 12) {
                             if let showOnboarding = showOnboarding {
@@ -146,7 +150,7 @@ struct SettingsView: View {
                                     }
                                 } label: {
                                     Label("Replay Welcome Tour", systemImage: "sparkles")
-                                        .font(.system(size: 11, weight: .semibold))
+                                        .font(.system(size: 11.5, weight: .semibold))
                                         .foregroundStyle(Color.accentColor)
                                 }
                                 .buttonStyle(.plain)
@@ -157,24 +161,28 @@ struct SettingsView: View {
 
                             Link(destination: URL(string: "https://github.com/balshaansingh29/FolderLab")!) {
                                 Label("GitHub Repository", systemImage: "link")
-                                    .font(.system(size: 11, weight: .medium))
+                                    .font(.system(size: 11.5, weight: .medium))
                             }
 
                             Link(destination: URL(string: "https://github.com/balshaansingh29/FolderLab/releases")!) {
                                 Label("Release Notes", systemImage: "sparkles")
-                                    .font(.system(size: 11, weight: .medium))
+                                    .font(.system(size: 11.5, weight: .medium))
                             }
 
                             Link(destination: URL(string: "https://github.com/balshaansingh29/FolderLab/issues")!) {
                                 Label("Report an Issue", systemImage: "exclamationmark.bubble")
-                                    .font(.system(size: 11, weight: .medium))
+                                    .font(.system(size: 11.5, weight: .medium))
                             }
                         }
                         .padding(.top, 2)
                     }
                     .padding(14)
-                    .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
+                    .background(Color(nsColor: .controlBackgroundColor).opacity(0.65))
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .strokeBorder(Color.white.opacity(0.10), lineWidth: 1)
+                    )
                 }
                 .padding(20)
             }

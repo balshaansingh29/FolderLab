@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v0.6-brightgreen.svg" alt="Release v0.6">
+  <img src="https://img.shields.io/badge/Release-v0.7-brightgreen.svg" alt="Release v0.7">
   <img src="https://img.shields.io/badge/macOS-13%2B%20Ventura%20%7C%20Sonoma%20%7C%20Sequoia-blue.svg?logo=apple" alt="macOS 13+">
   <img src="https://img.shields.io/badge/Swift-5.9%2B-orange.svg?logo=swift" alt="Swift 5.9+">
   <img src="https://img.shields.io/badge/UI-SwiftUI%20%26%20AppKit-purple.svg" alt="SwiftUI & AppKit">
@@ -30,6 +30,11 @@
 ---
 
 ## Key Features
+
+### 🪄 Wallpaper Palette Matcher & UI Studio (v0.7)
+- **Match Desktop Wallpaper**: Auto-extract harmonious color palettes directly from your current macOS wallpaper (supports Sonoma/Sequoia system Store, dynamic HEIC day/night frames, and custom wallpapers) with 1-click theme application.
+- **Bespoke Personality Installer**: Custom 2× Retina installer DMG with drag-and-drop alignment and welcome tour onboarding with interactive 3D physics tilt.
+- **Unified High-Contrast Design System**: Complete typography and contrast overhaul across all inspector tabs, canvas stage controls, and settings for effortless readability.
 
 ### 🎨 Colors, Gradients & Textures
 - **Custom Palettes & Multi-Stop Gradients**: Design 3-stop mesh gradients or sync directly with native macOS Finder tag colors.
@@ -108,8 +113,8 @@ brew install --cask https://raw.githubusercontent.com/balshaansingh29/FolderLab/
 
 Download pre-compiled binaries from the latest release:
 
-- **[FolderLab-v0.6.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.6/FolderLab-v0.6.dmg)** — Drag-and-drop installer
-- **[FolderLab-v0.6.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.6/FolderLab-v0.6.zip)** — Standalone application archive
+- **[FolderLab-v0.7.dmg](https://github.com/balshaansingh29/FolderLab/releases/download/v0.7/FolderLab-v0.7.dmg)** — Drag-and-drop installer
+- **[FolderLab-v0.7.zip](https://github.com/balshaansingh29/FolderLab/releases/download/v0.7/FolderLab-v0.7.zip)** — Standalone application archive
 
 ---
 

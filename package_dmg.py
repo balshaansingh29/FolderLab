@@ -125,7 +125,7 @@ end tell
 
 if __name__ == "__main__":
     app_path = "FolderLab.app"
-    out_dmg = "FolderLab-v0.6.dmg"
+    out_dmg = "FolderLab-v0.7.dmg"
     if len(sys.argv) > 1:
         app_path = sys.argv[1]
     if len(sys.argv) > 2:
