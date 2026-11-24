@@ -13,6 +13,10 @@ struct StagedFolder: Identifiable, Equatable {
     var previousSpec: IconSpec?
     var isApplied: Bool
 
+    var isDesktop: Bool {
+        IconExporter.isDesktopFolder(url)
+    }
+
     init(url: URL, originalIcon: NSImage, originalTags: [String], previousSpec: IconSpec? = nil, isApplied: Bool = false) {
         self.id = UUID()
         self.url = url
@@ -392,7 +396,11 @@ final class IconStore: ObservableObject {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
                 stagedFolder = StagedFolder(url: staged.url, originalIcon: refreshedIcon, originalTags: staged.originalTags, previousSpec: nil, isApplied: false)
             }
-            notify("Restored '\(staged.name)' to default macOS icon! ↩️")
+            if staged.isDesktop {
+                notify("Restored '\(staged.name)'! ↩️ (Desktop tip: open folder once to show change)")
+            } else {
+                notify("Restored '\(staged.name)' to default macOS icon! ↩️")
+            }
         } else {
             notify("Failed to restore '\(staged.name)'. Check folder permissions.", isError: true)
         }
@@ -1037,13 +1045,26 @@ struct StudioCanvasView: View {
 
             // 4. Guidance Hint
             if let staged = store.stagedFolder {
-                HStack(spacing: 5) {
-                    Image(systemName: "info.circle.fill")
-                        .font(.system(size: 11))
-                        .foregroundStyle(Color.accentColor)
-                    Text("Staged '\(staged.name)' • Live edits update the AFTER preview! Click Apply to write to Finder.")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.secondary)
+                VStack(spacing: 4) {
+                    HStack(spacing: 5) {
+                        Image(systemName: "info.circle.fill")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color.accentColor)
+                        Text("Staged '\(staged.name)' • Live edits update the AFTER preview! Click Apply to write to Finder.")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(.secondary)
+                    }
+
+                    if staged.isDesktop {
+                        HStack(spacing: 5) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.orange)
+                            Text("Desktop folder: Open the folder once in Finder after applying to show change.")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(.orange)
+                        }
+                    }
                 }
             } else {
                 Text(isDropTargeted ? "Release to stage folder & compare live!" : "📁 Drag & drop any folder from Finder onto the canvas to stage & compare live")
@@ -3715,6 +3736,18 @@ struct ExportInspectorTab: View {
                                 }
                                 .buttonStyle(.plain)
                             }
+
+                            if staged.isDesktop {
+                                HStack(spacing: 5) {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .font(.system(size: 10))
+                                        .foregroundStyle(.orange)
+                                    Text("Desktop folder: Open the folder once after applying to show change.")
+                                        .font(.system(size: 10, weight: .medium))
+                                        .foregroundStyle(.orange)
+                                }
+                                .padding(.top, 2)
+                            }
                         }
                         .padding(.bottom, 4)
                     }
@@ -3805,6 +3838,16 @@ struct ExportInspectorTab: View {
                             .foregroundStyle(.secondary)
                     }
                     .padding(.top, 4)
+
+                    HStack(spacing: 5) {
+                        Image(systemName: "info.circle")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.secondary)
+                        Text("For Desktop folders: Open the folder once after applying to show change.")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.top, 2)
                 }
             }
 

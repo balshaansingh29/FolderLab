@@ -101,6 +101,19 @@ enum IconExporter {
         }
     }
 
+    // MARK: - Desktop Path Checking
+
+    nonisolated public static func isDesktopFolder(_ url: URL) -> Bool {
+        let path = url.standardized.path
+        if let desktopURL = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first {
+            let desktopPath = desktopURL.standardized.path
+            if path == desktopPath || path.hasPrefix(desktopPath + "/") {
+                return true
+            }
+        }
+        return path.contains("/Desktop/") || path.hasSuffix("/Desktop")
+    }
+
     // MARK: - Folder Metadata & Design Persistence (xattr)
 
     public static let xattrSpecKey = "com.folderlab.spec"
@@ -175,7 +188,11 @@ enum IconExporter {
                 _ = setFinderTag(tag.rawValue, for: url)
             }
             refreshFinder(for: url)
-            return (true, "Customized folder '\(url.lastPathComponent)'! ✨")
+            if isDesktopFolder(url) {
+                return (true, "Customized '\(url.lastPathComponent)'! ✨ (Desktop tip: open folder once to show change)")
+            } else {
+                return (true, "Customized folder '\(url.lastPathComponent)'! ✨")
+            }
         } else {
             return (false, "Failed to customize '\(url.lastPathComponent)'. Check permissions.")
         }
@@ -191,7 +208,11 @@ enum IconExporter {
         guard panel.runModal() == .OK, !panel.urls.isEmpty else { return "Cancelled." }
 
         var ok = 0, failed = 0
+        var hasDesktop = false
         for url in panel.urls {
+            if isDesktopFolder(url) {
+                hasDesktop = true
+            }
             let (success, _) = apply(spec: spec, to: url)
             if success {
                 ok += 1
@@ -199,9 +220,15 @@ enum IconExporter {
                 failed += 1
             }
         }
-        return failed == 0
-            ? "Customized \(ok) folder(s)! ✨"
-            : "Applied to \(ok), failed for \(failed) (check folder permissions)."
+        if failed == 0 {
+            if hasDesktop {
+                return "Customized \(ok) folder(s)! ✨ (Desktop tip: open folder once to show change)"
+            } else {
+                return "Customized \(ok) folder(s)! ✨"
+            }
+        } else {
+            return "Applied to \(ok), failed for \(failed) (check folder permissions)."
+        }
     }
 
     static func resetItems() -> String {
@@ -214,7 +241,11 @@ enum IconExporter {
         guard panel.runModal() == .OK, !panel.urls.isEmpty else { return "Cancelled." }
 
         var ok = 0, failed = 0
+        var hasDesktop = false
         for url in panel.urls {
+            if isDesktopFolder(url) {
+                hasDesktop = true
+            }
             if NSWorkspace.shared.setIcon(nil, forFile: url.path, options: []) {
                 removeStoredSpec(for: url)
                 refreshFinder(for: url)
@@ -223,9 +254,15 @@ enum IconExporter {
                 failed += 1
             }
         }
-        return failed == 0
-            ? "Restored \(ok) folder(s) to default macOS icon."
-            : "Reset \(ok), failed for \(failed)."
+        if failed == 0 {
+            if hasDesktop {
+                return "Restored \(ok) folder(s) to default icon. (Desktop: open folder once to show change)"
+            } else {
+                return "Restored \(ok) folder(s) to default macOS icon."
+            }
+        } else {
+            return "Reset \(ok), failed for \(failed)."
+        }
     }
 
     // MARK: - Batch Subfolders Styler (Feature 2)
